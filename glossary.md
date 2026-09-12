@@ -9,6 +9,10 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 ## Week 1 — Human Visual System
 *(full explanations in [`week1-study-notes.md`](./week1-study-notes.md); this is the lookup-speed version)*
 
+- **Aperture** — camera terminology for the opening that controls how much light gets let in (a wider opening = more light); the pupil is the eye's own aperture. Deepened in Week 2.
+- **Image sensor** — the electronic chip behind a camera's lens that converts incoming light into a digital image, sitting where photographic film used to go; the retina plays the same biological role. Deepened in Week 2.
+- **Bayer color filter array / RGGB mosaic** — the physical grid of tiny red/green/green/blue filters glued onto a sensor, one per pixel, so each pixel measures only one color; the rest gets computationally filled in later (demosaicking, Week 3).
+- **dpi (dots per inch)** — how many printed dots or screen pixels are packed into one inch; higher dpi means finer, less visible pixel structure, up to the limit of what the eye can actually resolve (§9).
 - **Accommodation** — the eye changing focus by reshaping its lens via the ciliary muscle.
 - **Fovea** — the small, cone-dense pit in the retina responsible for sharp central vision.
 - **Rods / cones** — the retina's two photoreceptor types: rods for low-light/no-color vision, cones for color and fine detail.

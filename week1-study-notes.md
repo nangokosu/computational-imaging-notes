@@ -14,7 +14,7 @@ The lecture frames this with a simple triangle:
 
 > **Computational Imaging = Optics + Sensing + Computation**
 
-Traditional cameras separate these three (a fixed lens, a passive sensor, and image processing bolted on afterward). Computational imaging co-designs them — e.g., a coded aperture *jointly* changes the optics and the deconvolution algorithm on purpose.
+Traditional cameras separate these three (a fixed lens, a passive sensor, and image processing bolted on afterward). Computational imaging co-designs them — e.g., a coded aperture (a specially shaped opening that controls how light enters a lens — full definition in §1, where the eye's own version of this shows up) *jointly* changes the optics and the deconvolution algorithm on purpose.
 
 ---
 
@@ -26,11 +26,11 @@ Cross-section, front to back:
 |---|---|
 | **Cornea** | The clear, curved front surface. Does *most* of the eye's fixed focusing power (it's a strong, non-adjustable lens). |
 | **Aqueous humour** (anterior chamber) | Clear fluid between cornea and lens; maintains eye pressure/shape. |
-| **Iris / Pupil** | The iris is the colored muscle ring; the pupil is the hole in its middle. The iris contracts/dilates the pupil to control how much light enters — this is the eye's aperture. |
+| **Iris / Pupil** | The iris is the colored muscle ring; the pupil is the hole in its middle. The iris contracts/dilates the pupil to control how much light enters — this is the eye's **aperture**. (*Aperture* is camera terminology for "the opening that controls how much light gets let in": a wider opening lets in more light, a narrower one lets in less — exactly like your pupil widening in the dark and shrinking in bright light. Every camera lens has one, usually made of adjustable overlapping blades rather than a muscle.) |
 | **Lens** | A flexible, adjustable lens behind the iris. Fine-tunes focus by changing shape (see *accommodation*, §5). |
 | **Ciliary muscle / zonular (suspensory) fibers** | Muscles and fibers attached to the lens that squeeze or relax it to change its shape/focal power. |
 | **Vitreous humour** | Clear gel filling the main eyeball cavity, behind the lens. |
-| **Retina** | The light-sensitive "sensor" layer at the back of the eye (see §2). |
+| **Retina** | The light-sensitive "**sensor**" layer at the back of the eye (see §2). (In a digital camera, the *image sensor* is the electronic chip that sits where photographic film used to go — it converts incoming light into an electrical signal that becomes a digital image. The retina does the same biological job.) |
 | **Choroid** | A blood-vessel-rich layer behind the retina; supplies oxygen/nutrients and absorbs stray light (like the black interior paint of a pinhole camera — this is *literally why HW1 has you paint the box interior black*: to stop internal reflections from ruining contrast). |
 | **Sclera** | The white, tough outer shell of the eyeball — structural support, like a camera body. |
 | **Fovea** | A small pit in the retina, directly behind the pupil, packed with cone photoreceptors — this is where sharp, color vision happens (see §2, §3). |
@@ -94,6 +94,8 @@ The lecture draws a direct structural analogy:
 | Retina | Image sensor |
 | Fovea (non-uniform density, denser in center) | Uniform pixel grid |
 | 3 cone types, irregularly interleaved | Bayer color filter array (regular RGGB mosaic) |
+
+A digital camera sensor is actually colorblind on its own — each individual light-sensing pixel can only measure *brightness*, not color. To get color, manufacturers glue a **Bayer color filter array** directly on top of the sensor: a physical grid of tiny red, green, and blue filters, one per pixel, arranged in a repeating 2×2 tile of one red, two green, and one blue filter ("**RGGB**" — green is doubled because human vision is most sensitive to green, per §3's cone curves). Each pixel then only ever records *one* of the three colors; the other two get computationally filled in later, a process called *demosaicking* (Week 3).
 
 Two important **disanalogies** to remember:
 1. The retina's cone mosaic is **irregular/random**, not a neat repeating grid like a camera's Bayer pattern.
@@ -171,7 +173,7 @@ p = 2 · d · tan(α / 2)
 p = 2 × 12" × tan(0.5 arcmin) ≈ 0.0035"
 ```
 
-Converting that resolvable pixel pitch to a dot density: **≈ 286 dpi** is the density at which pixels become individually unresolvable at 12 inches — Apple's marketing claim was **300 dpi**, i.e., *slightly* above the computed "retina" threshold (300 > 286), which is the point of the slide: the marketing number is a real, checkable physical claim, not just a buzzword, and it holds up to the math (with a small safety margin).
+Converting that resolvable pixel pitch to a dot density (**dpi**, "dots per inch" — how many printed dots or screen pixels are packed into one inch; higher dpi means finer, less visible pixel structure, assuming the eye is even able to resolve it): **≈ 286 dpi** is the density at which pixels become individually unresolvable at 12 inches — Apple's marketing claim was **300 dpi**, i.e., *slightly* above the computed "retina" threshold (300 > 286), which is the point of the slide: the marketing number is a real, checkable physical claim, not just a buzzword, and it holds up to the math (with a small safety margin).
 
 **Why this generalizes:** the same formula tells you that "how many pixels fall in your fovea" is a *moving target* that depends entirely on viewing distance — a screen designed to be "retina" at 12 inches would look pixelated at 3 inches and be wastefully over-resolved at 3 meters. This exact idea — same physical image, different perceived spatial frequency content depending on distance — is the entire mechanism behind hybrid images (§13) and is exactly what HW1 Task 3 asks you to compute for a printed photo at two different viewing distances.
 
