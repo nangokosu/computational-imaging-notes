@@ -1,0 +1,19 @@
+# CSC2529 Computational Imaging — Study Notes
+
+Running, beginner-level study notes for CSC2529 (Computational Imaging), written up week by week as the course goes.
+
+**📖 Read the notes:** [Optics, Sensing, Computation](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0) — a running, browsable course notebook (nav per week + a cumulative glossary). The markdown in this repo is the same content in plain-text form.
+
+## Contents
+
+| File | What it is |
+|---|---|
+| [`week1-study-notes.md`](./week1-study-notes.md) | Week 1 — the human visual system: eye anatomy, the contrast sensitivity function, hybrid images, and more. |
+| [`glossary.md`](./glossary.md) | A single, cumulative glossary of course terminology, grouped by the week each term is (or will be) covered. |
+| [`CLAUDE.md`](./CLAUDE.md) | The project's own working notes for how these are generated and kept up to date. |
+
+More `weekN-study-notes.md` files are added as the course progresses.
+
+## Source
+
+Course site: https://www.cs.toronto.edu/~lindell/teaching/2529/
