@@ -270,7 +270,9 @@ Human depth perception combines many independent cues, grouped into two families
 
 ## 15. Stereoscopic Displays & a Brief History of VR
 
-Stereoscopic 3D displays work by presenting each eye a slightly different image (mimicking binocular disparity, §14) so the brain fuses them into a perceived depth.
+**Stereoscopic** comes from *stereo* ("two"/"solid") + *scopic* ("viewing") — literally "two-eyed viewing." It describes anything that recreates depth by giving each eye a slightly different image, the way ordinary binocular vision already works: your two eyes sit a few centimeters apart, so each sees the same scene from a slightly different horizontal viewpoint, and the difference between those two views (**binocular disparity**, §14) is what your brain decodes into depth.
+
+A **stereoscopic** device or display exploits this on purpose: instead of showing both eyes the same flat image, it feeds each eye its own slightly-offset image, so the brain perceives depth that isn't really there on a flat screen or print. Stereoscopic 3D displays work by presenting each eye a slightly different image (mimicking binocular disparity, §14) so the brain fuses them into a perceived depth.
 
 Brief timeline given in lecture:
 - **1838**: Charles Wheatstone invents the **stereoscope** — the first device to present offset images to each eye and produce a 3D perception (predates photography-based stereo images; early stereoscopes used stereo pairs of drawings/photos, e.g., a 1865 stereo photo of Lincoln shown in lecture).

@@ -19,6 +19,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **Spatial frequency** — how rapidly brightness varies across an image, in cycles per unit distance (or cycles per degree, perceptually).
 - **Contrast Sensitivity Function (CSF)** — the curve describing how sensitive the eye is to a given spatial frequency; band-pass, peaking around 4–6 cycles per degree.
 - **Low-pass / high-pass filter** — operations that keep only coarse/smooth content, or only fine detail/edges, respectively.
+- **Stereoscopic** — literally "two-eyed viewing" (*stereo* + *scopic*); describes any device or display that feeds each eye a slightly different image (mimicking binocular disparity) so the brain perceives depth from an otherwise flat picture.
 - **Vergence-accommodation conflict (VAC)** — the mismatch, in stereo displays, between where the eyes converge (simulated depth) and where they must focus (actual screen distance).
 
 ## Week 2 — Digital Photography I (ray optics, aperture, sensor)
