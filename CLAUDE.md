@@ -14,6 +14,7 @@ The user is a **complete beginner** to computational imaging with no prior backg
 - Prefer plain-language analogies before formal definitions, then give the formal definition.
 - When a formula appears, show the derivation intuition, not just the result — a beginner should be able to see *why* the formula has that shape, not just memorize it.
 - Explicitly cross-reference where a concept reappears or gets formalized in a later week — this course builds concepts cumulatively, and notes should make those threads visible.
+- **Illustrate geometric or spatial ideas with a diagram, proactively.** Angles, ray paths, triangles, top-down comparisons, frequency-domain composition, anything where the geometry itself carries the meaning — don't rely on prose alone to carry a spatial idea. If an explanation would be confusing or hard to picture from text, it needs a diagram; add one without waiting to be asked. (See "Published artifact" below for how these are built.)
 
 ## Source material
 
