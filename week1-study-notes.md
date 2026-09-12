@@ -173,7 +173,17 @@ p = 2 · d · tan(α / 2)
 p = 2 × 12" × tan(0.5 arcmin) ≈ 0.0035"
 ```
 
-Converting that resolvable pixel pitch to a dot density (**dpi**, "dots per inch" — how many printed dots or screen pixels are packed into one inch; higher dpi means finer, less visible pixel structure, assuming the eye is even able to resolve it): **≈ 286 dpi** is the density at which pixels become individually unresolvable at 12 inches — Apple's marketing claim was **300 dpi**, i.e., *slightly* above the computed "retina" threshold (300 > 286), which is the point of the slide: the marketing number is a real, checkable physical claim, not just a buzzword, and it holds up to the math (with a small safety margin).
+**dpi is just *p* turned upside down.** *p* is a *length* — how physically big one resolvable pixel is (in inches). **dpi** ("dots per inch") is a *density* — how many of those pixel-widths fit side by side into one inch. Since *p* is already "inches per pixel," dpi is just its reciprocal:
+
+```
+dpi = 1 inch / p
+```
+
+Plugging in: 1 / 0.0035 ≈ **286 dpi**. It isn't a separately measured quantity — it's the exact same fact about pixel size, just flipped from "how big is one pixel" into "how many pixels fit in an inch," because "286 dots per inch, bigger is sharper" is a more intuitive number to compare screens by than "0.0035 inches, smaller is sharper."
+
+(A pixel and a "dot" are the same unit here — *dpi* is historically a *printing* term, since a printer physically deposits ink dots on paper; it got carried over informally to describe screens too, even though the more precise screen term is **ppi**, pixels per inch. Apple's "300 dpi" claim is really a ppi claim wearing the older, more familiar name — the lecture and this course treat the two as interchangeable, same as Apple's own marketing did.)
+
+**≈ 286 dpi** is the density at which pixels become individually unresolvable at 12 inches — Apple's marketing claim was **300 dpi**, i.e., *slightly* above the computed "retina" threshold (300 > 286), which is the point of the slide: the marketing number is a real, checkable physical claim, not just a buzzword, and it holds up to the math (with a small safety margin).
 
 **Why this generalizes:** the same formula tells you that "how many pixels fall in your fovea" is a *moving target* that depends entirely on viewing distance — a screen designed to be "retina" at 12 inches would look pixelated at 3 inches and be wastefully over-resolved at 3 meters. This exact idea — same physical image, different perceived spatial frequency content depending on distance — is the entire mechanism behind hybrid images (§13) and is exactly what HW1 Task 3 asks you to compute for a printed photo at two different viewing distances.
 
