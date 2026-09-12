@@ -2,7 +2,7 @@
 
 Running, beginner-level study notes for CSC2529 (Computational Imaging), written up week by week as the course goes.
 
-**📖 Read the notes:** [Optics, Sensing, Computation](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0) — a running, browsable course notebook (nav per week + a cumulative glossary). The markdown in this repo is the same content in plain-text form.
+**📖 Read the notes:** [Running Notes](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0) — a running, browsable course notebook (nav per week + a cumulative glossary). The markdown in this repo is the same content in plain-text form.
 
 ## Contents
 
