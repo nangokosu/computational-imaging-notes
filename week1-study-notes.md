@@ -65,7 +65,7 @@ So light actually passes through several neuron layers *before* hitting the phot
 
 **Why this matters:** your sharp, colorful vision only exists in a *tiny* central region (the fovea) that you're constantly darting your eyes ("saccades") around to sample — you don't actually perceive the world in uniform high resolution the way a camera sensor captures a frame. This non-uniform, foveated sampling is a recurring theme that resurfaces later when the course discusses light-field/foveated displays and compressive/adaptive sensing.
 
-A key experimental data point cited in lecture (Roorda & Williams, 1999, *Nature*): imaging the living human cone mosaic in the fovea, they found individual [cones](https://en.wikipedia.org/wiki/Cone_cell) separated by about **5 [arcminutes](https://en.wikipedia.org/wiki/Minute_and_second_of_arc) of visual angle** — i.e., that's roughly the finest-grain "sampling grid" your retina's cone mosaic provides at the very center of vision. (An arcminute is 1/60th of a degree — see §8 for how this becomes the basis for acuity limits.)
+A key experimental data point cited in lecture (Roorda & Williams, 1999, *Nature*): imaging the living human cone mosaic in the fovea, they found individual [cones](https://en.wikipedia.org/wiki/Cone_cell) separated by about **0.5 [arcminutes](https://en.wikipedia.org/wiki/Minute_and_second_of_arc) of visual angle** — i.e., that's roughly the finest-grain "sampling grid" your retina's cone mosaic provides at the very center of vision. (An arcminute is 1/60th of a degree — see §8 for how this becomes the basis for acuity limits. This ~0.5 arcmin spacing is also exactly what makes the numbers elsewhere in this section consistent: by the sampling/Nyquist logic in §12.3, a ~0.5 arcmin sampling pitch predicts a resolution limit around 1 arcmin — matching §8's 20/20 figure — and a spatial-frequency cutoff around 60 cycles per degree — matching §12.3's CSF cutoff.)
 
 ---
 
@@ -296,10 +296,83 @@ This number is now fixed too — it stays 50 cycles/inch no matter how far anyon
 
 **Shape of the CSF curve (contrast sensitivity, on the y-axis, plotted against spatial frequency in cpd, on the x-axis):**
 - It is **band-pass**, not low-pass or flat: sensitivity is *reduced* at very low spatial frequencies (large, slowly-varying patterns — picture a very gradual, barely-there gradient, which is genuinely hard to notice) *and* at very high spatial frequencies (very fine stripes), and **peaks around 4–6 cpd**, meaning that's the "sweet spot" density of light/dark cycles your eye is best at detecting.
-- At the high-frequency end, sensitivity eventually drops to zero around **~60 cpd**, set by **[cone](https://en.wikipedia.org/wiki/Cone_cell) packing density** — you simply cannot perceive stripes finer than your photoreceptor mosaic can sample (a direct callback to §2 and §8: this is the same physical sampling-grid limit as the ~5-arcminute cone spacing Roorda & Williams measured).
+- At the high-frequency end, sensitivity eventually drops to zero around **~60 cpd**, set by **[cone](https://en.wikipedia.org/wiki/Cone_cell) packing density** — you simply cannot perceive stripes finer than your photoreceptor mosaic can sample (a direct callback to §2 and §8: this is the same physical sampling-grid limit as the ~0.5-arcminute cone spacing Roorda & Williams measured).
 - Critically, because of §12.2: **the same physical pattern's position on this curve shifts as you change your viewing distance**, since its cpd value itself changes with distance. Move closer → its cpd drops, potentially sliding it toward the 4–6 cpd peak (more visible). Move farther away → its cpd rises, potentially pushing it past ~60 cpd (less visible, eventually invisible).
 
 **Why this matters (the big idea, restated concretely):** take a photo with genuinely fine detail in it — hairline-thin brushstrokes, say. Physically, those fine strokes are a fixed size. But per §12.2, their *cpd* isn't fixed: viewed from far away, that small physical size subtends a tiny visual angle, so a huge number of them cram into one degree → very high cpd → likely past the ~60 cpd cutoff → invisible. Viewed up close, the same strokes subtend a much larger visual angle, so far fewer fit into one degree → their cpd drops into the visible, even peak-sensitivity range → clearly visible. A single physical image can therefore contain content that is only visible up close (high spatial frequency) stacked with content that stays visible from far away (low spatial frequency) — and that's precisely how a hybrid image works.
+
+### 12.4.0 The Fourier transform: images as sums of waves — why detour here
+
+Everything above establishes *that* an image has spatial-frequency content, and how humans perceive it. This subsection answers a different question: on a computer, how do you actually pull an image apart into its low-frequency and high-frequency pieces? The answer is the **Fourier transform**, and it's the real mechanism sitting underneath §13's hybrid images — this subsection builds just enough of it, intuitively, to understand that mechanism and to use it in code.
+
+HW1's hybrid-images task isn't implemented by hand-blurring pixels — it's implemented by calling `np.fft.fft2`, `np.fft.fftshift`, `np.fft.ifftshift`, and `np.fft.ifft2`. To use those as more than magic incantations, you need a mental model of what they actually do to an image.
+
+It also names a genuine reframing worth being explicit about, since it's exactly what makes computational imaging different from ordinary computer vision. Most computer-vision code treats an image as nothing more than an array of RGB brightness values indexed by pixel location — "what color is at row y, column x?" That's the **spatial domain** view.
+
+Computational imaging routinely switches to a completely different representation of the *same* image: not "what color is here," but "how much of each possible wave pattern is present, across the whole image at once?" That second representation is the **frequency domain**. The Fourier transform converts between the two — nothing is lost in the conversion; it's an equally complete, alternative description of the same image, and an *inverse* Fourier transform converts back.
+
+**Scope note:** this is genuinely a Week 5 topic ("Sampling, Linear Systems, Deconvolution"), formalized properly there. What follows is a deliberately partial, HW1-driven preview — just enough to use `fft2`/`fftshift` with real understanding and to see precisely how hybrid images work. Left for Week 5: the exact discrete Fourier transform formula, the sampling theorem, Nyquist rate/aliasing, and why the FFT algorithm is fast. Left for Week 6: the point spread function (PSF) and deconvolution, which reuse the convolution theorem introduced in §12.4.5 below.
+
+### 12.4.1 The 1D idea: any signal is a sum of waves
+
+A musical chord sounds like one complex sound, but it's really several pure tones (sine waves) sounding at once, each with its own pitch (**frequency**) and loudness (**amplitude**). Taking a chord apart into its individual pure tones is, informally, exactly what a Fourier transform does.
+
+Stated more generally: essentially any signal — a sound wave over time, brightness measured along a single scanline of a photo, or anything that's a single value varying along one axis — can be written as a sum of sine waves of different frequencies, each with its own **amplitude** (how strong that wave is) and **phase** (how far that wave is shifted left/right relative to a reference starting point). The **Fourier transform** is the operation that takes a signal's original description — a value at each moment or position, the "time domain" or "spatial domain" view — and returns the *recipe* of which frequencies are present and how strong/shifted each one is — the "frequency domain" view.
+
+**Worked example:** let `s(t) = sin(2π·3t) + 0.5·sin(2π·7t)` — a signal built from exactly two pure tones: one oscillating 3 times per unit of *t* with amplitude 1, another oscillating 7 times per unit of *t* with amplitude 0.5. Its Fourier transform is *not* a smooth curve — it's zero almost everywhere except two sharp spikes: one at frequency 3 (reflecting amplitude 1), one at frequency 7 (reflecting amplitude 0.5). That's the core idea: the frequency-domain view tells you exactly which pure frequencies are "in" a signal and how strong each one is, and a signal built from only a few frequencies produces a spectrum that's mostly zero with a few spikes.
+
+### 12.4.2 From 1D to 2D: an image needs waves that vary in two directions
+
+A 1D signal like sound only has one axis to vary along — time. An image has two: brightness can change as you move left-right (horizontal) *and* as you move up-down (vertical), independently. So the "pure tone" building block for a 2D signal can't be an ordinary 1D sine wave — it needs to be a pattern that can oscillate horizontally, vertically, or diagonally (some mix of both) at once. That building block is a **2D sinusoidal grating**: a repeating stripe pattern, like the gratings from §12.1, but now allowed to run in any direction.
+
+Once that picture is clear, here's the formula it corresponds to (introduced only to read off what each piece means — it isn't manipulated further here):
+
+```
+I(x, y) = A · cos(2π(u·x + v·y) + φ)
+```
+
+where *x, y* are pixel coordinates, *A* is the grating's amplitude (contrast/strength), *φ* is its phase (where the stripes sit), and — the important pair — **u** is the *horizontal* spatial frequency (cycles per pixel as you scan left-right) and **v** is the *vertical* spatial frequency (cycles per pixel as you scan up-down).
+
+What *u* and *v* control, geometrically:
+- `v = 0, u > 0`: brightness only changes as *x* changes → **vertical stripes** — a pure "horizontal wave."
+- `u = 0, v > 0`: brightness only changes as *y* changes → **horizontal stripes** — a pure "vertical wave."
+- `u > 0` and `v > 0` both: stripes run **diagonally**, tilted at an angle set by the ratio of *v* to *u*. The stripes are always oriented *perpendicular* to the direction pointed to by `(u, v)`, and how tightly packed they are is set by the combined frequency `√(u² + v²)` cycles/pixel.
+
+This is exactly the "image as horizontal and vertical waves" idea: any real image — not just a striped test pattern — can be treated as a giant sum of these 2D gratings, one for every possible `(u, v)` pair, each with its own amplitude and phase. The **2D Fourier transform** is the operation that reports, for every `(u, v)`, how much of that particular tilted stripe pattern is present in the image.
+
+### 12.4.3 What `fft2`'s output actually represents — same shape, different meaning
+
+This is the single most common point of confusion, worth stating bluntly: when you call `np.fft.fft2` on an *H*-pixel-tall, *W*-pixel-wide image, you get back another array that is also *H*×*W* — but comparing the two arrays entry-by-entry is meaningless, because they represent completely different things.
+
+- In the **input** array, the entry at row *y*, column *x* is the brightness at pixel location `(x, y)`. Spatial domain: index = location.
+- In the **output** array, the entry at "row *v*, column *u*" is a single complex number describing the 2D grating with horizontal frequency *u* and vertical frequency *v* from §12.4.2 — its **magnitude** (the number's size) tells you how strong that grating is in the image, and its **phase** (the number's angle) tells you how that grating is shifted. Frequency domain: index = a `(u, v)` frequency pair, not a location.
+
+(A complex number's magnitude and phase are just two numbers packaged together — magnitude answers "how much," phase answers "shifted by how much." It's the same amplitude/phase pair from §12.4.1's sine waves, just stored compactly as one number.)
+
+The whole array of these magnitudes is called the image's **spectrum** (or *magnitude spectrum*, when specifically plotting `|F(u,v)|` and ignoring phase — usually on a log scale for display, since real photos are dominated by a few very strong low frequencies that would otherwise wash out everything else on a linear scale).
+
+This directly formalizes §12.2.1's "image frequency": the *u* and *v* axes of `F(u,v)` are literally measured in cycles per pixel — exactly the unit §12.2.1 defined.
+
+- Low `(u,v)`, near the origin: slow brightness variation — coarse shapes and broad shading.
+- High `(u,v)`, far from the origin: rapid variation — fine edges and texture.
+
+This is the precise, computable version of the qualitative "fine stripes = high spatial frequency" story from §12.1 — and it's exactly what lets a computer split an image into the "coarse" and "fine" bands that hybrid images (§13) combine.
+
+### 12.4.4 `fftshift`: reordering the output to match intuition
+
+Display a raw `fft2` output's magnitude as an image, and it looks wrong at first: the brightest spot — the **DC component**, meaning zero spatial frequency, `u = v = 0`, which is just the image's overall average brightness — sits in a *corner*, not the center, and the pattern seems to wrap around the edges.
+
+Why: in how the discrete Fourier transform indexes frequencies, index 0 means frequency 0 as expected, but the far end of the array (index *N*−1) doesn't mean "the highest positive frequency" — it means a small *negative* frequency, because the transform is periodic and treats frequency *N*−1 as identical to frequency −1. So the second half of each axis actually holds the negative frequencies, wrapped around to the far end of the array instead of sitting naturally in front of frequency 0.
+
+`fftshift` simply reorders the array (swapping opposite quadrants) so that frequency 0 moves to the **center** and frequency magnitude increases outward in every direction — matching the natural mental picture of a spectrum, and matching how the low-pass/high-pass masks in §12.4.5 are naturally described ("a disc around the center"). `ifftshift` undoes exactly this reordering, and must be applied *before* `ifft2`, since `ifft2` expects the original DC-in-the-corner layout, not the shifted one.
+
+### 12.4.5 Filtering in the frequency domain, and the convolution theorem
+
+Once a spectrum is fftshift-ed (DC centered), building a filter becomes a simple masking operation: to keep only low spatial frequencies, zero out everything except a disc around the center — a **low-pass filter**. To keep only high spatial frequencies, do the opposite — zero out that disc and keep everything outside it — a **high-pass filter**, the complement of the low-pass mask.
+
+Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshift`, then `ifft2`) to the spatial domain, produces a filtered image — and this turns out to be the *exact same operation* as §13.1's spatial-domain description (blurring by averaging neighboring pixels; edge-extraction by subtracting a blur from the original). This equivalence has a name: the **convolution theorem** — multiplying two spectra together in the frequency domain is mathematically identical to *convolving* (a generalized "sliding weighted average," the formal name for the neighbor-averaging operation §13.1 already describes informally) the two corresponding signals in the spatial domain. The frequency-domain route (mask + `fft2`/`ifft2`) and the spatial-domain route (blur/subtract) are two views of *one* operation, not two different techniques — the frequency-domain view is usually easier to control precisely (e.g., choosing an exact cutoff frequency as a mask radius), and it's the route HW1's own code path actually uses.
+
+**Forward pointer:** this same convolution theorem is the mechanism behind the point spread function (PSF, Week 5) and deconvolution/Wiener filtering (Week 6) — in both cases, a blur is described as convolution in the spatial domain and as multiplication in the frequency domain, and "undoing" a blur means dividing out its frequency-domain multiplier. §12.4.5 is that same idea, seen here for the first time.
 
 ---
 
@@ -318,12 +391,23 @@ Any photo can be thought of as a mix of coarse structure (the rough shapes and o
 - A **[low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter)** blurs the image — literally, e.g. averaging each pixel with its neighbors. Averaging smooths out anything that changes quickly from pixel to pixel (high spatial frequency), while leaving slow, broad variations (low spatial frequency) mostly intact. The result looks like the original image out of focus.
 - A **[high-pass filter](https://en.wikipedia.org/wiki/High-pass_filter)** does the opposite: subtract a blurred version of the image from the original. Whatever was slow/broad cancels out (since it was present in both the original and the blur), leaving only the fast-changing edges and fine texture behind — the result looks like a faint line drawing of just the edges, mid-gray everywhere else.
 
-### 13.2 Mechanism, tying directly back to §12
+### 13.2 Mechanism, tying directly back to §12 and §12.4
 
-1. Take Image A, apply a high-pass filter → keep only its fine detail / sharp edges, discard its smooth/coarse structure.
-2. Take Image B, apply a low-pass filter → keep only its coarse, smooth/blurry structure, discard its fine detail.
-3. **Add the two filtered images together**, pixel by pixel (done per color channel, in the Fourier/frequency domain in the course's approach — see Week 5 for what "frequency domain" formally means).
-4. The result is a single image containing *both* spatial-frequency bands at once, stacked on top of each other. Which band you consciously perceive depends entirely on **viewing distance**, because — per §12.3 — your CSF determines which spatial-frequency band is currently sitting in your visible range at that distance.
+In code, this isn't done by blurring and subtracting pixels directly — it's done in the frequency domain, using exactly the machinery §12.4 just built:
+
+1. Take Image A, compute its spectrum (`fft2`, then `fftshift` so the DC component sits at the center — §12.4.3–12.4.4), and apply a **high-pass mask** (§12.4.5) to keep only its high-`(u,v)` content — fine detail and sharp edges. Call this masked spectrum `H_A(u,v)`.
+2. Take Image B, compute its spectrum the same way, and apply a **low-pass mask** to keep only its low-`(u,v)` content — coarse, smooth structure. Call this masked spectrum `L_B(u,v)`.
+3. **Add the two masked spectra together**, entry by entry, per color channel — literal Fourier-domain addition, not a spatial-domain blend of pixel values:
+
+   ```
+   F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
+   ```
+
+4. Undo the shift (`ifftshift`) and inverse-transform (`ifft2`) back to the spatial domain to recover the hybrid image's actual pixel values.
+
+By the convolution theorem (§12.4.5), this frequency-domain construction is mathematically equivalent to §13.1's blur-and-subtract description — the two are the same operation, viewed in two different domains; the frequency-domain route is just the one that gives precise control over the cutoff.
+
+The result is a single image containing *both* spatial-frequency bands at once, stacked on top of each other. Which band you consciously perceive depends entirely on **viewing distance**, because — per §12.3 — your CSF determines which spatial-frequency band is currently sitting in your visible range at that distance.
 
 ### 13.3 Why it works perceptually, walked through with §12.2's logic
 
@@ -390,7 +474,7 @@ The lecture ends with a compact summary of every number introduced. Reproduced h
 - **Visual acuity**: 20/20 is about 1 arcminute (§8)
 - **Field of view**: ~190° monocular, ~120° binocular, ~135° vertical (§7)
 - **Temporal resolution**: ~60 Hz (varies with contrast and luminance) — how fast a flickering/changing stimulus needs to be before it appears smooth/continuous to us; relevant later for flutter-shutter/coded-exposure photography (Week 4) and displays generally
-- **Dynamic range**: ~6.5 f-stops instantaneous, adapts up to ~46.5 total (equivalently the ~5 vs. ~14 orders of magnitude figures in §10 — these are two different ways of citing the same underlying range)
+- **Dynamic range**: ~6.5 f-stops instantaneous, adapts up to ~46.5 total. The "total" figure is a straightforward unit conversion of §10's ~14 orders of magnitude (1 order of magnitude ≈ 3.32 f-stops, so 14 × 3.32 ≈ 46.5 f-stops — consistent). The "instantaneous" figure is *not* a matching conversion of §10's ~5 orders of magnitude, though — 5 orders of magnitude is ≈16.6 f-stops, not 6.5. These are two independently-cited numbers for "instantaneous" range (6.5 f-stops being the eye's truly momentary, no-adaptation contrast range; ~5 orders of magnitude a looser, more commonly quoted figure that already includes some fast local adaptation) rather than the same number in two units — worth knowing they don't reduce to each other.
 - **Color**: describable by the CIE xy chromaticity diagram; perceptual distances between colors are approximately linear (uniform) in CIE Lab space (a color space designed so that equal numeric distances correspond to roughly equal perceived color differences)
 - **Depth cues in 3D displays**: vergence, focus (accommodation), their potential conflict, and resulting (dis)comfort (§14–§16)
 - **Accommodation range**: ~8 cm to ∞ (young), degrading with age (§5)
