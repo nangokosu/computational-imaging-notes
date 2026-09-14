@@ -95,7 +95,11 @@ The lecture draws a direct structural analogy:
 | Fovea (non-uniform density, denser in center) | Uniform pixel grid |
 | 3 cone types, irregularly interleaved | Bayer color filter array (regular RGGB mosaic) |
 
-A digital camera sensor is actually colorblind on its own — each individual light-sensing pixel can only measure *brightness*, not color. To get color, manufacturers glue a **[Bayer color filter array](https://en.wikipedia.org/wiki/Bayer_filter)** directly on top of the sensor: a physical grid of tiny red, green, and blue filters, one per pixel, arranged in a repeating 2×2 tile of one red, two green, and one blue filter ("**RGGB**" — green is doubled because human vision is most sensitive to green, per §3's cone curves). Each pixel then only ever records *one* of the three colors; the other two get computationally filled in later, a process called *[demosaicking](https://en.wikipedia.org/wiki/Demosaicing)* (Week 3).
+A digital camera sensor is actually colorblind on its own — each individual light-sensing pixel can only measure *brightness*, not color; it has no way to tell what wavelength of light it absorbed, only how much light hit it. To get color, manufacturers glue a **[Bayer color filter array](https://en.wikipedia.org/wiki/Bayer_filter)** directly on top of the sensor: a physical grid of tiny red, green, and blue filters, with exactly **one filter sitting over each individual pixel**.
+
+**Every single pixel is single-color, not multi-color.** A pixel under a green filter only ever measures the green component of the light hitting that spot — it has *no* red or blue information at all, because the filter physically blocked those wavelengths before they reached it. What *is* multi-color is the grid as a whole: the filters are arranged in a repeating 2×2 tile — one red, two green, one blue — across the array of individually single-color pixels ("**RGGB**," green doubled because human vision is most sensitive to green, per §3's cone curves). **"RGGB" describes the mosaic pattern of the pixel grid, not any property of a single pixel** — no individual pixel is ever itself "RGGB."
+
+Because each pixel only ever records one channel, the full-color image you eventually see — where every pixel appears to have a red, green, *and* blue value — isn't what the sensor directly measured. It's a **reconstruction**: for each pixel, the two channels it didn't measure are estimated by looking at its neighboring pixels (which, thanks to the repeating tile, measured different colors) and interpolating between them. This estimation step is called *[demosaicking](https://en.wikipedia.org/wiki/Demosaicing)* (Week 3) — it means two-thirds of every pixel's RGB value in a final photo is computed, not measured.
 
 Two important **disanalogies** to remember:
 1. The retina's cone mosaic is **irregular/random**, not a neat repeating grid like a camera's Bayer pattern.
@@ -303,7 +307,11 @@ This number is now fixed too — it stays 50 cycles/inch no matter how far anyon
 
 ### 12.4.0 The Fourier transform: images as sums of waves — why detour here
 
-Everything above establishes *that* an image has spatial-frequency content, and how humans perceive it. This subsection answers a different question: on a computer, how do you actually pull an image apart into its low-frequency and high-frequency pieces? The answer is the **Fourier transform**, and it's the real mechanism sitting underneath §13's hybrid images — this subsection builds just enough of it, intuitively, to understand that mechanism and to use it in code.
+Everything above establishes *that* an image has spatial-frequency content, and how humans perceive it. This subsection answers a different question: on a computer, how do you actually pull an image apart into its low-frequency and high-frequency pieces?
+
+**One more disambiguation, because it matters for everything below:** the "frequency" this subsection computes with is **image frequency** (§12.2.1) — cycles per pixel, fixed to the file — not yet the physical or perceptual spatial frequency from §12.2. §12.4 stays entirely in image-frequency space; converting an image-frequency value to cpd still needs the dpi/viewing-distance chain §12.2.1 already built. Whenever this subsection says a bare "frequency" or "(u,v)," it means image frequency, never cpd.
+
+The answer to how a computer performs that split is the **Fourier transform**, and it's the real mechanism sitting underneath §13's hybrid images — this subsection builds just enough of it, intuitively, to understand that mechanism and to use it in code.
 
 HW1's hybrid-images task isn't implemented by hand-blurring pixels — it's implemented by calling `np.fft.fft2`, `np.fft.fftshift`, `np.fft.ifftshift`, and `np.fft.ifft2`. To use those as more than magic incantations, you need a mental model of what they actually do to an image.
 
@@ -331,12 +339,12 @@ Once that picture is clear, here's the formula it corresponds to (introduced onl
 I(x, y) = A · cos(2π(u·x + v·y) + φ)
 ```
 
-where *x, y* are pixel coordinates, *A* is the grating's amplitude (contrast/strength), *φ* is its phase (where the stripes sit), and — the important pair — **u** is the *horizontal* spatial frequency (cycles per pixel as you scan left-right) and **v** is the *vertical* spatial frequency (cycles per pixel as you scan up-down).
+where *x, y* are pixel coordinates, *A* is the grating's amplitude (contrast/strength), *φ* is its phase (where the stripes sit), and — the important pair — **u** is the *horizontal* image frequency (cycles per pixel as you scan left-right) and **v** is the *vertical* image frequency (cycles per pixel as you scan up-down). Per the disambiguation in §12.4.0, these are image frequencies, the same cycles-per-pixel ruler as §12.2.1 — not yet cpd.
 
 What *u* and *v* control, geometrically:
 - `v = 0, u > 0`: brightness only changes as *x* changes → **vertical stripes** — a pure "horizontal wave."
 - `u = 0, v > 0`: brightness only changes as *y* changes → **horizontal stripes** — a pure "vertical wave."
-- `u > 0` and `v > 0` both: stripes run **diagonally**, tilted at an angle set by the ratio of *v* to *u*. The stripes are always oriented *perpendicular* to the direction pointed to by `(u, v)`, and how tightly packed they are is set by the combined frequency `√(u² + v²)` cycles/pixel.
+- `u > 0` and `v > 0` both: stripes run **diagonally**, tilted at an angle set by the ratio of *v* to *u*. The stripes are always oriented *perpendicular* to the direction pointed to by `(u, v)`, and how tightly packed they are is set by the combined image frequency `√(u² + v²)` cycles/pixel.
 
 This is exactly the "image as horizontal and vertical waves" idea: any real image — not just a striped test pattern — can be treated as a giant sum of these 2D gratings, one for every possible `(u, v)` pair, each with its own amplitude and phase. The **2D Fourier transform** is the operation that reports, for every `(u, v)`, how much of that particular tilted stripe pattern is present in the image.
 
@@ -356,11 +364,11 @@ This directly formalizes §12.2.1's "image frequency": the *u* and *v* axes of `
 - Low `(u,v)`, near the origin: slow brightness variation — coarse shapes and broad shading.
 - High `(u,v)`, far from the origin: rapid variation — fine edges and texture.
 
-This is the precise, computable version of the qualitative "fine stripes = high spatial frequency" story from §12.1 — and it's exactly what lets a computer split an image into the "coarse" and "fine" bands that hybrid images (§13) combine.
+This is the precise, computable version of §12.1's qualitative "fine stripes = high frequency" story — there a general, pre-ruler notion of frequency; here specifically image frequency — and it's exactly what lets a computer split an image into the "coarse" and "fine" bands that hybrid images (§13) combine.
 
 ### 12.4.4 `fftshift`: reordering the output to match intuition
 
-Display a raw `fft2` output's magnitude as an image, and it looks wrong at first: the brightest spot — the **DC component**, meaning zero spatial frequency, `u = v = 0`, which is just the image's overall average brightness — sits in a *corner*, not the center, and the pattern seems to wrap around the edges.
+Display a raw `fft2` output's magnitude as an image, and it looks wrong at first: the brightest spot — the **DC component**, meaning zero image frequency, `u = v = 0`, which is just the image's overall average brightness — sits in a *corner*, not the center, and the pattern seems to wrap around the edges.
 
 Why: in how the discrete Fourier transform indexes frequencies, index 0 means frequency 0 as expected, but the far end of the array (index *N*−1) doesn't mean "the highest positive frequency" — it means a small *negative* frequency, because the transform is periodic and treats frequency *N*−1 as identical to frequency −1. So the second half of each axis actually holds the negative frequencies, wrapped around to the far end of the array instead of sitting naturally in front of frequency 0.
 
@@ -368,7 +376,7 @@ Why: in how the discrete Fourier transform indexes frequencies, index 0 means fr
 
 ### 12.4.5 Filtering in the frequency domain, and the convolution theorem
 
-Once a spectrum is fftshift-ed (DC centered), building a filter becomes a simple masking operation: to keep only low spatial frequencies, zero out everything except a disc around the center — a **low-pass filter**. To keep only high spatial frequencies, do the opposite — zero out that disc and keep everything outside it — a **high-pass filter**, the complement of the low-pass mask.
+Once a spectrum is fftshift-ed (DC centered), building a filter becomes a simple masking operation: to keep only low image frequencies, zero out everything except a disc around the center — a **low-pass filter**. To keep only high image frequencies, do the opposite — zero out that disc and keep everything outside it — a **high-pass filter**, the complement of the low-pass mask.
 
 Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshift`, then `ifft2`) to the spatial domain, produces a filtered image — and this turns out to be the *exact same operation* as §13.1's spatial-domain description (blurring by averaging neighboring pixels; edge-extraction by subtracting a blur from the original). This equivalence has a name: the **convolution theorem** — multiplying two spectra together in the frequency domain is mathematically identical to *convolving* (a generalized "sliding weighted average," the formal name for the neighbor-averaging operation §13.1 already describes informally) the two corresponding signals in the spatial domain. The frequency-domain route (mask + `fft2`/`ifft2`) and the spatial-domain route (blur/subtract) are two views of *one* operation, not two different techniques — the frequency-domain view is usually easier to control precisely (e.g., choosing an exact cutoff frequency as a mask radius), and it's the route HW1's own code path actually uses.
 
@@ -378,7 +386,7 @@ Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshif
 
 ## 13. [Hybrid Images](https://en.wikipedia.org/wiki/Hybrid_image) (Oliva, Torralba & Schyns, 2006, SIGGRAPH)
 
-Every "frequency" word in this section is **spatial frequency**, exactly as pinned down in §12.0 — how rapidly brightness changes as you scan across the image, nothing to do with color or with time.
+Every "frequency" word in this section is **spatial frequency**, exactly as pinned down in §12.0 — how rapidly brightness changes as you scan across the image, nothing to do with color or with time — with one exception: §13.2's Fourier-domain mechanism works in **image frequency** (the fft2 `(u,v)` ruler from §12.4.0), not spatial frequency. §13.1 and §13.3 stay at the general/perceptual level where "spatial frequency" is correct.
 
 **Core idea:** merge two different images into one composite such that:
 - **Viewed up close** → the **high-spatial-frequency** (fine detail, sharp edges) content dominates perception → you see Image A.
