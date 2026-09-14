@@ -234,7 +234,7 @@ This course uses *frequency* to mean three genuinely different things. Mixing th
 |---|---|---|---|
 | **Light frequency** (equivalently, wavelength/color) | How fast the *electromagnetic wave itself* oscillates | Hz, or more commonly its wavelength in nm | §3 (color perception) — ~400–700 nm visible range |
 | **Temporal frequency** | How fast a signal changes *over time* (e.g. a flickering light, or a video's frame rate) | Hz (cycles per second) | §17 (temporal resolution, ~60 Hz) |
-| **Spatial frequency** | How fast *brightness* changes *across space* — i.e., as you scan your eye or a sensor sideways across an image | cycles per degree (cpd), or cycles per unit distance | This section, §13 (hybrid images), and reused formally in Week 5 |
+| **Spatial frequency** | How fast *brightness* changes *across space* — i.e., as you scan your eye or a sensor sideways across an image | cycles per degree (cpd), or cycles per unit distance | This section, §13 (hybrid images), further split into "image" vs. "physical" vs. "perceptual" flavors in §12.2.1, and reused formally in Week 5 |
 
 **Every "high-frequency" / "low-frequency" mention from here through §13 means spatial frequency, and nothing else.** It has nothing to do with color (light frequency) and nothing to do with flicker/time (temporal frequency) — a "high-frequency" region of an image can be any color at all, and the image can be a single still photo with no time dimension involved.
 
@@ -261,6 +261,34 @@ Suppose a grating's cycles are 1 cm wide (1 cm of light stripe + dark stripe tog
 - **Step closer to 50 cm:** the same 1 cm cycle now subtends roughly *double* the visual angle. Each cycle eats up more of your field of view, so *fewer* whole cycles fit into one degree → cpd goes **down**.
 
 The physical ink on the page never changes. Only *how many of its cycles fit inside your one-degree window* changes, and that depends entirely on viewing distance. This single fact — **cpd is a property of "the pattern as seen from here," not a fixed property of the pattern itself** — is exactly what the rest of this section, and all of §13, is built on.
+
+### 12.2.1 Image frequency vs. spatial frequency — the same pattern, three different rulers
+
+§12.2 already showed that "cycles per centimeter" (fixed, physical) and "cycles per degree" (cpd, viewer-dependent) are two different rulers for measuring the *same* grating. There's a third ruler sitting even further upstream of both, and Week 5's material (Fourier transforms of digital images) leans on the distinction: **image frequency**.
+
+**Image frequency** is how fast brightness changes across the *pixel grid* of a digital image file — cycles per pixel (equivalently, how many cycles fit across the image's full pixel width). It is a property of the array of pixel values alone: it doesn't know or care how large the image is printed, what screen shows it, or how far away anyone stands. Two copies of the exact same image file — one displayed on a phone, one blown up on a cinema screen — have identical image frequency, because that number never leaves the file's own pixel-index coordinate system. This is precisely the frequency axis you get from a digital image's Fourier transform (formalized in Week 5) — measured in cycles per pixel, not cycles per inch or cycles per degree.
+
+**Spatial frequency**, as built up in §12.1–12.2, is the *physical/perceptual* version of the same idea — how fast brightness changes across real space, in cycles per unit distance (fixed, once an image is printed/displayed at a given size) or cycles per degree of visual angle (cpd — additionally dependent on viewing distance, per §12.2).
+
+**The relationship is a two-step conversion chain**, reusing tools already built in this section:
+
+1. **Image frequency → physical spatial frequency**, via dpi (§9). Image frequency is in cycles/pixel; dpi is in pixels/inch (the same dpi = 1/p density from §9). Multiplying converts the units:
+   ```
+   physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi (pixels/inch)
+   ```
+   This step turns a fixed *digital* quantity into a fixed *physical* quantity — it depends only on what dpi you choose to print or display at, never on the viewer.
+
+2. **Physical spatial frequency → cpd**, via viewing distance — exactly the visual-angle logic §12.2 already applied to the 1 cm grating example. This is the only step in the whole chain that depends on the viewer at all.
+
+**Worked example:** suppose a digital image contains a fine repeating texture with a period of 6 pixels — one full light-dark cycle every 6 pixels — so its **image frequency is 1/6 ≈ 0.167 cycles/pixel**, a fixed fact about the file, unrelated to how it's ever displayed. Printed at **300 dpi** (the same density as §9's retina-display example):
+
+```
+physical spatial frequency = 0.167 cycles/pixel × 300 pixels/inch = 50 cycles/inch (≈ 19.7 cycles/cm)
+```
+
+This number is now fixed too — it stays 50 cycles/inch no matter how far anyone stands from the print, because it's baked into the physical ink the moment you commit to 300 dpi. Only the last step — converting to cpd — depends on the viewer: viewed from 40 cm, applying the same visual-angle machinery as §12.2's worked example gives roughly **13.7 cpd** (comfortably inside the visible range, past the 4–6 cpd peak but nowhere near the ~60 cpd cutoff). Change the viewing distance and, per §12.2, that cpd number moves — but the image frequency (0.167 cycles/pixel) and the physical spatial frequency (50 cycles/inch) never do.
+
+**Takeaway:** image frequency is the innermost, most fixed quantity — a property of the pixel array alone. Spatial frequency is the umbrella term for "how fast brightness varies across space," which itself splits into a fixed-once-printed flavor (cycles per physical distance) and a viewer-dependent flavor (cpd, what the CSF is actually plotted against). Confusing "cycles per pixel" with "cycles per degree" is a common mistake — a texture with fixed image frequency can sit anywhere on the CSF curve depending on print size and viewing distance, which is exactly the print-size/viewing-distance reasoning HW1 Task 3 asks you to work through (the specific numbers are left to the assignment, per the note in §13).
 
 ### 12.3 The CSF curve itself
 
