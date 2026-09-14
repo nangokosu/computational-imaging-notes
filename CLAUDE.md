@@ -47,6 +47,10 @@ Diagrams live only in the artifact, never in the markdown files. Any geometric o
 
 **Hyperlinks:** every technical term, named concept, instrument, formula, phenomenon, or historical figure introduced in the artifact's prose or tables is wrapped in an inline `<a href="https://en.wikipedia.org/wiki/...">` link on first mention within its section. Wikipedia is the only link target ever used — never lecture slides, other course sites, or other external references. This matches the convention already established across Week 1's content and must be followed for every week added afterward. The `weekN-study-notes.md` files carry no hyperlinks at all, per the plain-text/tables-only rule above.
 
+## Git workflow
+
+Every change made in this project — new week notes, glossary updates, CLAUDE.md edits, anything — must always be committed and pushed to GitHub (`origin/main`) once made. Don't leave changes sitting uncommitted or unpushed for the user to handle separately.
+
 ## When asked to add a new week
 
 1. Fetch/read that week's lecture slides and any linked readings the same way Week 1 was researched (see "Source material" above).
