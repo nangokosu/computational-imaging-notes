@@ -353,18 +353,30 @@ This is exactly the "image as horizontal and vertical waves" idea: any real imag
 This is the single most common point of confusion, worth stating bluntly: when you call `np.fft.fft2` on an *H*-pixel-tall, *W*-pixel-wide image, you get back another array that is also *H*×*W* — but comparing the two arrays entry-by-entry is meaningless, because they represent completely different things.
 
 - In the **input** array, the entry at row *y*, column *x* is the brightness at pixel location `(x, y)`. Spatial domain: index = location.
-- In the **output** array, the entry at "row *v*, column *u*" is a single complex number describing the 2D grating with horizontal frequency *u* and vertical frequency *v* from §12.4.2 — its **magnitude** (the number's size) tells you how strong that grating is in the image, and its **phase** (the number's angle) tells you how that grating is shifted. Frequency domain: index = a `(u, v)` frequency pair, not a location.
+- In the **output** array, the entry at row `k_v`, column `k_u` — plain integer positions, exactly like any other array index — is a single complex number describing one particular 2D grating: its **magnitude** (the number's size) tells you how strong that grating is in the image, and its **phase** (the number's angle) tells you how that grating is shifted. Frequency domain: index = *which grating*, not a location.
 
 (A complex number's magnitude and phase are just two numbers packaged together — magnitude answers "how much," phase answers "shifted by how much." It's the same amplitude/phase pair from §12.4.1's sine waves, just stored compactly as one number.)
 
+**Units, precisely — array index vs. cycles per pixel.** `k_u` and `k_v` are *not yet* the `u` and `v` from §12.4.2's grating formula. `k_u` is a plain integer (0 to *W*−1 before `fftshift`, roughly −*W*/2 to *W*/2 after) that counts how many complete stripe-cycles that grating fits across the image's *entire width* — cycles across the whole image, not cycles per pixel. To get the actual image frequency in cycles per pixel — the same `u`, `v` used everywhere else in §12.4 — divide by the corresponding dimension:
+
+```
+u = k_u / W      v = k_v / H
+```
+
+Because *W* and *H* can differ for a non-square image, the same array position generally gives *different* cycles-per-pixel values for `u` and `v` — worth remembering whenever reading a frequency straight off an axis.
+
+**Worked example:** a 256-pixel-wide image's `fft2` output has a nonzero entry at column index `k_u = 8`. That grating completes exactly 8 full stripe-cycles across the whole 256-pixel width — its image frequency is `u = 8 / 256 = 0.03125 cycles/pixel`, i.e., one full light-dark cycle every 32 pixels.
+
 The whole array of these magnitudes is called the image's **spectrum** (or *magnitude spectrum*, when specifically plotting `|F(u,v)|` and ignoring phase — usually on a log scale for display, since real photos are dominated by a few very strong low frequencies that would otherwise wash out everything else on a linear scale).
 
-This directly formalizes §12.2.1's "image frequency": the *u* and *v* axes of `F(u,v)` are literally measured in cycles per pixel — exactly the unit §12.2.1 defined.
+This directly formalizes §12.2.1's "image frequency": once converted from raw array index by dividing by *W* or *H* as above, `u` and `v` are literally measured in cycles per pixel — exactly the unit §12.2.1 defined.
 
 - Low `(u,v)`, near the origin: slow brightness variation — coarse shapes and broad shading.
 - High `(u,v)`, far from the origin: rapid variation — fine edges and texture.
 
 This is the precise, computable version of §12.1's qualitative "fine stripes = high frequency" story — there a general, pre-ruler notion of frequency; here specifically image frequency — and it's exactly what lets a computer split an image into the "coarse" and "fine" bands that hybrid images (§13) combine.
+
+**What about color?** `fft2` only accepts a single 2D array, and a color image is really *three* of them stacked — one *H*×*W* array per channel (R, G, B). There's no single joint "color spectrum": you call `fft2` on each channel separately, giving three completely independent spectra, one per channel, each with its own magnitude and phase at every `(k_u, k_v)`. This is exactly what §13.2's "per color channel" means — the whole hybrid-image procedure (transform, mask, add, inverse-transform) repeats three times, once per channel, with no interaction between channels.
 
 ### 12.4.4 `fftshift`: reordering the output to match intuition
 
@@ -372,7 +384,7 @@ Display a raw `fft2` output's magnitude as an image, and it looks wrong at first
 
 Why: in how the discrete Fourier transform indexes frequencies, index 0 means frequency 0 as expected, but the far end of the array (index *N*−1) doesn't mean "the highest positive frequency" — it means a small *negative* frequency, because the transform is periodic and treats frequency *N*−1 as identical to frequency −1. So the second half of each axis actually holds the negative frequencies, wrapped around to the far end of the array instead of sitting naturally in front of frequency 0.
 
-`fftshift` simply reorders the array (swapping opposite quadrants) so that frequency 0 moves to the **center** and frequency magnitude increases outward in every direction — matching the natural mental picture of a spectrum, and matching how the low-pass/high-pass masks in §12.4.5 are naturally described ("a disc around the center"). `ifftshift` undoes exactly this reordering, and must be applied *before* `ifft2`, since `ifft2` expects the original DC-in-the-corner layout, not the shifted one.
+Concretely, since rows index *v* and columns index *u*, each of the raw array's four quadrants holds one fixed combination of signs: top-left is `u ≥ 0, v ≥ 0` (and contains the DC corner), top-right is `u < 0, v ≥ 0`, bottom-left is `u ≥ 0, v < 0`, and bottom-right is `u < 0, v < 0`. `fftshift` doesn't touch a single pixel's *value* — it only relocates these four fixed-sign blocks so they meet at a shared center instead of wrapping at the array's outer edges, which is why frequency 0 ends up in the **center** and frequency magnitude increases outward in every direction from there — matching the natural mental picture of a spectrum, and matching how the low-pass/high-pass masks in §12.4.5 are naturally described ("a disc around the center"). `ifftshift` undoes exactly this reordering, and must be applied *before* `ifft2`, since `ifft2` expects the original DC-in-the-corner layout, not the shifted one.
 
 ### 12.4.5 Filtering in the frequency domain, and the convolution theorem
 
