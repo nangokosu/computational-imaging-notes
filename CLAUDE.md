@@ -36,6 +36,8 @@ Never compute the specific numeric answers a homework asks the student to derive
 - `weekN-study-notes.md` — one per lecture week, following the structure established in `week1-study-notes.md`: numbered sections mirroring the lecture's own slide order, tables for structured comparisons, worked examples in their own callout-style blocks, and a "Part A" that ends with a pointer to the shared glossary rather than repeating it.
 - `glossary.md` — the single, cumulative, beginner-facing glossary, grouped by the course week each term is actually covered (not flat A–Z). Update it every time a new week's notes are written: promote that week's terms out of any "forward-looking preview," and add genuinely new forward-looking terms for weeks further out if the new lecture introduces them. Never delete an existing entry — later weeks may deepen a definition, but the original beginner-level anchor stays.
 - `FACT_AUDIT.md` — created and updated when fact-checking the artifact against external sources (not on every change, but proactively before major revisions or on request). Lists every factual claim verified, with sources cited. Document its existence in the README table once it exists.
+- `.claude/settings.json` — declares the Claude Code plugins/marketplaces this project's workflow uses (`superpowers`, `document-skills`), so cloning the repo and opening it in Claude Code reproduces the same setup.
+- `.claude/agents/fact-auditor.md` — the custom subagent definition that runs the fact-checking pass behind `FACT_AUDIT.md`.
 
 ## Published artifact — one running notebook, not one per week
 
