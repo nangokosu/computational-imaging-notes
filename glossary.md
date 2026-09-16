@@ -34,14 +34,34 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **[Vergence-accommodation conflict (VAC)](https://en.wikipedia.org/wiki/Vergence-accommodation_conflict)** — the mismatch, in stereo displays, between where the eyes converge (simulated depth) and where they must focus (actual screen distance).
 
 ## Week 2 — Digital Photography I (ray optics, aperture, sensor)
-- **[Ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** — modeling light as straight-line rays, ignoring wave effects — the assumption behind pinhole-camera geometry (HW1).
-- **[Aperture](https://en.wikipedia.org/wiki/Aperture)** — the opening controlling how much light enters a lens; analogous to the iris/pupil.
-- **[f-number](https://en.wikipedia.org/wiki/F-number)** — ratio of focal length to aperture diameter; smaller means more light and shallower depth of field.
-- **[Depth of field](https://en.wikipedia.org/wiki/Depth_of_field)** — the range of distances that appear acceptably in focus at once.
-- **[Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))** — total light collected, set by aperture, exposure time, and ISO together.
-- **Sensor** — the chip converting incident light into an electrical signal — the camera's "retina."
-- **[Shot noise](https://en.wikipedia.org/wiki/Shot_noise) / [read noise](https://en.wikipedia.org/wiki/Image_noise#Read_noise)** — shot noise: fundamental randomness in photon arrival counts. Read noise: added by the sensor's own readout electronics.
-- **[ISO](https://en.wikipedia.org/wiki/Film_speed)** — a sensor gain setting that amplifies signal (and noise) without collecting more light.
+*(full explanations in [`week2-study-notes.md`](./week2-study-notes.md); this is the lookup-speed version)*
+
+- **[Ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** — modeling light as straight-line rays, ignoring wave effects — the assumption behind pinhole-camera geometry (HW1) and the thin lens model (§0, §4).
+- **Pinhole camera / [camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)** — a barrier with a single small opening that lets only one ray per scene point reach the sensor, forming an inverted, scaled image; known since Mo-Ti (470–390 BC) (§1).
+- **[Aperture](https://en.wikipedia.org/wiki/Aperture)** — the opening controlling how much light enters a lens or pinhole; analogous to the iris/pupil. Deepened here with the f-number/stops formalism (§7).
+- **Focal length (f)** — the distance from a pinhole or lens to the plane where a sharp image forms; shorter focal length shrinks the projected image (§1, §4).
+- **Magnification (M)** — the ratio of image size to object size produced by a lens, M = f/(f − S₁) (§4).
+- **[Refraction](https://en.wikipedia.org/wiki/Refraction)** — the bending of light at a boundary between two materials of different optical density; the mechanism a lens uses to redirect rays (§4).
+- **Thin lens model** — a simplified lens model (zero thickness) built on two assumptions (center rays pass straight through; parallel rays converge at the focal plane), giving the thin lens equation 1/f = 1/S₁ + 1/S₂ (§4).
+- **Aberrations** (spherical, [chromatic](https://en.wikipedia.org/wiki/Chromatic_aberration), oblique/coma/distortion) — systematic deviations from ideal thin-lens focusing, caused respectively by spherical (not hyperbolic) lens shapes, wavelength-dependent refraction (dispersion), and off-axis geometry (§5).
+- **[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** — the angular extent of scene captured, set by focal length and sensor size; the camera analog of Week 1's eye FOV (§6).
+- **[f-number](https://en.wikipedia.org/wiki/F-number)** — ratio of focal length to aperture diameter (N = f/D); smaller means more light and shallower depth of field (§7).
+- **Stop** — a change in light by a factor of 2×, the standard unit for spacing aperture (and exposure) settings; the same unit as Week 1's dynamic-range f-stops (§7).
+- **[Circle of confusion](https://en.wikipedia.org/wiki/Circle_of_confusion)** — the blur disc a defocused point forms on the sensor, c = M·D·|S − S₁|/S (§8).
+- **[Depth of field](https://en.wikipedia.org/wiki/Depth_of_field)** — the range of object distances whose circle of confusion stays below an acceptable (pixel-set) threshold (§8).
+- **Hyperfocal distance (H)** — the focus distance that extends the far edge of the depth of field to infinity, H = f²/(Nc) (§8).
+- **Diffraction limit / [numerical aperture](https://en.wikipedia.org/wiki/Numerical_aperture) (NA)** — the smallest resolvable spot size set by diffraction alone (Abbe's formula, d ≈ λ/(2·NA) ≈ λN); trades off against depth of field via f-number (§2, §9).
+- **Exposure** — total light collected, set by aperture, exposure time, and ISO together (§12).
+- **Sensor** — the chip converting incident light into an electrical signal — the camera's "retina" (§10).
+- **[Photoelectric effect](https://en.wikipedia.org/wiki/Photoelectric_effect)** — a photon striking a photodiode knocking loose an electron; the basic photon-to-signal conversion inside every pixel (§10).
+- **[Quantum efficiency](https://en.wikipedia.org/wiki/Quantum_efficiency) / fill factor** — the fraction of incoming photons actually converted to signal, and the fraction of a pixel's area that is light-sensitive, respectively (§10).
+- **[CCD](https://en.wikipedia.org/wiki/Charge-coupled_device) / [CMOS](https://en.wikipedia.org/wiki/CMOS_sensor)** — two sensor architectures for converting and reading out pixel charge; CCD trades speed/cost for sensitivity/noise, CMOS the reverse (§11).
+- **[ISO](https://en.wikipedia.org/wiki/Film_speed)** — a sensor gain setting, applied before the ADC, that amplifies signal (and noise) without collecting more light (§12).
+- **Bit depth** — the number of discrete digital levels a sensor's ADC can output (12–14 bits RAW vs. 8 bits JPEG), an additional cap on dynamic range beyond the physical noise floor (§13).
+- **[Rolling shutter](https://en.wikipedia.org/wiki/Rolling_shutter) / global shutter** — row-by-row vs. all-at-once pixel exposure timing; rolling shutter can produce motion/flicker banding (e.g. 120 Hz AC-light flicker) but can also be exploited as a fine-grained temporal sensor (§14).
+- **[Gaussian noise](https://en.wikipedia.org/wiki/Gaussian_noise)** — additive, signal-independent sensor noise from thermal/read/amplifier sources (§15).
+- **[Shot noise](https://en.wikipedia.org/wiki/Shot_noise) / [read noise](https://en.wikipedia.org/wiki/Image_noise#Read_noise)** — shot noise: fundamental, signal-dependent randomness in photon arrival counts (Poisson-distributed, standard deviation = √N). Read noise: added by the sensor's own readout electronics, signal-independent (§15).
+- **[Signal-to-noise ratio (SNR)](https://en.wikipedia.org/wiki/Signal-to-noise_ratio)** — mean signal divided by its standard deviation; combines shot noise, dark current, and read noise into one formula (§15).
 
 ## Week 3 — Digital Photography II (ISP, demosaicking, deconvolution)
 - **[ISP](https://en.wikipedia.org/wiki/Image_processor)** — the image signal processor pipeline (demosaic, denoise, color-correct) turning raw sensor output into a viewable photo.
