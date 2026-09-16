@@ -3,6 +3,7 @@
 **Topic:** Digital Photography I — Ray Optics, Aperture, Sensor
 **Source:** Lecture 2 slides (D. Lindell, CSC2529, Fall 2026); Problem Session 2 ("PS2," a TA problem session covering HW2), Task 1 only (f-number / depth of field / circle of confusion); reading: Marc Levoy, Stanford CS178 "Digital Photography" course.
 **Scope:** Announcements and the guest-colloquium plug skipped — notes start from "Let's say we have a sensor…". PS2's Tasks 2–3 (demosaicing methods, gamma correction, denoising) belong to the image-signal-processing pipeline the lecture itself defers to "Next" — that material is Week 3's, not repeated here.
+**Exam note:** this lecture is unusually formula-dense, and several of its formulas reuse the same handful of symbols with quietly-shifted meanings across sections (flagged explicitly below wherever it happens) — the most common source of confusion on this material is mixing up which symbol means what in which formula, not the algebra itself.
 
 ---
 
@@ -12,7 +13,7 @@ Point a digital sensor (the electronic chip that converts light into an electric
 
 Everything in this lecture is optics or sensing built to fix exactly that problem: some device between scene and sensor that maps *each scene point to (ideally) one sensor location*, so that spatial structure in the scene survives into spatial structure in the image.
 
-**Standing assumption — ray optics.** Both the pinhole camera (§1–3) and the lens (§4 onward, until §9 revisits wave effects) are analyzed using **[ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** (also called geometric optics): light is modeled as travelling in perfectly straight lines ("rays") that only bend at a lens surface or get blocked by an opaque barrier, ignoring the fact that light is actually a wave. This is the same simplifying assumption behind HW1's pinhole-box geometry. It's an excellent approximation almost everywhere in this lecture — until §2 and §9, where the *size* of an opening becomes small enough that light's wave nature can no longer be ignored, and ray optics alone stops predicting the right answer.
+**Standing assumption — ray optics.** Both the pinhole camera (§1–3) and the lens (§4 onward, until §10 revisits wave effects) are analyzed using **[ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** (also called geometric optics): light is modeled as travelling in perfectly straight lines ("rays") that only bend at a lens surface or get blocked by an opaque barrier, ignoring the fact that light is actually a wave. This is the same simplifying assumption behind HW1's pinhole-box geometry. It's an excellent approximation almost everywhere in this lecture — until §2 and §10, where the *size* of an opening becomes small enough that light's wave nature can no longer be ignored, and ray optics alone stops predicting the right answer.
 
 ---
 
@@ -28,6 +29,8 @@ Everything in this lecture is optics or sensing built to fix exactly that proble
 Because every ray travels in a straight line through one fixed point (the pinhole), the image that lands on the sensor is a scaled, upside-down copy of the scene — trace a ray from the top of an object, through the pinhole, and by simple straight-line geometry it continues downward, landing on the *bottom* of the image plane (and vice versa). This is the same similar-triangles idea used throughout the course: two rays from the same object point, one passing above the pinhole's axis and one below, form mirror-image triangles on either side of the pinhole, so the image is inverted **and** rescaled by the ratio of distances (pinhole-to-sensor vs. pinhole-to-object).
 
 **Focal length controls image size.** Halving the focal length (moving the sensor to sit half as far behind the pinhole) exactly halves the size of the projected image, for the same reason a shadow shrinks as you move the wall closer to the object: the same cone of rays from an object, converging back down to the single pinhole point, is caught by the image plane at half the distance, so it's caught before spreading as wide.
+
+**A pinhole never needs "focusing."** Notice there is no separate notion of "the distance the pinhole is focused at" — every scene point, at every distance, projects through the same single undeviated ray to exactly one sensor point, regardless of how far away it is. Keep this in mind for §5: it's exactly the property a lens gives up in exchange for gathering more light.
 
 ---
 
@@ -68,11 +71,11 @@ Two independent geometric facts, both straightforward consequences of §1's ray-
 - **Doubling the pinhole diameter quadruples the light reaching the sensor.** The amount of light passing through an opening scales with its *area*, not its diameter, and the area of a circular opening scales with the *square* of its diameter (area = π·(diameter/2)²) — so doubling the diameter multiplies the area, and therefore the light, by 2² = 4.
 - **Doubling the focal length quarters the light reaching the sensor.** Moving the sensor twice as far from the pinhole spreads the same total bundle of light over roughly 4× the sensor area (the same inverse-square-law reasoning that makes a light source look dimmer from farther away), so the light *per unit area* — the quantity that actually matters for exposure — drops by a factor of 4.
 
-These two facts are the geometric seed of the aperture/f-number trade-off formalized in §7, and of the exposure concept formalized in §12.
+These two facts are the geometric seed of the aperture/f-number trade-off formalized in §8, and of the exposure concept formalized in §13.
 
 ---
 
-## 4. Refraction and the Thin Lens Model
+## 4. Refraction, the Thin Lens Model, and the Gaussian Lens Formula
 
 A pinhole's fundamental problem is that "small enough to be sharp" and "large enough to gather useful light" pull in opposite directions (§2–3) — a pinhole can never have both. A **lens** — a shaped piece of transparent material, most often glass — solves this by bending many rays from the same scene point back together at one image point, so the imaging aperture can be made large (lots of light) without smearing the image (still sharp).
 
@@ -88,27 +91,99 @@ These two assumptions are enough to trace an image by hand using three character
 - the **chief ray**, which passes straight through the lens center unbent (assumption 1);
 - the **near-focal-plane ray**, which passes through the *near* focal point on its way to the lens and emerges parallel to the axis (the reverse of assumption 2).
 
-All three rays from the same object point reconverge at the same image point — which is both the geometric justification for the thin lens model and the standard hand-tracing technique for predicting where an image will form.
+All three rays from the same object point reconverge at the same image point — which is both the geometric justification for the thin lens model and the standard hand-tracing technique for predicting where an image will form. §4.1 turns exactly two of these three rays into algebra.
 
-**The thin lens equation**, relating object distance *S₁* (from lens to object) and image distance *S₂* (from lens to the sharp image it forms) to the lens's focal length *f*:
+### 4.1 Scene-space vs. image-space: deriving the Gaussian lens formula
+
+The hand-tracing picture above is qualitative — it tells you *that* the three rays meet, but not *where*, in numbers. To get a formula, put actual measurements on the picture:
+
+| Symbol | What it measures |
+|---|---|
+| *y* | height of the object above the lens's central axis |
+| *S* | **object distance** — from the object to the lens |
+| *f* | **focal length** — from the lens to its focal point (a fixed property of the lens, §4.2) |
+| *S′* | **sensor distance** (also called *image distance* or *focus distance*) — from the lens to wherever the sharp image actually forms |
+| *y′* | height of the image below the axis (the image is inverted, so *y′* points the opposite way from *y*; the diagram below treats both as unsigned magnitudes and keeps track of the inversion separately, exactly as the ray-tracing above already showed it) |
+
+Two of the three characteristic rays each give one similar-triangles relation between these quantities:
+
+**Relation 1 — from the chief ray.** The chief ray passes straight through the lens center, so the triangle formed by (object, lens center, axis) on the scene side is similar to the triangle formed by (lens center, image, axis) on the image side — they share the same vertex angle at the lens center. Similar triangles means their corresponding side ratios are equal:
 
 ```
-1/f = 1/S₁ + 1/S₂
+y'/y = S'/S
 ```
 
-*(derivation intuition: both S₁ and S₂ are being measured from the same lens, and the two assumptions above say the lens has exactly one focal length that governs both "how parallel rays converge" and "how a nearby point re-diverges" — the equation is the algebraic statement that these two facts about the same lens must be mutually consistent for any conjugate object/image pair.)*
-
-**Magnification** — how much larger or smaller the image is than the object:
+**Relation 2 — from the parallel ray.** The parallel ray travels flat until the lens, then bends through the far focal point *f* behind the lens and continues to the image point. This produces a *second*, different pair of similar triangles — one spanning the object height over the full object distance, the other spanning the image height over just the last stretch *(S′ − f)* from the focal point to the image:
 
 ```
-M = f / (f − S₁)
+y'/y = (S' - f)/f
 ```
 
-*(consistent with §1's pinhole finding that a shorter focal length shrinks the image: as f shrinks relative to a fixed S₁, |M| shrinks too.)* When the object sits *closer* than one focal length (S₁ < f), the lens acts as a magnifying glass, producing an enlarged, upright virtual image; at typical photographic distances (S₁ > f), it produces a real, inverted, minified image on the sensor — exactly the pinhole-camera picture of §1, now achieved with far more light-gathering aperture.
+**Combining the two relations** (both equal *y′/y*, so they equal each other) eliminates the heights entirely and leaves a relation purely between distances:
+
+```
+S'/S = (S' - f)/f
+⟹ f·S' = S·(S' - f)          (cross-multiply)
+⟹ f·S' = S·S' - S·f
+⟹ f·S' + S·f = S·S'          (move S·f to the left)
+⟹ f·(S' + S) = S·S'          (factor out f)
+⟹ (S' + S)/(S·S') = 1/f      (divide both sides by S·S'·f)
+```
+
+```
+1/S + 1/S' = 1/f
+```
+
+This is the **thin lens equation** (also called the **Gaussian lens formula**) — the single algebraic fact that ties together where an object sits (*S*), where its sharp image forms (*S′*), and the lens's own fixed focal length (*f*). Substituting *S′ = fS/(S−f)* (solved from the same equation) back into Relation 2 gives the **magnification**:
+
+```
+m = y'/y = (S' - f)/f
+```
+
+*(equivalently m = S′/S, from Relation 1 — both are the same quantity, just expressed with different variables substituted in.)* Consistent with §1's pinhole finding that a shorter focal length shrinks the image: for a fixed object distance, shrinking *f* also shrinks the *S′* the equation demands, and *m* shrinks with it.
+
+### 4.2 Intrinsic lens properties vs. setup properties
+
+This is the single most useful distinction for reading every formula in the rest of this lecture without confusing yourself:
+
+- **Intrinsic to the lens** (fixed the moment the glass is ground; you cannot change it without physically swapping the lens, or, for a zoom lens, changing the zoom setting): the **focal length *f***, and — once §7 introduces it — the lens's maximum aperture diameter and its aberration characteristics (§6).
+- **A property of the scene, not the lens at all**: the **object distance *S***, i.e., however far away the thing you're photographing happens to be. Nothing about the lens sets this; it's just wherever the subject is standing.
+- **A property of the setup / how the lens interacts with the sensor**: the **sensor distance *S′***. This is *not* fixed by the lens alone — it's a mechanical choice. Turning a lens's focus ring physically moves internal lens elements, which changes the effective distance from the lens's optical center to the sensor. *S′* is the thing a focus mechanism (manual ring or autofocus motor) actively adjusts.
+
+The thin lens equation `1/S + 1/S' = 1/f` is precisely the constraint linking these three. For a *fixed* focal length *f* (you can't change that) and a *chosen* object distance *S* (wherever your subject is), there is exactly **one** value of *S′* that puts it in sharp focus — the value the equation demands. **"Focusing" means physically turning the focus ring until *S′* reaches that value.** Get *S′* right for your chosen *S*, and the image is sharp; leave it at the wrong value, and you get the defocus blur that §5 formalizes.
+
+### 4.3 The inverse relationship: how moving the lens changes what's in focus
+
+Rearranging the thin lens equation to isolate the object distance that's currently in focus, for whatever sensor distance *S′* the focus ring happens to be set to:
+
+```
+S = 1 / (1/f - 1/S')
+```
+
+Read this rearrangement directly: **as *S′* increases, 1/*S′* shrinks, so `1/f − 1/S′` grows, so *S* shrinks.** In plain language — moving the lens *farther* from the sensor (larger *S′*) brings the *plane of focus closer* to the camera; moving the lens *closer* to the sensor (smaller *S′*) pushes the plane of focus *farther* away. This is exactly what the lecture's own focus-ring diagram shows, and it's the physical mechanism behind every manual-focus and autofocus system: there is no separate "focus knob" other than this one lens-to-sensor distance.
+
+> **Two special focus distances, worked symbolically (general facts about *any* lens, not tied to a specific homework setup).**
+> - **Infinity focus:** set *S′ = f* exactly. Plugging into the thin lens equation, `1/S = 1/f − 1/f = 0`, so *S = ∞*. This is why "infinity focus" is a single, fixed lens position — exactly one focal length from the sensor — rather than a moving target: it's the *S′ = f* limit of the same equation everything else in this section uses. (It's also consistent with assumption 2 of the thin lens model: parallel rays, i.e. rays from an object infinitely far away, converge exactly at the focal plane.)
+> - **Unity magnification ("1:1 macro"):** set *S′ = S = 2f*. Check the thin lens equation: `1/(2f) + 1/(2f) = 2/(2f) = 1/f` ✓. Check the magnification: `m = (S′−f)/f = (2f−f)/f = 1`. A symmetric setup — object and sensor equally far from the lens, each at twice the focal length — reproduces the object at exactly life-size on the sensor.
 
 ---
 
-## 5. Real Lenses: Compound Lenses and Aberrations
+## 5. Defocus: What Happens When the Object Isn't at the Focused Distance
+
+§4.2 established that for a given, fixed sensor distance *S′* (wherever you last left the focus ring), the thin lens equation names exactly *one* object distance that comes out sharp. The lecture's own notation gives this specific, currently-in-focus distance a name distinct from wherever an actual scene point happens to sit:
+
+- **S** — the **in-focus (or "focused") object distance**: whatever distance the thin lens equation currently predicts for the fixed *S′* the lens is set to. This is the *same* symbol *S* as §4.1, just now thought of as "fixed by wherever you left the focus ring" rather than as a free variable.
+- **O** — the **actual object distance**: wherever a real point in the scene actually is. It only equals *S* by coincidence (or because you deliberately focused on it).
+
+When *O = S*, that scene point's rays converge exactly at the sensor plane, and it renders as a sharp point. When *O ≠ S*, the thin lens equation says those rays actually want to converge somewhere *other* than the sensor plane — either before it (if the true object is farther than the focused distance) or after it (if closer) — so by the time they reach the actual, fixed sensor, they've re-diverged into a small blurred disc instead of a point. This blurred disc is the **circle of confusion**, and its exact size is derived in §9.2.
+
+**Why this never happens with an ideal pinhole (§1).** A pinhole has no focal length and no focus distance to get wrong — every scene point, at every distance *O*, projects through its single undeviated ray to one sensor point, with no dependence on *O* at all. Defocus is specifically a lens phenomenon: it's the price paid for the light-gathering aperture a lens buys over a pinhole (§4's entire motivation for using a lens in the first place).
+
+**Focus is local to one plane.** Because a single fixed *S′* only satisfies the thin lens equation for one *S*, and real scenes have objects at many different actual distances *O* at once, no single lens position brings an entire non-flat scene into focus simultaneously — some range of nearby distances will look "acceptably" sharp and everything else will show some degree of defocus blur. Exactly how wide that acceptably-sharp range is is the subject of **depth of field**, §9.3.
+
+---
+
+## 6. Real Lenses: Compound Lenses and Aberrations
 
 **Thin lenses are a fiction.** The thin lens model assumes a lens with literally zero thickness, which no real lens has. Real camera lenses are **compound lenses**: several individual lens elements stacked together, engineered so that, to a good approximation, the whole stack behaves paraxially (i.e., for rays close to the central axis) like one single ideal thin lens with some equivalent focal length and aperture.
 
@@ -124,9 +199,9 @@ A famous real-world example: the Hubble Space Telescope's primary mirror origina
 
 ---
 
-## 6. Field of View
+## 7. Field of View
 
-**[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** is the angular extent of the scene a lens/sensor combination captures — the same angular-extent idea introduced for the human eye in Week 1 §7 (monocular ~190°, binocular ~120°), now applied to a camera. It depends on both the lens's focal length *f* and the physical size of the sensor (or film) capturing the image: a longer focal length concentrates the same sensor size onto a narrower angular slice of the scene (a "telephoto" or "zoom" effect), while a shorter focal length spreads a wider angular slice onto that same sensor size (a "wide-angle" effect).
+**[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** is the angular extent of the scene a lens/sensor combination captures — the same angular-extent idea introduced for the human eye in Week 1 §7 (monocular ~190°, binocular ~120°), now applied to a camera. It depends on both the lens's focal length *f* (intrinsic, §4.2) and the physical size of the sensor capturing the image (a property of the camera body, not the lens): a longer focal length concentrates the same sensor size onto a narrower angular slice of the scene (a "telephoto" or "zoom" effect), while a shorter focal length spreads a wider angular slice onto that same sensor size (a "wide-angle" effect).
 
 This is exactly the same right-triangle relationship as Week 1 §9's screen-pixel formula, just run in the opposite direction: there, a fixed angle and a known distance gave a physical size; here, a fixed physical size (the sensor) and a known distance (the focal length) give an angle. For a sensor dimension *d* and focal length *f*:
 
@@ -134,13 +209,15 @@ This is exactly the same right-triangle relationship as Week 1 §9's screen-pixe
 FOV = 2 · arctan(d / (2f))
 ```
 
+**Components:** *d* is the sensor's physical width or height (a fixed number, set by the camera body); *f* is the lens's focal length (intrinsic, §4.2); the *2×* and the *arctan* come from splitting the sensor in half around the lens's central axis and treating each half as one leg of a right triangle whose other leg is the focal length — the same half-angle construction as Week 1 §9's `p = 2·d·tan(α/2)`, just solved for the angle instead of the length.
+
 Concretely (values as cited in lecture, for a full-frame sensor): an 8 mm lens gives roughly 180° FOV, a 50 mm "normal" lens gives roughly 43°, and a 1000 mm super-telephoto lens narrows to roughly 2.5° — the same sensor size, wildly different captured angle, purely as a function of focal length.
 
 ---
 
-## 7. Aperture and F-Number
+## 8. Aperture and F-Number
 
-Most real lenses include an adjustable **aperture** (§1) — typically a diaphragm made of overlapping blades, mechanically playing the same role as the eye's iris (Week 1 §1) — that can widen or narrow the effective diameter *D* of the lens opening, independent of the lens's fixed focal length *f*.
+Most real lenses include an adjustable **aperture** (§1) — typically a diaphragm made of overlapping blades, mechanically playing the same role as the eye's iris (Week 1 §1) — that can widen or narrow the effective diameter *D* of the lens opening, independent of the lens's fixed focal length *f*. Note that *D* is a *setup* choice (you turn an aperture ring or let the camera pick it), not an intrinsic lens property, even though it's capped by an intrinsic one — the lens's *maximum* possible aperture diameter.
 
 The standard way to describe aperture size is the **[f-number](https://en.wikipedia.org/wiki/F-number)**, *N*, written as "f/*N*":
 
@@ -148,69 +225,108 @@ The standard way to describe aperture size is the **[f-number](https://en.wikipe
 N = f / D
 ```
 
-i.e., f-number is focal length divided by aperture diameter — so, confusingly, a *larger* f-number (like f/16) means a *smaller* physical opening, and a *smaller* f-number (like f/1.4) means a *larger* opening. Aperture sizes are conventionally spaced in **stops**, where one full stop changes the amount of light reaching the sensor by a factor of 2× (the same "stop" unit already introduced for dynamic range in Week 1 §10) — so f/2.8 lets in twice as much light as f/4, which lets in twice as much as f/5.6, and so on.
+**Components:** *f* is the lens's (intrinsic, fixed) focal length; *D* is the (setup-chosen) aperture diameter; *N* is their ratio, dimensionless. Because *N* is *f* divided by *D*, a *larger* f-number (like f/16) means a *smaller* physical opening, and a *smaller* f-number (like f/1.4) means a *larger* opening — the inverse relationship is baked directly into the formula's shape, not an arbitrary convention. Aperture sizes are conventionally spaced in **stops**, where one full stop changes the amount of light reaching the sensor by a factor of 2× (the same "stop" unit already introduced for dynamic range in Week 1 §10) — so f/2.8 lets in twice as much light as f/4, which lets in twice as much as f/5.6, and so on.
 
 By §3's area-scales-as-diameter-squared logic, halving the f-number (doubling the aperture diameter *D* at fixed *f*) quadruples the light reaching the sensor — the exact same 2× diameter → 4× light relationship already derived for pinholes, now expressed through *N* instead of *D* directly.
 
-Widening the aperture doesn't only affect brightness — it also affects how much of the scene appears sharply focused at once, which is exactly the subject of §8.
+Widening the aperture doesn't only affect brightness — it also affects how much of the scene appears sharply focused at once, which is exactly the subject of §9.
 
 ---
 
-## 8. Depth of Field and Circle of Confusion
+## 9. Depth of Field and Circle of Confusion
 
-This is the most important technical concept of Week 2 — the direct basis for PS2's Task 1 and for HW2. It answers a question the thin lens equation (§4) leaves hanging: that equation names *one* object distance *S₁* that focuses perfectly onto the sensor — so what happens to everything else in the scene, at every *other* distance?
+This is the most important technical concept of Week 2 — the direct basis for PS2's Task 1 and for HW2, and the section where the lecture's notation is easiest to mix up under exam pressure. §5 already introduced the key distinction (*S* = the currently in-focus distance, *O* = a scene point's actual distance) — this section puts exact numbers on what happens when they differ.
 
-### 8.1 What "in focus" and "out of focus" actually mean, geometrically
+### 9.1 What "in focus" and "out of focus" mean, precisely
 
-The thin lens equation (§4) guarantees a perfectly sharp image point only for an object sitting at the *one* distance *S₁* the lens is currently focused on (i.e., the distance for which the sensor sits exactly at the corresponding image distance *S₂* the equation predicts). An object at any *other* distance *S* still has rays converging somewhere — just not exactly *at* the sensor plane. Those rays, caught by the sensor slightly before or after their true convergence point, form a small blurred disc on the sensor instead of a sharp point. That disc is the **circle of confusion**.
+Recap from §5: for a lens with a fixed sensor distance *S′*, the thin lens equation (§4.1) names exactly one object distance *S* whose rays converge perfectly at the sensor plane. A real scene point sitting at its own actual distance *O* is perfectly sharp only when *O = S*; at any other *O*, its rays converge either before or after the sensor plane and have re-diverged into a small blurred disc — the **circle of confusion** — by the time they reach the sensor.
 
-### 8.2 The circle-of-confusion formula
+### 9.2 The circle-of-confusion formula, derived
 
-For a lens with aperture diameter *D*, focused at distance *S₁*, imaging an object actually at distance *S*, the diameter of the resulting blur disc on the sensor is:
+Two similar-triangle relations, exactly parallel in spirit to §4.1's derivation of the thin lens equation, but now tracking a point that is *not* at the focused distance:
 
-```
-c = M · D · |S − S₁| / S
-```
-
-where *M* is the magnification for the focused distance (§4, M = f/(S₁ − f) here, up to the sign convention used for this particular formula — only its magnitude matters for a blur-disc *size*, which can't be negative).
-
-*(derivation intuition: |S − S₁| is how far the actual object sits from the plane the lens is focused on — the "focus error." If that error is zero (S = S₁), c is exactly zero: perfect focus, matching §8.1. As the focus error grows, the blur disc grows too, and it grows fastest for a large aperture diameter D — consistent with §2's pinhole finding that a bigger opening produces more geometric blur, now formalized for a lens instead of a pinhole.)*
-
-### 8.3 Depth of field: the range where blur stays imperceptible
-
-A real sensor's own pixel grid already has finite resolution (Week 1 §12.2.1's "image frequency" ruler is fixed by pixel pitch), so a blur disc smaller than roughly one pixel is simply invisible — it can't be told apart from a perfectly sharp point at that resolution. **[Depth of field (DoF)](https://en.wikipedia.org/wiki/Depth_of_field)** is exactly this: the range of object distances *S* for which the circle of confusion *c* stays below that pixel-set "acceptable blur" threshold, rather than the single exact distance *S₁* the lens happens to be focused on.
-
-> **Worked example, from lecture (method only — not solved here).** For a Canon 5D Mark III with f = 50 mm, N = 2.8, focused at 5 m, and a 7.5 µm pixel pitch, §8.2's formula gives a curve of circle-of-confusion size (in pixels) vs. object distance. The lecture's own exercise is: "using the graph [of c vs. distance], what is the depth of field?" — i.e., read off the distance range where the curve stays under the allowed-blur threshold. Per this project's policy of never computing the specific numeric answers a homework/exercise asks the student to derive, that range is intentionally left uncomputed here — but the *method* is exactly §8.2's formula, evaluated across a range of S and compared against a fixed pixel-based threshold.
-
-**Why a small f-number gives shallow depth of field.** Because *c* in §8.2 grows in proportion to aperture diameter *D*, and *D* = f/N (§7, rearranged), a *smaller* f-number (bigger aperture, more light) makes *c* grow *faster* as the actual object distance strays from *S₁* — so the "acceptable blur" range shrinks. This is the classic depth-of-field trade-off: more light (small N) inherently costs you a shallower zone of acceptable sharpness. It's also why focusing far away costs you less depth-of-field sensitivity to the *lens's* f-number than focusing close up does — at large S₁, the same aperture produces proportionally less blur growth per unit of focus error, holding f fixed.
-
-### 8.4 Hyperfocal distance
-
-The **hyperfocal distance**, *H*, is the specific focus distance that pushes the *far* edge of the depth-of-field range all the way out to infinity — i.e., focus at *H* and everything from roughly *H*/2 out to infinity satisfies §8.3's "acceptable blur" threshold simultaneously:
+**Relation 1.** The actual object point (at distance *O*) sends a full cone of rays spanning the entire aperture diameter *D* by the time they reach the lens. Slice that same cone at the closer *S*-plane (the in-focus plane) instead of at the lens, and by similar triangles (same rays, same apex at the object point, just measured at a different distance along the axis) the cone's half-width there, call it *y*, scales down proportionally:
 
 ```
-H = f² / (N · c)
+y / (D/2) = |O - S| / O
 ```
 
-where *c* here is the fixed acceptable-circle-of-confusion threshold (set by pixel size, as in §8.3), not a variable. Focusing at the hyperfocal distance is a classic landscape-photography technique for maximizing the usable in-focus range without stopping the aperture down so far that diffraction (§2, §9) starts to matter.
+**Relation 2.** By definition, *S* is the one object distance whose rays converge to a perfect point at the sensor (*S′*) — so the lens maps that *y*-wide slice at the *S*-plane to the sensor with exactly the magnification *m* that applies to the focused pair (*S*, *S′*) from §4.1. The half-width at the sensor is therefore *m·y*, and since the actual object is at *O* ≠ *S*, this mapped width is exactly half the circle of confusion:
+
+```
+y / (c/2) = 1/m
+```
+
+**Combining** (solve Relation 2 for *y* = *c*/(2*m*), then substitute into Relation 1 and solve for *c*):
+
+```
+c = m · D · |O - S| / O
+```
+
+**Components:** *c* is the circle-of-confusion diameter (what we're solving for); *m* is the magnification at the focused pair (*S*, *S′*), from §4.1; *D* is the aperture diameter (§8); *O* is the actual object distance; *S* is the currently-focused distance. Sanity checks: if *O = S* (object actually at the focused distance), *c* = 0 — perfectly sharp, matching §9.1. As the "focus error" |*O* − *S*| grows, *c* grows too, and it grows fastest for a large aperture diameter *D* — consistent with §2's pinhole finding that a bigger opening produces more geometric blur, now formalized for a lens.
+
+### 9.3 Depth of field: the formula and where it comes from
+
+A real sensor's own pixel grid already has finite resolution (Week 1 §12.2.1's "image frequency" ruler is fixed by pixel pitch), so a blur disc smaller than some small threshold — call it *ε* pixels — is simply invisible; it can't be told apart from a perfectly sharp point at that resolution. **[Depth of field (DoF)](https://en.wikipedia.org/wiki/Depth_of_field)** is the range of actual object distances *O* for which *c* stays below that threshold.
+
+**Deriving the range from §9.2's formula.** Require *c* ≤ *ε*:
+
+```
+m·D·|O - S|/O ≤ ε
+⟹ |1 - S/O| ≤ ε/(mD)
+```
+
+Call *k* = *ε*/(*mD*) (small when the acceptable blur *ε* is small compared to the aperture-and-magnification term *mD*, which is the case for any reasonably tight focus tolerance). Then *S*/*O* is squeezed between (1−*k*) and (1+*k*), which inverts to a range for *O* itself:
+
+```
+O ranges from S/(1+k)  (near edge)   to   S/(1-k)  (far edge)
+```
+
+The width of that range, for small *k* (using 1/(1−*k*) − 1/(1+*k*) = 2*k*/(1−*k*²) ≈ 2*k* when *k* ≪ 1):
+
+```
+DOF = S/(1-k) - S/(1+k) ≈ 2kS = 2εS/(mD)
+```
+
+which is exactly the compact formula the lecture states directly:
+
+```
+DOF = 2·ε·S / (m·D)
+```
+
+**Notation trap, worth flagging explicitly:** the lecture's own slide writes this with the symbol *O* in place of *S* (i.e. `DOF = 2εO/(mD)`) — but as the derivation above shows, the distance that belongs in this particular formula is the *focused* distance (§9.1's *S*), since depth of field is a range *centered on the focus plane*, not a property of any one actual object's distance. Read that slide's "*O*" as meaning *S* specifically inside the DOF formula; §9.2's circle-of-confusion formula is the one where *O* genuinely means "actual object distance," a distinct, independent variable from *S*.
+
+**Why a small f-number gives shallow depth of field.** Because *c* (§9.2) grows in proportion to aperture diameter *D*, and *D* = *f*/*N* (§8, rearranged), a *smaller* f-number (bigger aperture, more light) makes both *c* and the DOF-shrinking factor *mD* larger — so the acceptable-blur range shrinks. This is the classic depth-of-field trade-off: more light (small *N*) inherently costs a shallower zone of acceptable sharpness.
+
+> **Worked example, from lecture (method only — not solved here).** For a Canon 5D Mark III with f = 50 mm, N = 2.8, focused at 5 m, and a 7.5 µm pixel pitch, §9.2's formula gives a curve of circle-of-confusion size (in pixels) vs. object distance. The lecture's own exercise is: "using the graph [of *c* vs. distance], what is the depth of field?" — i.e., read off the distance range where the curve stays under the allowed-blur threshold. Per this project's policy of never computing the specific numeric answers a homework/exercise asks the student to derive, that range is intentionally left uncomputed here — but the *method* is exactly §9.2's formula, evaluated across a range of *O* and compared against a fixed pixel-based threshold *ε*.
+
+### 9.4 Hyperfocal distance
+
+The **hyperfocal distance**, *H*, is the specific focus distance *S* that pushes the *far* edge of the depth-of-field range (§9.3) all the way out to infinity. Deriving it directly from §9.2's circle-of-confusion formula: as the actual object distance *O* → ∞, the ratio |*O* − *S*|/*O* → 1 (the finite *S* becomes negligible next to an infinite *O*), so the circle of confusion an object at infinity would show, if focused at *S* = *H*, is simply *c*<sub>∞</sub> = *m·D* (using the magnification evaluated at that focus distance). Setting this equal to the fixed acceptable threshold and solving for *S* = *H* (using *D* = *f*/*N* from §8, and dropping *f* itself as negligible next to the much larger *H*) gives:
+
+```
+H = f² / (N·c)
+```
+
+where *c* here is the fixed acceptable-circle-of-confusion threshold (the same role §9.3 calls *ε* — the lecture reuses the letter *c* for this constant *and* for §9.2's general, object-distance-dependent circle-of-confusion size; in this one formula, it means the fixed threshold only). Focusing at the hyperfocal distance means everything from roughly *H*/2 out to infinity satisfies the depth-of-field threshold simultaneously — a classic landscape-photography technique for maximizing usable in-focus range without stopping the aperture down so far that diffraction (§2, §10) starts to matter.
 
 ---
 
-## 9. The Diffraction Limit, Formalized
+## 10. The Diffraction Limit, Formalized
 
-§2 introduced diffraction qualitatively: shrinking an opening spreads its Fourier-transform-shaped diffraction pattern wider. Ernst Abbe (1873) made this precise for a lens system, giving the smallest resolvable spot radius *d* an optical system can produce, purely as a consequence of diffraction (i.e., the best possible result even with zero aberrations, §5):
+§2 introduced diffraction qualitatively: shrinking an opening spreads its Fourier-transform-shaped diffraction pattern wider. Ernst Abbe (1873) made this precise for a lens system, giving the smallest resolvable spot radius *d* an optical system can produce, purely as a consequence of diffraction (i.e., the best possible result even with zero aberrations, §6):
 
 ```
 d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 ```
 
-Here *λ* is the wavelength of light being imaged (light frequency, in Week 1 §12.0's disambiguation — nothing to do with spatial or temporal frequency), and **numerical aperture**, *NA = n·sinθ*, packages together the refractive index *n* of the medium and the half-angle *θ* of the widest cone of light the lens can accept or emit — a bigger NA means the lens gathers a wider cone of rays, which (by the same Fourier-transform logic as §2, run in reverse) corresponds to a *narrower*, more tightly focused diffraction spot. The right-hand approximation, *d ≈ λN*, substitutes the standard small-angle relationship *NA ≈ 1/(2N)* between numerical aperture and the everyday photographic f-number *N* (§7) — showing that f-number alone, not just raw aperture diameter, sets the diffraction-limited resolution floor.
+Here *λ* is the wavelength of light being imaged (light frequency, in Week 1 §12.0's disambiguation — nothing to do with spatial or temporal frequency), and **numerical aperture**, *NA = n·sinθ*, packages together the refractive index *n* of the medium and the half-angle *θ* of the widest cone of light the lens can accept or emit — a bigger NA means the lens gathers a wider cone of rays, which (by the same Fourier-transform logic as §2, run in reverse) corresponds to a *narrower*, more tightly focused diffraction spot. The right-hand approximation, *d ≈ λN*, substitutes the standard small-angle relationship *NA ≈ 1/(2N)* between numerical aperture and the everyday photographic f-number *N* (§8) — showing that f-number alone, not just raw aperture diameter, sets the diffraction-limited resolution floor.
 
-**The resolution/depth-of-field trade-off.** §8.3 showed that a *small* f-number (wide aperture) buys more light at the cost of shallow depth of field. §9's formula shows the opposite pressure: a *large* f-number (narrow aperture, more depth of field) makes the diffraction-limited spot size *d* bigger — i.e., a fundamentally blurrier best-case image, no matter how well-corrected the lens's aberrations (§5) are. High-end microscope objectives, for comparison, push NA up to 1.4–1.6 (giving *d* = λ/2.8, an extremely tight spot) specifically by sacrificing depth of field almost entirely. This unavoidable trade — better 2D resolution always costs some 3D (depth) information, and vice versa — is an instance of a **space-bandwidth product** (or "uncertainty principle") constraint: no optical system can have arbitrarily good resolution *and* arbitrarily good depth of field at once, only a trade between them, governed jointly by f-number.
+**The resolution/depth-of-field trade-off.** §9.3 showed that a *small* f-number (wide aperture) buys more light at the cost of shallow depth of field. §10's formula shows the opposite pressure: a *large* f-number (narrow aperture, more depth of field) makes the diffraction-limited spot size *d* bigger — i.e., a fundamentally blurrier best-case image, no matter how well-corrected the lens's aberrations (§6) are. High-end microscope objectives, for comparison, push NA up to 1.4–1.6 (giving *d* = λ/2.8, an extremely tight spot) specifically by sacrificing depth of field almost entirely. This unavoidable trade — better 2D resolution always costs some 3D (depth) information, and vice versa — is an instance of a **space-bandwidth product** (or "uncertainty principle") constraint: no optical system can have arbitrarily good resolution *and* arbitrarily good depth of field at once, only a trade between them, governed jointly by f-number.
 
 ---
 
-## 10. Sensors: What's a Pixel?
+## 11. Sensors: What's a Pixel?
 
 A camera sensor's fundamental building block is the **photodiode**: a semiconductor structure that converts an incoming photon into an electron via the **[photoelectric effect](https://en.wikipedia.org/wiki/Photoelectric_effect)** — a photon striking the material knocks loose an electron, and counting those freed electrons (as an accumulated charge) over the exposure time is what "measuring light" means at the hardware level.
 
@@ -222,7 +338,7 @@ A real pixel is more than a bare photodiode:
 
 ---
 
-## 11. CCD vs. CMOS
+## 12. CCD vs. CMOS
 
 There are two dominant sensor architectures, differing in *how* accumulated pixel charges get converted to a readable signal and read out:
 
@@ -232,25 +348,25 @@ There are two dominant sensor architectures, differing in *how* accumulated pixe
 | Readout | Charges shifted out row-by-row, then converted centrally | Per-pixel voltages read out row-by-row via a multiplexer, no charge-shifting needed |
 | Typical trade-off | Higher sensitivity, lower noise (fewer, more carefully-matched amplifiers) | Faster readout, lower manufacturing cost (parallel per-pixel amplification, standard chip-fabrication processes) |
 
-Both approaches ultimately deliver a per-pixel voltage proportional to accumulated charge; they differ in the electrical path and cost/performance trade-offs for getting there, not in the underlying photoelectric sensing principle of §10.
+Both approaches ultimately deliver a per-pixel voltage proportional to accumulated charge; they differ in the electrical path and cost/performance trade-offs for getting there, not in the underlying photoelectric sensing principle of §11.
 
 ---
 
-## 12. Exposure and ISO
+## 13. Exposure and ISO
 
-**[Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))** (shutter speed) is simply how *long* the sensor is allowed to accumulate photo-generated charge before readout — typical values range from small fractions of a second (1/250 s, freezing motion) to many seconds or a manually-held "bulb" exposure (as long as the shutter button stays pressed) for very dim scenes, directly recalling HW1's own 15–60 s pinhole-box exposures. Exposure, together with aperture (§7) and ISO (below), jointly determines total light collected.
+**[Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))** (shutter speed) is simply how *long* the sensor is allowed to accumulate photo-generated charge before readout — typical values range from small fractions of a second (1/250 s, freezing motion) to many seconds or a manually-held "bulb" exposure (as long as the shutter button stays pressed) for very dim scenes, directly recalling HW1's own 15–60 s pinhole-box exposures. Exposure, together with aperture (§8) and ISO (below), jointly determines total light collected.
 
-**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is an **analog gain** applied to the sensor's signal *before* it reaches the analog-to-digital converter (ADC, §13). Raising ISO does not make the sensor collect more photons — it electrically amplifies whatever charge was collected, boosting a dim signal up into a usable digital range. Critically, this amplification boosts noise right along with signal (indeed, it amplifies certain noise sources, like read noise, disproportionately relative to the fundamental photon-counting noise of §14) — so raising ISO is a way of trading *cleanliness* for *brightness* on a fixed amount of collected light, not a way of gathering more light in the first place.
-
----
-
-## 13. Dynamic Range and Bit Depth
-
-**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §10 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a digital sensor, the same *ratio-between-brightest-and-darkest-representable-signal* definition applies, but a sensor adds a second, purely digital constraint on top of the physical one: **bit depth** — how many discrete numeric levels the ADC (§14) can output. A typical camera's unprocessed **RAW** format uses 12–14 bits per pixel (4,096–16,384 distinct levels), while a processed, display-ready **JPEG** typically compresses this down to 8 bits per channel (256 levels) after the tone-mapping and gamma-correction steps previewed in §16 — so a sensor's *achievable* dynamic range is capped by whichever is smaller: the physical noise floor (§14) or the digital quantization step size set by bit depth.
+**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is an **analog gain** applied to the sensor's signal *before* it reaches the analog-to-digital converter (ADC, §14). Raising ISO does not make the sensor collect more photons — it electrically amplifies whatever charge was collected, boosting a dim signal up into a usable digital range. Critically, this amplification boosts noise right along with signal (indeed, it amplifies certain noise sources, like read noise, disproportionately relative to the fundamental photon-counting noise of §16) — so raising ISO is a way of trading *cleanliness* for *brightness* on a fixed amount of collected light, not a way of gathering more light in the first place.
 
 ---
 
-## 14. Global Shutter vs. Rolling Shutter
+## 14. Dynamic Range and Bit Depth
+
+**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §10 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a digital sensor, the same *ratio-between-brightest-and-darkest-representable-signal* definition applies, but a sensor adds a second, purely digital constraint on top of the physical one: **bit depth** — how many discrete numeric levels the ADC can output. A typical camera's unprocessed **RAW** format uses 12–14 bits per pixel (4,096–16,384 distinct levels), while a processed, display-ready **JPEG** typically compresses this down to 8 bits per channel (256 levels) after the tone-mapping and gamma-correction steps previewed in §17 — so a sensor's *achievable* dynamic range is capped by whichever is smaller: the physical noise floor (§16) or the digital quantization step size set by bit depth.
+
+---
+
+## 15. Global Shutter vs. Rolling Shutter
 
 There are two ways to time when each pixel's exposure happens relative to readout:
 
@@ -263,13 +379,13 @@ Rather than treating this purely as a nuisance, Sheinin et al. (2017) demonstrat
 
 ---
 
-## 15. Sensor Noise and Signal-to-Noise Ratio
+## 16. Sensor Noise and Signal-to-Noise Ratio
 
-### 15.1 From photons to a RAW image
+### 16.1 From photons to a RAW image
 
-The full chain from incoming light to a stored RAW image: **photons** arrive at the sensor → the **photodiode** (§10) converts them to electrons, with photon-counting randomness (**shot noise**, below) already baked in at this step → an **amplifier** applies ISO gain (§12), adding further noise → an **ADC** quantizes the amplified analog voltage into discrete digital levels (§13), adding **quantization noise** (the unavoidable rounding error from representing a continuous voltage with a finite number of discrete levels) → the result is the **RAW image**, which also carries **fixed pattern noise** — per-pixel manufacturing-defect variation that is consistent from shot to shot (unlike the random noise sources above), caused by slight fabrication differences between individual pixels.
+The full chain from incoming light to a stored RAW image: **photons** arrive at the sensor → the **photodiode** (§11) converts them to electrons, with photon-counting randomness (**shot noise**, below) already baked in at this step → an **amplifier** applies ISO gain (§13), adding further noise → an **ADC** quantizes the amplified analog voltage into discrete digital levels (§14), adding **quantization noise** (the unavoidable rounding error from representing a continuous voltage with a finite number of discrete levels) → the result is the **RAW image**, which also carries **fixed pattern noise** — per-pixel manufacturing-defect variation that is consistent from shot to shot (unlike the random noise sources above), caused by slight fabrication differences between individual pixels.
 
-### 15.2 The two dominant noise distributions
+### 16.2 The two dominant noise distributions
 
 Sensor noise comes from many physical sources (heat, electronics, amplifier gain, the photon-to-electron conversion itself, individual pixel defects, read-out electronics), but two statistical distributions dominate:
 
@@ -277,7 +393,7 @@ Sensor noise comes from many physical sources (heat, electronics, amplifier gain
 
 **[Photon (shot) noise](https://en.wikipedia.org/wiki/Shot_noise)** — from the fundamentally random arrival timing of individual photons. Photon arrivals follow a **[Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution)**, `f(k; λ) = λᵏe⁻λ/k!`, which describes the probability of observing exactly *k* discrete, randomly-timed events (here, photon arrivals) given an average rate λ. A defining property of the Poisson distribution is that its **standard deviation equals the square root of its mean**: for an average of *N* photons collected, the standard deviation of the actual count is `√N`. Shot noise is therefore **signal-dependent** — a brighter pixel (larger *N*) has *more* absolute noise (`√N` grows with *N*), but proportionally *less* relative noise, since the ratio `√N / N = 1/√N` shrinks as *N* grows. This is why doubling the light collected (*N* → 2*N*) doesn't double the noise — it only multiplies it by `√2`, meaningfully improving the *ratio* of signal to noise even though both the signal and its absolute noise both increased.
 
-### 15.3 Signal-to-noise ratio (SNR)
+### 16.3 Signal-to-noise ratio (SNR)
 
 **[Signal-to-noise ratio](https://en.wikipedia.org/wiki/Signal-to-noise_ratio)**, SNR, is the mean pixel value divided by the standard deviation of that pixel value (a general statistics definition, here applied to sensor measurements):
 
@@ -285,15 +401,15 @@ Sensor noise comes from many physical sources (heat, electronics, amplifier gain
 SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 ```
 
-where *P* is the incident photon flux (photons per pixel per second), *Qe* is quantum efficiency (§10), *t* is exposure time (§12), *D* is dark current (unwanted electrons generated per pixel per second even with no incident light — one source of §15.2's Gaussian noise family), and *Nr* is read noise (root-mean-square electrons of noise added purely by the sensor's own readout electronics, including fixed pattern noise). The numerator, *P·Qe·t*, is exactly the mean number of photo-generated electrons collected — the *signal* — while inside the square root, that same term reappears as the *shot-noise variance* (§15.2's `√N` fact, squared back into a variance) alongside the two Gaussian-family noise-variance terms *D·t* and *Nr²*.
+where *P* is the incident photon flux (photons per pixel per second), *Qe* is quantum efficiency (§11), *t* is exposure time (§13), *D* is dark current (unwanted electrons generated per pixel per second even with no incident light — one source of §16.2's Gaussian noise family), and *Nr* is read noise (root-mean-square electrons of noise added purely by the sensor's own readout electronics, including fixed pattern noise). The numerator, *P·Qe·t*, is exactly the mean number of photo-generated electrons collected — the *signal* — while inside the square root, that same term reappears as the *shot-noise variance* (§16.2's `√N` fact, squared back into a variance) alongside the two Gaussian-family noise-variance terms *D·t* and *Nr²*.
 
 **Scientific sensors** (e.g., cooled to around −100°C for astronomical or microscopy work) minimize *D* and *Nr* by aggressive cooling and specialized low-noise electronics, driving nearly all remaining noise down to the fundamental, physically unavoidable shot-noise floor set by *P·Qe·t* itself — the one noise term in the formula above that no amount of engineering can remove, since it comes from the quantum randomness of photon arrival itself, not from any imperfection in the sensor.
 
 ---
 
-## 16. Looking Ahead: The Image Processing Pipeline
+## 17. Looking Ahead: The Image Processing Pipeline
 
-This lecture's own closing slide names what comes next: **RAW images → demosaicking → denoising → deblurring → white balancing → gamma correction → compression** — the **image signal processing (ISP)** pipeline that turns the raw, single-channel-per-pixel, noisy sensor output described in §10–15 into the finished color photo a viewer actually sees. PS2's remaining tasks (linear, chrominance-smoothed, and Malvar–He–Cutler high-quality demosaicing; gamma correction; Gaussian, median, bilateral, and non-local-means denoising) live here, and are covered in Week 3's notes rather than this week's — Week 2 has been entirely about the optics (§1–9) and raw sensing (§10–15) stages that come *before* any of that pipeline runs.
+This lecture's own closing slide names what comes next: **RAW images → demosaicking → denoising → deblurring → white balancing → gamma correction → compression** — the **image signal processing (ISP)** pipeline that turns the raw, single-channel-per-pixel, noisy sensor output described in §11–16 into the finished color photo a viewer actually sees. PS2's remaining tasks (linear, chrominance-smoothed, and Malvar–He–Cutler high-quality demosaicing; gamma correction; Gaussian, median, bilateral, and non-local-means denoising) live here, and are covered in Week 3's notes rather than this week's — Week 2 has been entirely about the optics (§1–10) and raw sensing (§11–16) stages that come *before* any of that pipeline runs.
 
 ---
 
@@ -305,3 +421,5 @@ Moved to the project's running, cumulative glossary so terminology previews stay
 
 ## Quick self-check
 If you can explain, in your own words, *why* a wider aperture (smaller f-number) simultaneously gathers more light, produces shallower depth of field, and moves you further from (not closer to) the diffraction limit — using only the words "circle of confusion," "f-number," and "numerical aperture" — you've understood the core trade-off of Week 2.
+
+A second check, specifically for the focal-length/sensor-distance distinction (§4.2–4.3, §5): if a friend asked you "what's the difference between focal length and sensor distance, and why does moving the sensor change what's in focus?", you should be able to answer using only the words "intrinsic," "setup," and "thin lens equation" — without needing to look anything up.
