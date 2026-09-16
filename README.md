@@ -9,8 +9,10 @@ Running, beginner-level study notes for CSC2529 (Computational Imaging), written
 | File | What it is |
 |---|---|
 | [`week1-study-notes.md`](./week1-study-notes.md) | Week 1 — the human visual system: eye anatomy, the contrast sensitivity function, hybrid images, and more. |
+| [`week2-study-notes.md`](./week2-study-notes.md) | Week 2 — optical principles: lenses, focal length, image formation, diffraction, and the pinhole camera. |
 | [`glossary.md`](./glossary.md) | A single, cumulative glossary of course terminology, grouped by the week each term is (or will be) covered. |
 | [`CLAUDE.md`](./CLAUDE.md) | The project's own working notes for how these are generated and kept up to date. |
+| [`FACT_AUDIT.md`](./FACT_AUDIT.md) | Verification log of factual claims against external sources. |
 
 More `weekN-study-notes.md` files are added as the course progresses.
 

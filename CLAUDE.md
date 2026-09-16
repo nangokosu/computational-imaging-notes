@@ -32,8 +32,10 @@ Never compute the specific numeric answers a homework asks the student to derive
 ## File structure
 
 - `CLAUDE.md` — this file.
+- `README.md` — the project's public face: one-paragraph summary, link to the running artifact, and a table listing all `weekN-study-notes.md` files and related project files with brief descriptions. Update the table every time a new week is added (new row with filename, week number, and 1-sentence content summary) and when `FACT_AUDIT.md` is first created.
 - `weekN-study-notes.md` — one per lecture week, following the structure established in `week1-study-notes.md`: numbered sections mirroring the lecture's own slide order, tables for structured comparisons, worked examples in their own callout-style blocks, and a "Part A" that ends with a pointer to the shared glossary rather than repeating it.
 - `glossary.md` — the single, cumulative, beginner-facing glossary, grouped by the course week each term is actually covered (not flat A–Z). Update it every time a new week's notes are written: promote that week's terms out of any "forward-looking preview," and add genuinely new forward-looking terms for weeks further out if the new lecture introduces them. Never delete an existing entry — later weeks may deepen a definition, but the original beginner-level anchor stays.
+- `FACT_AUDIT.md` — created and updated when fact-checking the artifact against external sources (not on every change, but proactively before major revisions or on request). Lists every factual claim verified, with sources cited. Document its existence in the README table once it exists.
 
 ## Published artifact — one running notebook, not one per week
 
