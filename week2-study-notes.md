@@ -18,7 +18,7 @@ Everything in this lecture is optics or sensing built to fix exactly that proble
 
 ## 1. The Pinhole Camera
 
-**Fix:** put an opaque barrier (a **diaphragm**) between scene and sensor, with a single small opening in it — a **pinhole**, also called the camera's **[aperture](https://en.wikipedia.org/wiki/Aperture)** in this context (the general "opening that controls how much light gets in," first introduced via the eye's pupil in Week 1 §1). Now, of all the rays leaving any one scene point in every direction, only the *one* ray heading straight at the pinhole makes it through to the sensor — every other ray from that point is blocked by the barrier. Each scene point therefore lights up (ideally) exactly one sensor location, instead of smearing across the whole sensor as in §0.
+**Fix:** put an opaque barrier (a **diaphragm**) between scene and sensor, with a single small opening in it — a **pinhole**, also called a **[camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)**, or the camera's **[aperture](https://en.wikipedia.org/wiki/Aperture)** in this context (the general "opening that controls how much light gets in," first introduced via the eye's pupil in Week 1 §1). Now, of all the rays leaving any one scene point in every direction, only the *one* ray heading straight at the pinhole makes it through to the sensor — every other ray from that point is blocked by the barrier. Each scene point therefore lights up (ideally) exactly one sensor location, instead of smearing across the whole sensor as in §0.
 
 **Geometry and terms** (all consequences of straight-line ray optics, §0):
 - **Camera center** (or **center of projection**): the pinhole itself — every surviving ray passes through this single point.
@@ -28,8 +28,6 @@ Everything in this lecture is optics or sensing built to fix exactly that proble
 Because every ray travels in a straight line through one fixed point (the pinhole), the image that lands on the sensor is a scaled, upside-down copy of the scene — trace a ray from the top of an object, through the pinhole, and by simple straight-line geometry it continues downward, landing on the *bottom* of the image plane (and vice versa). This is the same similar-triangles idea used throughout the course: two rays from the same object point, one passing above the pinhole's axis and one below, form mirror-image triangles on either side of the pinhole, so the image is inverted **and** rescaled by the ratio of distances (pinhole-to-sensor vs. pinhole-to-object).
 
 **Focal length controls image size.** Halving the focal length (moving the sensor to sit half as far behind the pinhole) exactly halves the size of the projected image, for the same reason a shadow shrinks as you move the wall closer to the object: the same cone of rays from an object, converging back down to the single pinhole point, is caught by the image plane at half the distance, so it's caught before spreading as wide.
-
-> **Historical aside.** The pinhole camera principle (called *camera obscura*, Latin for "dark room") was already described by the Chinese philosopher Mo-Ti (470–390 BC). Painters used camera-obscura projections as drawing aids for centuries — Vermeer's *The Milkmaid* (1658) is a well-known example cited in lecture — and the world's oldest surviving photograph, Nicéphore Niépce's *View from the Window at Le Gras* (1826), was captured this way with an 8-hour exposure (exposure — how long the sensor/film collects light — is formalized in §12).
 
 ---
 
@@ -43,7 +41,23 @@ An *ideal* pinhole is infinitesimally small (a true single point), but that's ph
 
 **Why, precisely — the diffraction pattern is the aperture's Fourier transform.** The pattern of light spreading out past an opening is, quite literally, the two-dimensional **[Fourier transform](https://en.wikipedia.org/wiki/Fourier_transform)** of the opening's shape — the same Fourier-transform idea built up from scratch in Week 1 §12.4 to explain hybrid images, now showing up in physical optics rather than digital image processing. Recall from Week 1 §12.4.3 that a *small*, tightly-packed feature in the spatial domain corresponds to spectral energy spread across *large* (u, v) values in the frequency domain — a general fact about the Fourier transform, not specific to images. A pinhole is exactly that kind of spatial-domain feature: a small physical opening. So by that same general fact, a *smaller* pinhole produces a *wider*-spread diffraction pattern (energy pushed out to large spatial frequencies), while a *larger* pinhole produces a *narrower*, more tightly concentrated diffraction pattern close to the geometric-optics prediction.
 
-**Putting the two directions together:** shrinking the pinhole reduces geometric blur (good) right up until diffraction effects take over and start *increasing* blur again (bad) — so there is a genuine sweet-spot pinhole diameter that minimizes total blur, not "smaller is always sharper." (§9 returns to this trade-off with a precise formula, once aperture and f-number have been defined in §7.)
+**Putting the two directions together:** shrinking the pinhole reduces geometric blur (good) right up until diffraction effects take over and start *increasing* blur again (bad) — so there is a genuine sweet-spot pinhole diameter that minimizes total blur, not "smaller is always sharper."
+
+### 2.1 The Exact Trade-off: Optimal Pinhole Diameter
+
+**Writing both blur contributions as one quantity to minimize.** Direction 1 says a pinhole of diameter *d* smears each scene point into a blurred disc roughly *d* wide — geometric blur ≈ *d*. Direction 2 says diffraction fans light out by an angle of roughly λ/*d* radians after it squeezes through an opening of width *d* (a standard result: the narrower the gap relative to the wavelength, the wider the fan-out); over the distance *f* from pinhole to image plane, that angular spread becomes a linear spread on the sensor of about *f*·λ/*d* (small-angle approximation: linear spread ≈ angle × distance). Adding the two independent contributions gives one blur-size function of the pinhole diameter:
+
+```
+blur(d) ≈ d + fλ/d
+```
+
+**Why the minimum sits where the two contributions balance, not at either extreme.** The first term grows with *d* (bigger hole → more geometric blur); the second shrinks with *d* (bigger hole → less relative diffraction spread). Shrinking *d* always helps one term while hurting the other, so `blur(d)` bottoms out where they're comparable in size, not where either term alone is smallest — setting its derivative to zero (d(blur)/d*d* = 1 − fλ/d² = 0) gives d² = fλ, i.e. d ≈ √(fλ). The course's own pinhole-camera build slides give this same balance with a leading factor of 2 from the exact geometry of the two blur terms:
+
+```
+d = 2√(fλ)
+```
+
+where *f* is the pinhole-to-image-plane distance (the pinhole's focal length, §1) and λ is the wavelength of light being imaged (nothing to do with spatial or temporal frequency — see Week 1 §12.0's frequency disambiguation). This is precisely the formula behind "how big should the hole be" for HW1's hand-built pinhole box; plugging in your own box's focal length to get an actual diameter in millimeters is the homework step, left to the assignment.
 
 ---
 
@@ -63,8 +77,6 @@ These two facts are the geometric seed of the aperture/f-number trade-off formal
 A pinhole's fundamental problem is that "small enough to be sharp" and "large enough to gather useful light" pull in opposite directions (§2–3) — a pinhole can never have both. A **lens** — a shaped piece of transparent material, most often glass — solves this by bending many rays from the same scene point back together at one image point, so the imaging aperture can be made large (lots of light) without smearing the image (still sharp).
 
 **[Refraction](https://en.wikipedia.org/wiki/Refraction)** is the bending of a light ray when it crosses the boundary between two materials with different optical densities (e.g., air into glass) — the same phenomenon that makes a straw look bent where it enters a glass of water. A lens is manufactured with precisely curved surfaces so that refraction bends parallel or diverging rays in a specific, useful way: toward a common point.
-
-> **Historical aside.** Shaped lenses are ancient: the Nimrud lens, a ground rock-crystal lens roughly 2,700 years old, is among the oldest known manufactured lenses. Photographic lenses proper arrive much later — Louis Daguerre's 1838/1839 *daguerreotype* process paired glass lenses with light-sensitive chemical plates, cutting required exposure times from Niépce's 8 hours (§1) down to 10–12 minutes.
 
 **The thin lens model** is a deliberate simplification of real (curved, thick) lens geometry, valid for well-designed lenses, built on two assumptions:
 

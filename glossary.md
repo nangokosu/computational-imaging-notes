@@ -37,7 +37,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 *(full explanations in [`week2-study-notes.md`](./week2-study-notes.md); this is the lookup-speed version)*
 
 - **[Ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** — modeling light as straight-line rays, ignoring wave effects — the assumption behind pinhole-camera geometry (HW1) and the thin lens model (§0, §4).
-- **Pinhole camera / [camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)** — a barrier with a single small opening that lets only one ray per scene point reach the sensor, forming an inverted, scaled image; known since Mo-Ti (470–390 BC) (§1).
+- **Pinhole camera / [camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)** — a barrier with a single small opening that lets only one ray per scene point reach the sensor, forming an inverted, scaled image (§1).
 - **[Aperture](https://en.wikipedia.org/wiki/Aperture)** — the opening controlling how much light enters a lens or pinhole; analogous to the iris/pupil. Deepened here with the f-number/stops formalism (§7).
 - **Focal length (f)** — the distance from a pinhole or lens to the plane where a sharp image forms; shorter focal length shrinks the projected image (§1, §4).
 - **Magnification (M)** — the ratio of image size to object size produced by a lens, M = f/(f − S₁) (§4).
@@ -51,6 +51,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **[Depth of field](https://en.wikipedia.org/wiki/Depth_of_field)** — the range of object distances whose circle of confusion stays below an acceptable (pixel-set) threshold (§8).
 - **Hyperfocal distance (H)** — the focus distance that extends the far edge of the depth of field to infinity, H = f²/(Nc) (§8).
 - **Diffraction limit / [numerical aperture](https://en.wikipedia.org/wiki/Numerical_aperture) (NA)** — the smallest resolvable spot size set by diffraction alone (Abbe's formula, d ≈ λ/(2·NA) ≈ λN); trades off against depth of field via f-number (§2, §9).
+- **Optimal pinhole diameter** — the pinhole size that minimizes total image blur by balancing geometric blur (grows with diameter *d*) against diffraction spread (shrinks with *d*): d = 2√(fλ), where *f* is the pinhole-to-image-plane distance and λ is the wavelength of light (§2.1).
 - **Exposure** — total light collected, set by aperture, exposure time, and ISO together (§12).
 - **Sensor** — the chip converting incident light into an electrical signal — the camera's "retina" (§10).
 - **[Photoelectric effect](https://en.wikipedia.org/wiki/Photoelectric_effect)** — a photon striking a photodiode knocking loose an electron; the basic photon-to-signal conversion inside every pixel (§10).
