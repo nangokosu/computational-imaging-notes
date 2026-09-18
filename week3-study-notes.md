@@ -386,7 +386,7 @@ Mirroring the lecture's own "everything put together" summary:
 I_out = I_in^(1/2.2)
 ```
 
-**Term-by-term:** I_in is the (already [0,1]-scaled) linear intensity value; the exponent 1/2.2 is the reciprocal of the human-sensitivity gamma quoted above (§, and by the lecture's own "roughly γ = 2.2" framing) — applying an exponent less than 1 to a value in [0,1] pulls dark values up disproportionately more than bright ones, exactly the perceptually-matched spacing described above.
+**Term-by-term:** I_in is the (already [0,1]-scaled) linear intensity value; the exponent 1/2.2 is the reciprocal of the human-sensitivity gamma quoted above, per the lecture's own "roughly γ = 2.2" framing — applying an exponent less than 1 to a value in [0,1] pulls dark values up disproportionately more than bright ones, exactly the perceptually-matched spacing described above.
 
 **(b) The lecture's exact sRGB standard.** The sRGB standard (§6's color space, also the standard gamma curve for 8-bit consumer images) uses a precise **piecewise** function rather than a single clean power law — a straight linear segment near zero (avoiding an infinite-slope singularity that a pure power law would have at exactly zero) joined to a power-law segment for the rest of the range:
 
