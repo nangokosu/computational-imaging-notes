@@ -413,6 +413,8 @@ where *P* is the incident photon flux (photons per pixel per second), *Qe* is qu
 
 This lecture's own closing slide names what comes next: **RAW images → demosaicking → denoising → deblurring → white balancing → gamma correction → compression** — the **image signal processing (ISP)** pipeline that turns the raw, single-channel-per-pixel, noisy sensor output described in §11–16 into the finished color photo a viewer actually sees. PS2's remaining tasks (linear, chrominance-smoothed, and Malvar–He–Cutler high-quality demosaicing; gamma correction; Gaussian, median, bilateral, and non-local-means denoising) live here, and are covered in Week 3's notes rather than this week's — Week 2 has been entirely about the optics (§1–10) and raw sensing (§11–16) stages that come *before* any of that pipeline runs.
 
+Week 3 covers considerably more than just this pipeline, though: before reaching the ISP stages above, it first builds up the color science underneath all of it from scratch — the spectral sensitivity function, CIE color matching experiments, the CIE XYZ/RGB tristimulus spaces, the CIE xy chromaticity diagram, and color gamuts (deepening Week 1 §3's cones/tristimulus/metamerism material) — and, past the pipeline stages themselves, it also covers gamut mapping (camera-native gamut → standard sRGB gamut), JPEG compression, and a brief one-slide preview of deconvolution ahead of its full treatment in Week 5–6.
+
 ---
 
 # Part B — Glossary

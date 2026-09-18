@@ -10,6 +10,7 @@ Running, beginner-level study notes for CSC2529 (Computational Imaging), written
 |---|---|
 | [`week1-study-notes.md`](./week1-study-notes.md) | Week 1 — the human visual system: eye anatomy, the contrast sensitivity function, hybrid images, and more. |
 | [`week2-study-notes.md`](./week2-study-notes.md) | Week 2 — optical principles: lenses, focal length, image formation, diffraction, and the pinhole camera. |
+| [`week3-study-notes.md`](./week3-study-notes.md) | Week 3 — color science (spectral sensitivity, CIE color matching, chromaticity, gamuts) and the camera image processing pipeline: demosaicking, denoising, gamma correction, gamut mapping, and JPEG compression. |
 | [`glossary.md`](./glossary.md) | A single, cumulative glossary of course terminology, grouped by the week each term is (or will be) covered. |
 | [`CLAUDE.md`](./CLAUDE.md) | The project's own working notes for how these are generated and kept up to date. |
 | [`FACT_AUDIT.md`](./FACT_AUDIT.md) | Verification log of factual claims against external sources. |
