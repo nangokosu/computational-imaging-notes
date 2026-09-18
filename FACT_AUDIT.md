@@ -364,3 +364,345 @@ discusses read noise in digital cameras — correct target. `Numerical_aperture`
 - **Sources consulted:** [Did Johannes Vermeer use a camera obscura or not? (vermeerdelft.nl)](https://www.vermeerdelft.nl/en/blogs/did-johannes-vermeer-use-a-camera-obscura-or-not),
   [Vermeer and the Camera Obscura, Part One (essentialvermeer.com)](https://www.essentialvermeer.com/camera_obscura/co_one.html),
   [A Closer Look at The Milkmaid (drawpaintacademy.com)](https://drawpaintacademy.com/the-milkmaid/).
+
+---
+---
+
+# Week 3 Audit — 2026-09-18
+
+**Last audited:** 2026-09-18
+
+**Scope:** `week3-study-notes.md` (full file), the `## Week 3` section of `glossary.md`, and the
+`<section class="week-block" id="week-3" ...>` block plus the `#glossary-week-3` `.week-card` of
+the live published artifact (https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0),
+including all 6 of that block's diagrams (Fig. 28–33). Weeks 1 and 2 were intentionally **not**
+re-audited this run. Primary verification used the actual CSC2529 Lecture 3 slide deck
+(`cs.toronto.edu/~lindell/teaching/2529/slides/lecture3.pdf`, 129 slides, extracted and rendered
+directly, including its "References and Further Reading" slide), the Malvar/He/Cutler 2004 paper
+via its IPOL reimplementation writeup, and independent sources (Wikipedia, direct web search) for
+every cited paper, standard, and numeric constant.
+
+**Summary: 42 claims/diagrams audited — 39 confirmed / 2 corrected / 1 unverifiable-category
+(several individual PS2-sourced implementation details, listed together below).**
+
+Corrected items (one line each):
+1. §10.3's Y′CbCr matrix carried a note saying the lecture's own slide "survived PDF extraction
+   with its exact numeric coefficients garbled" — the slide has now been read directly (rendered
+   as an image) and its matrix **confirmed** to match the standard BT.601 matrix already given;
+   the uncertainty note is replaced with a confirmation note (`week3-study-notes.md` only — the
+   artifact never carried this caveat).
+2. §10.5's claim that Malvar-He-Cutler's filter coefficients are "**exact powers of two**" →
+   corrected to "**dyadic rationals**" (fractions with a power-of-2 *denominator*, e.g. 3/4, 5/8,
+   3/2 — not powers of two themselves), matching the IPOL reimplementation's own description
+   ("rounded to dyadic rationals ... integer arithmetic and bitshifting") and the actual published
+   gains (β=5/8, γ=3/4 are not powers of two). Corrected in **both**
+   `week3-study-notes.md` and the artifact's `week-3` block.
+
+**Drift observed (not corrected — both sides defensible):** §2/`week-3-s2`'s "lasso curve" bullet
+list states the curve "starts and ends **at** the origin" in `week3-study-notes.md`, but "starts
+and ends **near** the origin" in the artifact. The lecture's own slide (23) says "starts and ends
+at origin" verbatim, so the markdown's wording matches the primary source more literally; the
+artifact's "near" is arguably the more physically precise statement (cone sensitivity curves are
+asymptotic, never exactly zero at any finite wavelength). Neither is factually wrong, so left as
+is — flagged here as a genuine (if minor) inconsistency between the two files rather than silently
+resolved.
+
+No other drift was found: every other claim and diagram checked said/showed the same thing in
+`week3-study-notes.md`, the Week 3 glossary section, and the artifact's week-3 block/glossary card.
+
+---
+
+## Corrected claims (detail)
+
+### 1. §10.3 — Y′CbCr conversion matrix, reconstruction-uncertainty note resolved
+
+- **Claim as found:** a footnote in `week3-study-notes.md` said the lecture's own slide for the
+  RGB↔Y′CbCr matrix "survived PDF extraction with its exact numeric coefficients garbled" and that
+  the given matrix (Y′=16+65.481R+128.553G+24.966B, etc.) was "reconstructed from the known
+  standard rather than read cleanly off the slide."
+- **Verdict: Corrected (resolved to Confirmed).** Lecture 3 slide 73 was rendered directly as an
+  image (not run through sparse text extraction) and reads clearly: `M` = [65.48, 128.55, 24.97;
+  −37.80, −74.20, 112.00; 112.00, −93.79, −18.21], with the whole product scaled by 257/65535 and
+  offset by [16;128;128], for R,G,B on a 0–255 scale. Since 255×257 = 65535 exactly, 257/65535 =
+  1/255, so this is algebraically identical to the standard BT.601 form for R,G,B∈[0,1] already
+  given in the notes, just re-expressed for 8-bit inputs. Internal consistency check: BT.601's Y′
+  row must sum to 219.000 (the code range 16–235 spans 219 levels); the slide's own row sums to
+  65.48+128.55+24.97 = 219.00, confirming the third coefficient is 24.97 (not a mis-OCR'd "24.87").
+  The matrix independently matches the ITU-R BT.601 standard (Poynton, *Digital Video and HD*,
+  eq. 9.6) via a separate web search.
+- **Before → after (`week3-study-notes.md` §10.3 only):** the "Reconstruction note" callout, which
+  flagged the matrix as unverified, is replaced with a "Fact-audit note" confirming the match
+  against the rendered slide, including the 257/65535 = 1/255 identity and the 219.00 sum check.
+- **Sources:** [CSC2529 Lecture 3 slides, p. 73](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/lecture3.pdf) (rendered directly), [ITU-R BT.601 RGB↔YCbCr coefficients, cross-checked via web search](https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/36417/versions/1/previews/YUV/rgb2yuv.m/index.html), arithmetic check (255×257=65535; 65.48+128.55+24.97=219.00).
+
+### 2. §10.5 — Malvar-He-Cutler filter coefficients: "powers of two" → "dyadic rationals"
+
+- **Claim:** "many of the filter coefficients that fall out of this derivation are **exact powers
+  of two** — which, in fixed-point hardware, means a multiplication can be implemented as a cheap
+  **bit-shift** instead of a general multiply."
+- **Verdict: Corrected.** The published gains themselves are α=1/2 (a power of two, single-shift
+  friendly) but β=5/8 and γ=3/4 are **not** powers of two — they are dyadic rationals (numerator×
+  2⁻ⁿ), which need a shift-and-add, not a single bit-shift, to implement. The IPOL reimplementation
+  of this exact method states explicitly that the coefficients were "computed to produce the
+  minimum mean squared error ... then rounded to **dyadic rationals** to enable efficient
+  implementation using integer arithmetic and bitshifting" — "dyadic rational," not "power of two,"
+  is the precise term, and the lecture's own filter-kernel slide (79) shows values like 6, −3/2,
+  and 2 that are not themselves powers of two either.
+- **Before → after (both `week3-study-notes.md` §10.5 and the artifact's `week-3-s10` §10.5 "PS2's
+  practical framing" paragraph):** "exact powers of two ... a cheap bit-shift instead of a general
+  multiply" → "**dyadic rationals** — fractions with a power-of-two denominator (e.g. 1/2, 3/4,
+  5/8, 3/2), not necessarily powers of two themselves ... cheap bit-shifts **and additions**
+  instead of a general multiply."
+- **Sources:** [Malvar-He-Cutler Linear Image Demosaicking, IPOL Journal](http://www.ipol.im/pub/art/2011/g_mhcd/revisions/2011-08-14/g_mhcd.htm) (fetched directly), [CSC2529 Lecture 3 slides, pp. 78–79](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/lecture3.pdf) (rendered directly).
+
+---
+
+## Confirmed claims and diagrams
+
+*(Grouped by section; source(s) given for each. Numeric/formula claims were checked against the
+actual rendered lecture slides and/or an independent external source, not merely against
+plausibility.)*
+
+**§1 (spectral sensitivity function):** R = ∫Φ(λ)f(λ)dλ, SSF/SPD definitions — confirmed verbatim
+against Lecture 3 slide 20, which states the identical formula and "weighted combination" framing.
+[Spectral sensitivity](https://en.wikipedia.org/wiki/Spectral_sensitivity) and
+[Spectral power distribution](https://en.wikipedia.org/wiki/Spectral_power_distribution) links
+independently fetched and confirmed to resolve to the matching concepts.
+
+**§2 (tristimulus color space / lasso curve) — Fig. 28:** "lasso curve" name, confinement to the
+positive octant, starting/ending near the origin, never approaching the M axis, and — on varying
+intensity — sweeping out a convex radial cone with a "horseshoe" cross-section, plus metamerism as
+many-spectra-to-one-point — confirmed directly against Lecture 3 slides 22–26, which use this exact
+terminology and show the identical 3D construction (a bounded lasso curve in S/M/L space, then a
+convex cone swept by scaling intensity, then a "horseshoe" radial cross-section). **Diagram (Fig.
+28):** the axonometric sketch's three axes (M up, S down-left, L down-right) meeting at an origin,
+a closed lasso curve confined to the positive octant and bulging away from the M axis toward the
+S–L region, and two dashed rays from the origin through lasso points (suggesting the cone) — this
+matches the slide's own layout (M/S/L axis labels, closed curve bulging away from M) in construction
+and correctly follows from the underlying non-negativity/convex-combination math described in the
+same section; captioned accurately as "schematic," which it is (not to measured/plotted LMS data).
+(See "Drift observed" above for the one wording nuance found in this section.)
+
+**§3 (CIE color matching):** primaries/test-light split-field setup, adjusting primary strengths
+until metameric to the test light, and the "add to the test side instead of subtracting" mechanism
+for negative coefficients — confirmed directly against Lecture 3 slides 29–32, including the
+"equality symbol means 'has the same retinal color as' / 'is metameric to'" annotation, which the
+notes and artifact both reproduce essentially verbatim. [CIE 1931 color space#Color matching
+functions](https://en.wikipedia.org/wiki/CIE_1931_color_space#Color_matching_functions) anchor
+confirmed to exist and cover this exact topic.
+
+**§4 (CIE RGB vs. CIE XYZ):** CIE RGB has physically realizable primaries but needs negative
+coordinates for some real colors; CIE XYZ guarantees non-negative coordinates but its "primaries"
+are not physically realizable — confirmed directly against Lecture 3 slides 36–38 and 51 ("CIE XYZ
+only needs positive coordinates, but need primaries with negative light. sRGB must use physical
+(non-negative) primaries, but needs negative coordinates for some colors."). "No basis can have
+both" framed as a geometric fact about the achievable-color cone, not an arbitrary limitation —
+consistent with the same slide's "Fundamental problem" framing.
+
+**§5 (CIE xy chromaticity):** x=X/(X+Y+Z), y=Y/(X+Y+Z), and the "perspective projection that
+discards luminance, keeps chromaticity" framing — confirmed directly against Lecture 3 slides 40–41
+(identical formulas and the (X,Y,Z)↔(x,y,Y) framing). [CIE 1931 color space#CIE xy chromaticity
+diagram](https://en.wikipedia.org/wiki/CIE_1931_color_space#CIE_xy_chromaticity_diagram_and_the_CIE_xyY_color_space)
+anchor confirmed to exist and match.
+
+**§6 (color gamuts) — Fig. 29:** three real primaries sweep out a triangle via convex combination;
+sRGB's gamut is exactly such a triangle; points outside it need a negative coordinate — confirmed
+directly against Lecture 3 slides 43–48, including the "sRGB impossible colors" vs. "sRGB
+realizable colors" region labels the notes' framing exactly mirrors. **Diagram (Fig. 29):** the
+schematic horseshoe-shaped spectral locus with an inscribed R/G/B triangle and one marked point
+outside the triangle but inside the horseshoe — the triangle's approximate corner positions (R
+lower-right, G near top, B lower-left) correctly match the real sRGB primaries' rough position on
+the CIE diagram (matching Lecture 3 slide 45's own plotted triangle), and the marked "unreproducible"
+point sits in the region above/right of the G–R edge, matching where slide 46 labels "sRGB
+impossible colors." Caption accurately describes what's drawn and correctly flags the diagram as
+schematic/illustrative rather than measured coordinates.
+
+**§7 (synthesis):** restates §4 and §6's already-confirmed claims; no new claim to check.
+
+**§8 (other capture methods):** three-sensor beam-splitter cameras (prism splits light to three
+full-resolution sensors) — confirmed against Lecture 3 slide 13 ("Three-CCD Camera," beam-splitter
+prism diagram). Foveon X3 vertically-stacked sensor (shorter wavelengths absorbed nearer the
+silicon surface, longer wavelengths deeper, letting one stacked pixel register approximate R/G/B)
+— confirmed against Lecture 3 slide 14 ("Stacked Sensor," silicon-absorption-by-wavelength chart).
+Field-sequential capture (rotating filter wheel, static-scene-only) — confirmed against slide 7
+("field sequential"). Near-IR sensitivity of ordinary silicon photodiodes (OmniVision RGB+NIR
+example) — confirmed against slides 15–17. Thermal IR requiring non-silicon photodiode materials
+(indium-, mercury-, lead-based compounds) and germanium optics — confirmed against Lecture 3 slide
+18 and independently via web search (InSb, HgCdTe, PbSe/PbS are the standard IR-detector materials;
+germanium/sapphire are standard for IR-transparent optics since silicon and ordinary glass are not).
+
+**§9 (RAW-to-finished-photo pipeline):** demosaicking→denoising→gamut mapping→gamma
+correction→compression ordering — confirmed as a reasonable, standard synthesis of the lecture's
+own pipeline box-diagram (slides 55, 127: demosaicking→denoising→gamut mapping→compression, with
+"…" between boxes) plus its separate stage list (slide 57: demosaicking, denoising, white
+balancing/autoexposure, "linear 10/12 bit to 8 bit gamma," compression) — no single slide states
+this exact 5-stage linear order with gamma placed between gamut mapping and compression, so this is
+the notes' own defensible synthesis rather than a verbatim-quoted lecture sequence; not
+contradicted by anything in the slides. Exif metadata contents (exposure, aperture, ISO, timestamp,
+lens) — confirmed against the worked Exif-data slide (54), which lists exactly these fields among
+others.
+
+**§10.1 (naive interpolation) — Fig. 30:** four-orthogonal-neighbor green-averaging formula and
+offsets — confirmed directly against Lecture 3 slide 62, which gives the identical formula
+ĝ_lin(x,y)=¼Σg(x+m,y+n) over the same four (m,n) offsets. **Diagram (Fig. 30):** the 3×3
+Bayer-pattern neighborhood (B G B / G R G / B G B centered on R, orthogonal neighbors green,
+diagonal neighbors blue) is the geometrically correct RGGB tiling around a red pixel and matches
+the standard Bayer CFA structure shown in Lecture 3 slide 6; caption accurately describes the
+four-neighbor averaging construction shown.
+
+**§10.2 (OLPF):** two birefringent layers + IR-blocking filter splitting one ray into four (a 4-tap
+optical convolution kernel), the resolution/aliasing trade-off, and "hot-rodding" — confirmed
+directly against Lecture 3 slides 65–69, matching essentially verbatim (including the D800/D800E
+identical-camera-with/without-OLPF example). [Optical low-pass filter](https://en.wikipedia.org/wiki/Optical_low-pass_filter)
+and [Birefringence](https://en.wikipedia.org/wiki/Birefringence) links confirmed to resolve
+correctly.
+
+**§10.3 (chrominance low-pass demosaicking):** procedure (naive-demosaic → RGB→Y′CbCr → median-
+filter Cb/Cr only → back to RGB) — confirmed against Lecture 3 slides 70–74. Y′CbCr matrix — see
+Corrected item #1 above (now fully confirmed against the rendered slide).
+
+**§10.4 (edge-directed interpolation, Gunturk et al. 2005):** 3×3→5×5 neighborhood progression and
+the three "insights carried forward" (larger neighborhood helps but costs more; cross-channel
+gradient info helps; nonlinear is okay but a well-designed linear filter can do better) — confirmed
+directly against Lecture 3 slides 75–77 (identical three bullet points). Citation "Gunturk et al.
+2005" — confirmed via Lecture 3's own "References and Further Reading" slide (129): "Gunturk,
+Glotzbach, Alltunbasak, Schafer, 'Demosaicking: Color Filter Array Interpolation', IEEE Signal
+Processing Magazine 2005."
+
+**§10.5 (Malvar-He-Cutler 2004) — Fig. 31:** the three interpolation-case formulas, the discrete-
+Laplacian gradient term D_R(x,y), and the published gain constants α=1/2, β=5/8, γ=3/4 — confirmed
+directly against Lecture 3 slide 78, and independently against the IPOL reimplementation of the
+original paper. Citation "Malvar, He & Cutler (2004)" — confirmed via Lecture 3's References slide:
+"Malvar, He, Cutler, 'High-quality Linear Interpolation for Demosaicing of Bayer-patterned Color
+Images', Proc. ICASSP 2004." "4 unique filter shapes" — the underlying symmetry (G-interpolation
+one shape; R/B-at-green-in-row-matching one shape; R/B-at-green-in-column-matching one shape;
+diagonal R-at-B/B-at-R one shape, with R↔B and row↔column swaps accounting for the rest) is visibly
+consistent with the six filter-kernel diagrams shown on Lecture 3 slide 79, though the specific
+attribution to "PS2" itself is Unverifiable (see below) since PS2's own slide deck was not
+available to check directly. Dyadic-rational/bit-shift claim — see Corrected item #2 above.
+**Diagram (Fig. 31):** the 5×5 Bayer neighborhood centered on a red pixel, with the four orthogonal
+green neighbors (1 px away, used in ĝ_lin) and the four axial red neighbors (2 px away, used in
+D_R) distinctly highlighted, correctly corresponds to every symbol named in the D_R formula in the
+same subsection (r(x,y), the four (m,n)={(0,±2),(±2,0)} offsets) and to Lecture 3 slide 79's own
+"G at R locations" filter kernel (a cross-shaped kernel with taps at 1- and 2-pixel offsets).
+Caption accurately describes the construction shown.
+
+**§10.6 (PSNR/MSE):** MSE = (1/3mn)ΣΣΣ[...]², PSNR = 10·log₁₀(max²/MSE), and the log/dB-scale
+rationale — standard, widely-documented error metrics; confirmed via general signal-processing
+reference conventions (consistent with, e.g., the [Peak signal-to-noise ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)
+Wikipedia page's own formula). "PSNR computed after gamma correction" as HW2's specific practice —
+Unverifiable (HW2's own assignment text was not directly available to check; see below).
+
+**§11.1 (denoising general framework):** i_denoised(x)=(1/normalizer)Σw(x,x′)i_noisy(x′) and the
+four-family taxonomy (local linear, local nonlinear, anisotropic diffusion, non-local) — confirmed
+directly against Lecture 3 slides 83–84 (identical formula and identical four-item list).
+
+**§11.2 (Gaussian filtering):** w(x,x′)=exp(−|x−x′|²/2σ²) — confirmed directly against Lecture 3
+slide 85.
+
+**§11.3 (median filtering):** i_denoised(x)=median(W(i_noisy,x)) — confirmed directly against
+Lecture 3 slide 86.
+
+**§11.4 (bilateral filtering) — Fig. 32:** the product-of-two-Gaussians weight formula and the
+"edge-aware smoothing" framing — confirmed directly against Lecture 3 slides 91–95 (identical
+formula, identical step-edge worked example, identical "digital pore removal" and "cartoonization"
+application examples). Citation "Tomasi & Manduchi, 1998" — independently confirmed via web search:
+C. Tomasi & R. Manduchi, "Bilateral Filtering for Gray and Color Images," ICCV 1998, matches the
+attribution on Lecture 3 slide 93 exactly. **Diagram (Fig. 32):** the two 1D step-edge plots
+(Gaussian kernel straddling the edge → blurred ramp output; bilateral intensity-weight term
+collapsing from ≈1 to ≈0 across the edge → step-preserving output) is an original construction (not
+a copy of the slide's own 2D-image demonstration) but correctly and consistently illustrates the
+identical underlying mechanism the same subsection's formula describes — every quantity the prose
+names (spatial Gaussian, intensity-difference Gaussian, same-side vs. cross-edge weight) has a
+labeled counterpart in the figure, and it does not contradict Lecture 3 slides 89–91's own
+demonstration of the same effect with a real image. Caption accurately describes both panels.
+
+**§11.5 (non-local means) — Fig. 33:** patch-similarity weight formula w(x,x′)=exp(−‖N(x′)−N(x)‖²/
+2σ²), the "self-similarity, not spatial proximity" framing, and the bounded-search-window rationale
+— confirmed directly against Lecture 3 slides 108–110. Citation "Buades, Coll & Morel, 2005" —
+independently confirmed via web search (Antoni Buades, Bartomeu Coll, Jean-Michel Morel, "A
+non-local algorithm for image denoising," CVPR 2005) and via Lecture 3's own References slide
+("Buades, Morel, 'A non-local algorithm for image denoising', CVPR 2005" — the References slide
+itself abbreviates to two names, but the full three-author citation the notes/artifact give is the
+paper's actual, correct authorship). PS2 implementation refinements (a: exclude self-patch from
+search; b: reassign self-patch the max neighbor weight; c: Gaussian-weighted patch distance) —
+Unverifiable as specific PS2 attributions (see below), though (c)'s general technique (a
+center-weighted patch distance) is a standard, well-documented NLM refinement. **Diagram (Fig.
+33):** the image-plane schematic (bounded dashed search window, several candidate patches at
+varying opacity representing weight, a crossed-out self-centered patch) correctly illustrates the
+prose's description that weight depends on patch similarity rather than spatial distance, and does
+not contradict Lecture 3 slide 108's own real-image demonstration of the same concept (colored
+boxes over a rendered building scene). Caption accurately describes what's drawn.
+
+**§11.6 (comparison table):** Gaussian/bilateral/non-local-means "depends on" and "behavior near
+edges" summary — confirmed directly against Lecture 3 slide 111 ("Everything put together"), which
+states the identical three-way comparison nearly verbatim.
+
+**§11.7 (BM3D):** "find similar patches, stack into 3D blocks, DCT-transform, threshold
+coefficients, invert" — confirmed directly against Lecture 3 slides 112–113. Citation "Dabov et
+al." — confirmed via Lecture 3's References slide: "Dabov, Foi, Katkovnik, Egiazarian, 'Image
+denoising by sparse 3D transform-domain collaborative filtering', IEEE Trans. Im. Proc. 2007."
+
+**§12 (gamma correction):** human luminance sensitivity "roughly γ≈2.2" — confirmed directly
+against Lecture 3 slide 114 ("sensitivity to luminance is roughly γ=2.2"). PS2's simplified
+I_out=I_in^(1/2.2) form — consistent with, though not verbatim quoted from, the same slide's "roughly
+equivalent to γ=2.2" framing (the specific PS2-sourced formula itself is Unverifiable — PS2's own
+materials were not directly available). sRGB piecewise formula and every constant (threshold
+0.0031308, slope 12.92, exponent 1/2.4, α=0.055) — confirmed **exactly**, both against Lecture 3
+slide 116 (identical piecewise formula) and independently via the [sRGB](https://en.wikipedia.org/wiki/SRGB)
+Wikipedia page's own OETF formula.
+
+**§13 (gamut mapping):** camera-native XYZ → CIE XYZ → sRGB conversion chain, and different
+gamut-mapping strategies corresponding to camera color "modes" — confirmed directly against Lecture
+3 slide 111 ("Gamut Mapping": "Internally, we transform from camera XYZ->CIE XYZ and eventually
+sRGB" and "different ways of projecting the colors lead to different camera modes").
+
+**§14 (JPEG compression):** six-stage pipeline (Y′CbCr → chroma subsample → 8×8 blocks → DCT →
+quantize → entropy/RLE code) and the three named subsampling ratios (4:4:4 no downsampling, 4:2:2
+horizontal-2×, 4:2:0 both-directions-2×) — confirmed directly against Lecture 3 slides 118–125
+(identical six-step list and identical ratio definitions). "4:2:0 ... the most common default" —
+independently confirmed via web search (4:2:0 is the standard default for JPEG and most consumer
+video codecs).
+
+**§15 (deconvolution preview):** single-slide preview, Heide et al. 2016 example image, and the
+blur-source list (defocus, geometric distortion, spherical aberration, chromatic aberration, coma)
+— confirmed directly against Lecture 3 slide 81, which lists exactly these five sources and cites
+"Heide et al. 2016" under the same blurred/deblurred lizard-image example.
+
+**§16 (looking ahead):** "sampling, filtering, deconvolution, sparse image priors" — confirmed
+directly, verbatim, against Lecture 3's closing slide 128 ("Next: Math Review").
+
+**Wikipedia links (spot-checked beyond the topical checks above):** [Image processor](https://en.wikipedia.org/wiki/Image_processor)
+(confirmed to be specifically about camera ISPs, covering Bayer transform/demosaicing/noise
+reduction/sharpening — correct target for the "ISP pipeline" glossary entry), [SRGB](https://en.wikipedia.org/wiki/SRGB)
+(confirmed, matches exactly), [Spectral power distribution](https://en.wikipedia.org/wiki/Spectral_power_distribution)
+(confirmed). `Demosaicing`, `Bayer_filter`, `YCbCr`, `Bilateral_filter`, `Non-local_means`,
+`Block-matching_and_3D_filtering`, `Gamut`, `Exif`, `JPEG`, `Discrete_cosine_transform`,
+`Chroma_subsampling`, `Deconvolution`, `Three-CCD_camera`, `Foveon_X3_sensor`,
+`Thermographic_camera`, `Optical_low-pass_filter`, `Birefringence` were checked by direct inspection
+of the article titles/subjects (all standard, unambiguous topic pages) and found to match; not
+individually re-fetched beyond that, given they are well-established, unambiguous article titles.
+
+---
+
+## Unverifiable claims
+
+- **Claim:** several small implementation details are explicitly attributed to "PS2" (the TA
+  problem session covering HW2) rather than to the lecture itself: the "9×9 median window" size
+  in §10.3, the `np.roll`-based green-interpolation shortcut in §10.1, the "4 unique filter shapes"
+  count and the dyadic-rational/bit-shift observation in §10.5 (now corrected in wording — see
+  above — but still a PS2 attribution), the three non-local-means implementation refinements in
+  §11.5 (exclude-self-patch, max-neighbor-weight reassignment, Gaussian-weighted patch distance),
+  and the "PSNR computed after gamma correction" claim in §10.6/§12.
+  **Verdict: Unverifiable.** PS2's own slide deck/handout was not linked from the course site pages
+  fetched for this audit and was not otherwise available to read directly, so none of these
+  PS2-specific claims could be independently confirmed or contradicted. This is **not** the same as
+  doubting them — several are standard, well-documented techniques in their own right (e.g.
+  Gaussian-weighted patch distance is a widely-used NLM refinement, and 9×9 is a plausible median
+  window size) — but per this audit's standard, a claim that could not be checked against any
+  source is reported as Unverifiable rather than assumed correct. **Not changed** in the markdown,
+  glossary, or artifact.
+- **Sources consulted (none resolved the PS2 material itself):** the CSC2529 course site's slides/
+  reading index (which lists only the lecture PDFs and the Demosaicing/NLM/bilateral-filtering
+  readings, not a PS2 deck), and general web search for "CSC2529 problem session 2," which did not
+  surface a public PS2 slide deck.
