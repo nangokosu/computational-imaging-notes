@@ -195,7 +195,7 @@ Even a well-engineered compound lens doesn't behave *exactly* like the thin lens
 |---|---|---|
 | **Spherical aberration** | Real lens surfaces are usually ground *spherical*, not the ideal hyperbolic shape that would perfectly focus parallel rays to one point (spherical surfaces are simply far easier to manufacture — two curved surfaces ground together mechanically settle into a sphere) | Everywhere in the field, worst for rays far from the lens's central axis |
 | **[Chromatic aberration](https://en.wikipedia.org/wiki/Chromatic_aberration)** | Glass has **[dispersion](https://en.wikipedia.org/wiki/Dispersion_(optics))** — its refractive index (and therefore its effective focal length) depends slightly on wavelength — so different colors of light focus at slightly different distances | Everywhere in the field; partially correctable with a two-element "doublet" combining glasses of different dispersion so their errors cancel |
-| **Oblique aberrations** (coma, pincushion/barrel distortion, etc.) | Departures from the paraxial assumption itself | Only away from the center of the field of view — unlike spherical/chromatic aberration, these are zero exactly on-axis and grow toward the edges |
+| **Oblique aberrations** (coma, pincushion/barrel distortion, astigmatism, field curvature, etc.) | Departures from the paraxial assumption itself | Only away from the center of the field of view — unlike spherical/chromatic aberration, these are zero exactly on-axis and grow toward the edges |
 
 A famous real-world example: the Hubble Space Telescope's primary mirror originally suffered from severe spherical aberration due to a manufacturing error, corrected in orbit by the COSTAR instrument package — a striking demonstration that "aberration" is a precise, fixable geometric fact about a specific optical system, not just a vague image-quality complaint.
 
@@ -215,6 +215,8 @@ FOV = 2 · arctan(d / (2f))
 
 Concretely (values as cited in lecture, for a full-frame sensor): an 8 mm lens gives roughly 180° FOV, a 50 mm "normal" lens gives roughly 43°, and a 1000 mm super-telephoto lens narrows to roughly 2.5° — the same sensor size, wildly different captured angle, purely as a function of focal length.
 
+> **Worked example, from lecture: the Hubble Space Telescope's focal length.** Posed as a "what's the focal length?" exercise: given Hubble's field of view (52 arcseconds ≈ 0.0144°) and its 1024×1024 CCD, running §7's FOV formula in reverse gives Hubble's actual effective focal length: **f ≈ 57.6 m** — an extreme telephoto by any camera-lens standard (compare the 1000 mm/2.5° row of the table above; Hubble's FOV is roughly 170× narrower still). The lecture pairs this with a genuinely surprising follow-up fact: Hubble's physical optical tube assembly is only **13.2 m long** — far shorter than a straight lens barrel achieving a 57.6 m focal length would need. The gap is closed by *folding* the light path: Hubble is a mirror telescope, so light travels from a large primary mirror to a smaller secondary mirror and back down the tube to the instruments, covering an effective 57.6 m of optical path inside a physically much shorter housing. This decouples *effective focal length* from *physical lens length* — a real design technique (also used in compact "mirror lenses" for cameras), not just an astronomy curiosity.
+
 ---
 
 ## 8. Aperture and F-Number
@@ -228,6 +230,8 @@ N = f / D
 ```
 
 **Components:** *f* is the lens's (intrinsic, fixed) focal length; *D* is the (setup-chosen) aperture diameter; *N* is their ratio, dimensionless. Because *N* is *f* divided by *D*, a *larger* f-number (like f/16) means a *smaller* physical opening, and a *smaller* f-number (like f/1.4) means a *larger* opening — the inverse relationship is baked directly into the formula's shape, not an arbitrary convention. Aperture sizes are conventionally spaced in **stops**, where one full stop changes the amount of light reaching the sensor by a factor of 2× (the same "stop" unit already introduced for dynamic range in Week 1 §10) — so f/2.8 lets in twice as much light as f/4, which lets in twice as much as f/5.6, and so on.
+
+**Why full stops step by √2, not by 2.** It's the aperture's *area* — proportional to *D*² (§3) — that sets how much light gets through, not *D* itself. Halving the light (one stop) means halving *D*², which means shrinking *D* itself by a factor of 1/√2; since *N* = *f*/*D* at fixed *f*, that shrinks *N* by the same 1/√2 — so each full-stop f-number is roughly **√2 times** its predecessor, not simply double it. This is exactly why the standard full-stop sequence reads f/1.4, f/2, f/2.8, f/4, f/5.6, f/8, f/11, f/16, f/22 — each number ≈ √2 × the one before it, even though the *light* halves at every step.
 
 By §3's area-scales-as-diameter-squared logic, halving the f-number (doubling the aperture diameter *D* at fixed *f*) quadruples the light reaching the sensor — the exact same 2× diameter → 4× light relationship already derived for pinholes, now expressed through *N* instead of *D* directly.
 
@@ -295,6 +299,8 @@ which is exactly the compact formula the lecture states directly:
 ```
 DOF = 2·ε·S / (m·D)
 ```
+
+**A caveat on the symmetric approximation.** This compact formula comes from the small-*k* step in the derivation above, which treats the near and far edges as equally spaced around *S*. The lecture notes directly that the *true* depth of field is slightly **asymmetric** — visible already in the exact `O = S/(1±k)` expressions above, which are not symmetric around *S* even though their *difference* is well-approximated by the symmetric formula when *k* is small. In practice, a typical acceptable circle-of-confusion threshold *ε* is on the order of **4–5 pixels**.
 
 **Notation trap, worth flagging explicitly:** the lecture's own slide writes this with the symbol *O* in place of *S* (i.e. `DOF = 2εO/(mD)`) — but as the derivation above shows, the distance that belongs in this particular formula is the *focused* distance (§9.1's *S*), since depth of field is a range *centered on the focus plane*, not a property of any one actual object's distance. Read that slide's "*O*" as meaning *S* specifically inside the DOF formula; §9.2's circle-of-confusion formula is the one where *O* genuinely means "actual object distance," a distinct, independent variable from *S*.
 
