@@ -69,7 +69,7 @@ Section 2 described the space of achievable colors abstractly, in terms of cone 
 
 **Why some matches need negative coefficients.** For many test colors, no non-negative combination of the three primaries' strengths can reproduce the test color — the observer simply cannot make the primary side look right no matter how they adjust the knobs, because the required primary mixture would need to be *more saturated* than any achievable combination of those three specific primaries allows. The experimental fix: instead of trying to subtract light from the primary mixture (physically impossible — a light source can only add photons, never remove them), the experimenter adds some amount of one primary **to the test side instead**. Adding light to the test side and matching what remains is mathematically equivalent to subtracting that same amount from the primary side — so the coefficient recorded for that primary in the final result is written as **negative**, even though what physically happened was addition, just on the other side of the equation. Repeating this matching experiment for pure test beams across the visible spectrum, and recording each primary's required coefficient (positive when added normally to the primary side, negative when it had to be added to the test side instead) at every wavelength, produces the **color matching functions** for that choice of primaries.
 
-**Whose eyes? The standard observer.** Different people's cones differ slightly, so matches made by one person don't exactly fit another. The 1931 CIE data were therefore pooled from a small panel of observers (the lecture slide says 12 people; the standard references describe the pooled data as two datasets of 10 and 7 observers) and averaged into one idealized, "typical" viewer: the **standard observer**. Think of it like a clothing size chart built from measuring a group of people: nobody is exactly "size M," but everyone can agree on what M means. Formally, the standard observer *is* its three color matching functions — every CIE number in §4–§5 means "what this averaged viewer would report," not what any single person sees.
+**Whose eyes? The standard observer.** Different people's cones differ slightly, so matches made by one person don't exactly fit another. The 1931 CIE data were therefore pooled from a small panel of observers (the lecture slide says 12 people, but the standard references describe two independent matching experiments, one with 10 observers and one with 7, so 17 people in total, whose averaged results were combined) and averaged into one idealized, "typical" viewer: the **standard observer**. Think of it like a clothing size chart built from measuring a group of people: nobody is exactly "size M," but everyone can agree on what M means. Formally, the standard observer *is* its three color matching functions — every CIE number in §4–§5 means "what this averaged viewer would report," not what any single person sees.
 
 ---
 
@@ -350,7 +350,7 @@ The gradient term is a **discrete Laplacian** (local curvature/second-difference
 D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (−2,0), (2,0)}
 ```
 
-(D_G and D_B are defined identically, substituting g or b for r.)
+(D_B is defined identically, substituting b for r. D_G is not: the paper computes it over a 9-point region, the green pixel itself, its four diagonal green neighbors, and the green samples two pixels away, with different weights along the row and the column. That is why the two "R at a G pixel" filters are not simple crosses.)
 
 **Term-by-term:** ĝ_lin, r̂_lin are the plain §10.1 naive-average estimates; D_R(x,y) is "the red channel's value right here, minus the average of red's value two pixels away in each direction" — a measure of local curvature in red, computable exactly at this pixel because red *is* the channel actually sampled there (for the first formula's case). α, β, γ are fixed gain constants controlling how strongly that cross-channel curvature correction is trusted.
 
@@ -553,7 +553,7 @@ sharpened  = I + k · (I − blur(I))
 >
 > **Same step, bilateral blur** (σ = 1 px, σ_i = 0.1): the bilateral filter preserves the edge (§11.4), so blur(I) equals the input, the detail layer is 0 everywhere, and the sharpened output is the unchanged 0.2 / 0.8 step. No halo.
 >
-> **Add fine texture** (±0.02 alternating pixel to pixel on both sides of the step): with either blur, the texture amplitude in flat regions roughly doubles, 0.02 → 0.0407 (Gaussian) and 0.02 → 0.0399 (bilateral). The texture differences (0.04) are small relative to σ_i, so the bilateral filter blurs the texture like a Gaussian would, and it ends up in the detail layer. But next to the edge, the Gaussian version still overshoots to −0.02 and 1.02, while the bilateral version stays within 0.1589–0.8411, just the plateaus plus the amplified texture.
+> **Add fine texture** (±0.02 alternating pixel to pixel on both sides of the step): with either blur, the texture amplitude in flat regions roughly doubles, 0.02 → 0.0397 (Gaussian) and 0.02 → 0.0389 (bilateral). The texture differences (0.04) are small relative to σ_i, so the bilateral filter blurs the texture like a Gaussian would, and it ends up in the detail layer. But next to the edge, the Gaussian version still overshoots to −0.02 and 1.02, while the bilateral version stays within 0.1612–0.8388, just the plateaus plus the amplified texture.
 
 **The upshot.** With a Gaussian blur, the detail layer contains both texture *and* the edges themselves, so sharpening enhances texture but also draws halos around strong edges. With a bilateral blur, the blur keeps strong edges, so the detail layer holds mostly fine texture. Sharpening then enhances texture and local contrast with much less halo. That is the difference slide 100's two outputs illustrate. (Conceptual only; how far to push *k* and σ is a design choice.)
 
@@ -618,9 +618,9 @@ A camera sensor's native color response is defined by its own physical filters, 
 
 ```
 sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
-[0.4124  0.3576  0.1805]        [ 3.2410  −1.5374  −0.4986]
-[0.2126  0.7152  0.0722]        [−0.9692   1.8760   0.0416]
-[0.0193  0.1192  0.9505]        [ 0.0556  −0.2040   1.0570]
+[0.4124  0.3576  0.1805]        [ 3.2406  −1.5372  −0.4986]
+[0.2126  0.7152  0.0722]        [−0.9689   1.8758   0.0415]
+[0.0193  0.1192  0.9505]        [ 0.0557  −0.2040   1.0570]
 ```
 
 **Term-by-term:**
@@ -631,11 +631,11 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 
 > **Worked example: a color sRGB can't show.** Take Display P3's green primary (§7), a real color that P3 screens display. Its XYZ is (0.2657, 0.6917, 0.0451), chromaticity xy = (0.2650, 0.6900). Through the XYZ → sRGB matrix:
 >
-> **linear sRGB = (−0.2249, 1.0421, −0.0786)**
+> **linear sRGB = (−0.2249, 1.0420, −0.0786)**
 >
 > Red and blue come out negative and green exceeds 1. No sRGB display can produce this: the color lies outside the sRGB triangle, whose green corner is at (0.300, 0.600).
 
-**Strategy 1: clipping.** Clamp each channel to [0, 1] separately. Here, (−0.2249, 1.0421, −0.0786) → (0, 1, 0), which is simply sRGB's own green primary at xy = (0.3000, 0.6000), with luminance Y = 0.7152 instead of the original 0.6917. It is simple and cheap, but it has costs:
+**Strategy 1: clipping.** Clamp each channel to [0, 1] separately. Here, (−0.2249, 1.0420, −0.0786) → (0, 1, 0), which is simply sRGB's own green primary at xy = (0.3000, 0.6000), with luminance Y = 0.7152 instead of the original 0.6917. It is simple and cheap, but it has costs:
 - It **shifts hue and brightness**, because each channel is changed independently.
 - It **collapses detail**: every out-of-gamut color that clips to the same corner becomes identical, so gradations in a saturated region (a flower petal, a neon sign) flatten into a single patch.
 
