@@ -404,8 +404,8 @@ Corrected items (one line each):
    (3.2410, −1.5374, … 0.0556), not the published IEC 61966-2-1:1999 values (3.2406, −1.5372, …
    0.0557) that the text claims and that inverting the given forward matrix produces. Corrected in
    the markdown and the artifact.
-2. §13 P3-green worked example, green channel: 1.0421 → **1.0420** (follows from fix 1; the red
-   and blue channels, −0.2249 and −0.0786, are unchanged). Both occurrences, markdown and artifact.
+2. §13 P3-green worked example, green channel: briefly changed 1.0421 → 1.0420, then **reverted to 1.0421**
+   after script recomputation (see the entry below). Red and blue, −0.2249 and −0.0786, unchanged.
 3. §10.5 "D_G and D_B are defined identically [to D_R]" → D_B is; **D_G is not**. The paper
    computes Δ_G over a 9-point region, which is why the R-at-G filters are not crosses. Markdown
    corrected; artifact sentence qualified and a short note added.
@@ -480,12 +480,14 @@ while the plotted outputs are amber and teal.
   draft, 1997](https://ftp.osuosl.org/.1/libpng/documents/proposals/history/sRGB-iec6196621cd1.pdf)
   (eq. 5–6, Table 1).
 
-### 2. §13 — P3 green through the matrix: green channel 1.0421 → 1.0420
+### 2. §13 — P3 green through the matrix: green channel confirmed 1.0421 (an audit change to 1.0420 was reverted)
 
 - Display P3 green primary XYZ = (0.2656677, 0.6917385, 0.0451134), the green column of the P3
   (D65) RGB→XYZ matrix. Its xy is (0.2650, 0.6900). Confirmed.
-- Through the corrected matrix: R = −0.2249, **G = 1.0420**, B = −0.0786. The 7-decimal 2003
-  matrix gives the same values to 4 decimals. The old G = 1.0421 came from the draft matrix.
+- Script recomputation (2026-09-23): the exact inverse derived from sRGB primaries + D65 gives
+  (−0.224940, **1.042057**, −0.078636), and the 7-decimal matrix gives (−0.224904, 1.042081, −0.078655).
+  Both round to G = **1.0421**, so the hand-derived 1.0420 was a rounding slip and was reverted. The
+  published 4-decimal matrix gives (−0.2247, 1.0419, −0.0786), which the notes now mention alongside.
 - The downstream numbers are unchanged and were re-derived: blend fraction t =
   0.2249/(0.2249 + 0.6917) = 24.54%; result (0, 0.9561, 0.1104); xy (0.2843, 0.5436), which lies on
   sRGB's G–B edge; luminance 0.6917. An independent P3→sRGB matrix (endavid.com) gives the P3-green
