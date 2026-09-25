@@ -12,6 +12,7 @@ Running, beginner-level study notes for CSC2529 (Computational Imaging), written
 | [`week2-study-notes.md`](./week2-study-notes.md) | Week 2 — optical principles: lenses, focal length, image formation, diffraction, and the pinhole camera. |
 | [`week3-study-notes.md`](./week3-study-notes.md) | Week 3 — color science (spectral sensitivity, CIE color matching, chromaticity, gamuts) and the camera image processing pipeline: demosaicking, denoising, gamma correction, gamut mapping, and JPEG compression. |
 | [`glossary.md`](./glossary.md) | A single, cumulative glossary of course terminology, grouped by the week each term is (or will be) covered. |
+| [`formulas.md`](./formulas.md) | A single, cumulative reference of important formulas, grouped by week — each with the formula, a term-by-term breakdown, and what it computes. |
 | [`CLAUDE.md`](./CLAUDE.md) | The project's own working notes for how these are generated and kept up to date. |
 | [`FACT_AUDIT.md`](./FACT_AUDIT.md) | Verification log of factual claims against external sources. |
 
