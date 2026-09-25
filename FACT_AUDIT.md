@@ -412,6 +412,27 @@ discusses read noise in digital cameras — correct target. `Numerical_aperture`
   [A Closer Look at The Milkmaid (drawpaintacademy.com)](https://drawpaintacademy.com/the-milkmaid/).
 
 ---
+
+## Addendum — 2026-09-24: §9.3 units trap (new passage)
+
+**Scope:** only the new "Units trap: the threshold is stated in pixels, but the formula needs a
+length" paragraph and bullets in §9.3, and the new glossary entry **Pixel pitch**.
+
+**Summary: 6 claims audited — 6 confirmed / 0 corrected.**
+
+- *m* and |*O* − *S*|/*O* are dimensionless, so *c* = *m·D·|O − S|/O* carries *D*'s length unit,
+  and *k* = *ε*/(*mD*) dimensionless forces *ε* to be a length. Confirmed by dimensional analysis.
+- Pixel pitch = center-to-center pixel spacing = sensor width ÷ pixels across; equal from height
+  for square pixels; ε(length) = ε(pixels) × pitch. Confirmed (definition; Wikipedia Dot pitch,
+  which the `Pixel_pitch` link redirects to, defines pitch for pixel-based devices generally).
+- Illustrative example: 24 mm / 4000 px = 0.006 mm = 6 µm; 3 px × 0.006 mm = 0.018 mm. Arithmetic
+  confirmed. Uses made-up numbers, not a homework camera, so the homework rule is respected.
+- *D* = *f*/*N* carries *f*'s unit; *m* = *S′*/*S* matches §4.1 (line 151). Confirmed.
+- "Typically a few µm." Confirmed (e.g. the lecture's own 5D Mark III example uses 7.5 µm).
+- **Wikipedia link:** `Pixel_pitch` resolves, via redirect, to *Dot pitch*. Kept, because the
+  article defines pitch for pixel-based devices in general, but it is display-oriented.
+
+---
 ---
 
 # Week 3 Audit — 2026-09-23
@@ -779,3 +800,76 @@ checked by title only, not fetched. See the corrected item 7 for the two dead an
    and the field-sequential capture description (not independently sourced this run).
 8. **§9 / §11.7:** Exif field list, the 5-stage pipeline order, and the BM3D description were not
    independently fetched this run.
+
+---
+
+## Addendum — 2026-09-24: new §9.1, §10.1, §10.3, §11.5 passages and glossary entries
+
+**Scope:** only the newly added passages: §9.1 "Opening a real camera RAW file (HW2 bonus)",
+the §10.1 `interp2d` library warning, the §10.3 skimage `rgb2ycbcr` library note, the §11.5
+"Translating HW2's notation into these notes'" table and paragraph, and the glossary entries
+RAW file / dcraw, Black level / white level, White balance, and NLM filtering parameter *h* /
+normalizer *Z(i)*.
+
+**Summary: 27 claims audited — 25 confirmed / 2 corrected.**
+
+Corrected claims:
+1. **§9.1 dcraw table, `-D`:** "Output the mosaic totally unprocessed: no black subtraction,
+   scaling, demosaicking or color" → "Output the mosaic with no black subtraction, scaling,
+   demosaicking or color conversion. The gamma curve and automatic brightening applied when the
+   file is written still happen unless `-4` is added". In dcraw.c 9.28, `-D` only skips
+   `scale_colors()`, demosaicking and the color matrix. `write_ppm_tiff()` still applies the
+   99th-percentile auto-brightening and the default 2.222/4.5 gamma curve to every output
+   (`-4` = `-6 -W -g 1 1` turns both off).
+2. **§9.1 dcraw table, `-d`:** "with black-level subtraction and scaling applied" → "with
+   black-level subtraction and scaling (including the white-balance multipliers) applied".
+   In `scale_colors()`, `scale_mul` combines the white-balance multipliers `pre_mul` with the
+   65535/(maximum − black) scaling.
+
+Confirmed claims:
+- **dcraw options** (usage text in dcraw.c v9.28, rev. 1.478): `-i -v` "Identify files and show
+  metadata". Verbose identify prints Camera, Filter pattern, Daylight and Camera multipliers.
+  `-4` "Linear 16-bit, same as -6 -W -g 1 1". `-T` "Write TIFF instead of PPM". Document mode
+  writes `.pgm`, so "PPM/PGM" is correct. `-w` "Use camera white balance, if possible".
+  `-o 0` = raw color space. `-q 0` → `lin_interpolate()` (bilinear), 1 VNG, 2 PPG, 3 AHD.
+- **dcraw default output** applies auto-brightening (unless `-W`), gamma 2.222/4.5, the sRGB
+  matrix (`output_color=1`) and AHD demosaicking (`quality = 2 + !fuji_width` = 3). Confirmed
+  from the source.
+- **rawpy attributes** `raw_image_visible`, `raw_pattern`, `black_level_per_channel`,
+  `white_level` and `camera_whitebalance` all exist with the stated meanings (rawpy API docs).
+  LibRaw's processing methods are "inherited from Dave Coffin's dcraw.c" (libraw.org/about).
+- RAW extensions (CR2/CR3, NEF, ARW, DNG); 12–14-bit values. Black-level pedestal. Normalizing
+  by (white − black). White balance as a diagonal matrix. Camera RGB → sRGB as a 3×3 change of
+  basis. Pipeline order. Confirmed (Wikipedia Raw image format, Color balance; dcraw.c order:
+  scale_colors → demosaic → convert_to_rgb → gamma on output).
+- **§10.1 SciPy:** on SciPy 1.18.1, calling `interp2d` raises `NotImplementedError`: "`interp2d`
+  has been removed in SciPy 1.14.0 … nearly bug-for-bug compatible replacements are
+  `RectBivariateSpline` on regular grids". `RectBivariateSpline(kx=1, ky=1)` matched
+  `RegularGridInterpolator(method="linear")` exactly (max difference 0.0) on a random 4×4 grid.
+  With `bounds_error=False, fill_value=None`, `RegularGridInterpolator` returned 25.0 for a
+  linear plane at an out-of-grid point (exact value 25), so it extrapolates linearly.
+  `griddata(method="linear")` handles scattered (checkerboard) samples. Confirmed.
+- **§10.3 scikit-image 0.26.0 `rgb2ycbcr`:** over all 8 RGB-cube corners (an affine map reaches
+  its extremes at vertices), Y′ ∈ [16, 235] and Cb, Cr ∈ [16, 240]. Gray gives Cb = Cr = 128.
+  Red (1, 0, 0) gives (81.481, 90.203, 240.000). The `ycbcr2rgb` round trip has a max error of
+  2.8 × 10⁻¹⁶. Confirmed.
+- **§11.5 Buades, Coll & Morel, CVPR 2005 ("A non-local algorithm for image denoising", §3):**
+  w(i, j) = (1/Z(i))·exp(−‖v(N_i) − v(N_j)‖²₂,ₐ / h²), with Z(i) the normalizing sum and h "a
+  degree of filtering". The distance is a "weighted Euclidean distance" with "a > 0 … the
+  standard deviation of the Gaussian kernel", so the original paper does use a Gaussian-weighted
+  patch distance. exp(−d²/h²) = exp(−d²/(2σ²)) ⇔ h² = 2σ². Algebra confirmed. Here σ is the
+  weight-width symbol in these notes' formula, not the noise σ in the paper's
+  E‖·‖² = ‖·‖² + 2σ² identity. The paper sets h proportional to the noise level (h = 10σ for
+  its Gaussian-weighted distance). This supports the notes' qualitative "scale of *h*"
+  paragraph. The notes give no specific value, per the homework rule.
+- **Wikipedia links:** `Raw_image_format`, `Dcraw` and `Color_balance` resolve to matching
+  articles.
+
+Sources: dcraw.c v9.28 (mirror of Dave Coffin's source, github.com/ncruces/dcraw; the
+dechifro.org original failed TLS verification from this machine),
+https://letmaik.github.io/rawpy/api/rawpy.RawPy.html, https://www.libraw.org/about, the installed
+SciPy 1.18.1 and scikit-image 0.26.0, the Buades–Coll–Morel CVPR 2005 PDF, and Wikipedia.
+
+**Uncertain / not checked:** what the HW2 and PS2 handouts themselves say (that `interp2d` is
+suggested, HW2's exact weight formula and notation, HW2 applying YCbCr to linear data). The
+handouts were not available.

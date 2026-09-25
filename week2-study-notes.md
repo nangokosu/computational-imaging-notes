@@ -310,6 +310,19 @@ DOF = 2·ε·S / (m·D)
 
 **A caveat on the symmetric approximation.** This compact formula comes from the small-*k* step in the derivation above, which treats the near and far edges as equally spaced around *S*. The lecture notes directly that the *true* depth of field is slightly **asymmetric** — visible already in the exact `O = S/(1±k)` expressions above, which are not symmetric around *S* even though their *difference* is well-approximated by the symmetric formula when *k* is small. In practice, a typical acceptable circle-of-confusion threshold *ε* is on the order of **4–5 pixels**.
 
+**Units trap: the threshold is stated in pixels, but the formula needs a length.** In *c* = *m·D·|O − S|/O*, the magnification *m* and the ratio |*O* − *S*|/*O* are both dimensionless, so *c* comes out in whatever length unit *D* is in (mm, if *D* is in mm). It is a physical diameter on the sensor surface, not a pixel count. The same holds for *ε* inside *k* = *ε*/(*mD*): *k* must be dimensionless, so *ε* has to be a *length* in the same unit as *D*. A threshold given as "*ε* pixels" must first be converted:
+
+```
+pixel pitch   = sensor width / number of pixels across that width
+ε (length)    = ε (pixels) × pixel pitch
+```
+
+- **Pixel pitch** is the center-to-center spacing of pixels on the sensor, a length (typically a few µm). It's fixed by the camera, not something you choose.
+- Computing it from the *height* and the vertical pixel count gives the same value when pixels are square (the usual case), a useful self-check that you've read the sensor's specifications correctly.
+- Illustrative numbers (not any homework's camera): a 24 mm-wide sensor with 4000 pixels across has a pitch of 24/4000 = 0.006 mm (6 µm), so a 3-pixel threshold is 3 × 0.006 = 0.018 mm on the sensor.
+
+The other inputs need the same care. *D* = *f*/*N* (§8) comes out in the unit of *f*. *m* for the focused pair comes from §4.1 (*m* = *S′*/*S*, with *S′* from the thin lens equation), so *f*, *S* and *S′* must all be in one unit too: mixing meters and millimeters is the most common way to get a depth of field that's off by a factor of 1000.
+
 **Notation trap, worth flagging explicitly:** the lecture's own slide writes this with the symbol *O* in place of *S* (i.e. `DOF = 2εO/(mD)`) — but as the derivation above shows, the distance that belongs in this particular formula is the *focused* distance (§9.1's *S*), since depth of field is a range *centered on the focus plane*, not a property of any one actual object's distance. Read that slide's "*O*" as meaning *S* specifically inside the DOF formula; §9.2's circle-of-confusion formula is the one where *O* genuinely means "actual object distance," a distinct, independent variable from *S*.
 
 **Why a small f-number gives shallow depth of field.** Because *c* (§9.2) grows in proportion to aperture diameter *D*, and *D* = *f*/*N* (§8, rearranged), a *smaller* f-number (bigger aperture, more light) makes both *c* and the DOF-shrinking factor *mD* larger — so the acceptable-blur range shrinks. This is the classic depth-of-field trade-off: more light (small *N*) inherently costs a shallower zone of acceptable sharpness.

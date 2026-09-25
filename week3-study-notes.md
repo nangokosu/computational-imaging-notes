@@ -232,6 +232,45 @@ Each subsequent section below (§10–§14) covers one pipeline stage in the dep
 
 **Exif metadata.** Alongside the pixel data itself, a finished image file typically stores **Exif** ("exchangeable image file format") metadata — capture settings and context (exposure time, aperture, ISO, timestamp, lens model, and similar) embedded directly in the file next to the pixel data.
 
+### 9.1 Opening a real camera RAW file (HW2 bonus)
+
+HW2's provided images are already-extracted mosaics. A RAW file straight off a real camera needs a few extra steps before the pipeline above can run on it, and it helps to know what they are before comparing your own pipeline's output with a reference decoder.
+
+**What a RAW file is.** A camera's RAW file (`.CR2`/`.CR3` for Canon, `.NEF` for Nikon, `.ARW` for Sony, or the open `.DNG` format) is a container holding:
+- the sensor's mosaic values, essentially unprocessed: one number per pixel, usually 12–14 bits (Week 2 §14);
+- the metadata needed to interpret them: Exif (above), the color filter layout, black and white levels, the white-balance gains the camera chose, and a color matrix.
+
+The formats differ between manufacturers, so you need a decoder to get at the numbers.
+
+**`dcraw`** is the classic free command-line decoder that HW2 points to. It can either dump the raw mosaic as-is or run its own complete pipeline. **`rawpy`** is a Python wrapper around LibRaw (a library built on dcraw's code) that exposes the same data as NumPy arrays, e.g. `raw_image_visible` (the mosaic), `raw_pattern` (which filter color sits at each position of the repeating tile), `black_level_per_channel`, `white_level`, and `camera_whitebalance`.
+
+**The steps between a RAW file and the §9 pipeline**, in order:
+
+1. **Check the mosaic layout.** Not every camera is RGGB. BGGR, GRBG and GBRG are the same 2×2 tile starting at a different corner. Read it from the metadata (`dcraw -i -v`, or `rawpy`'s `raw_pattern`) rather than assuming, or every demosaicking formula in §10 will put colors in the wrong places.
+2. **Subtract the black level.** A pixel that received no light doesn't read 0: the electronics add a fixed offset (a "pedestal") so noise below it isn't clipped off. Subtract that **black level** from every pixel first. This is the same idea as the dark frame above, using a per-camera constant instead of a measured frame.
+3. **Normalize by the white level.** Divide by (white level − black level), so a saturated pixel (full-well capacity, Week 2 §13.4) maps to 1 and the image is on a [0, 1] linear scale.
+4. **White balance.** Multiply each color channel by its own gain so that an object that's neutral gray in the scene comes out with R = G = B. Without it, images take on the color cast of the light source (orange under indoor bulbs, blue in shade). The camera's "as shot" gains are stored in the file.
+   - *Linear-algebra view:* white balance is multiplication by a **diagonal matrix** diag(*g_R*, *g_G*, *g_B*). Each color basis vector is scaled by its own gain; no channel is mixed into another.
+5. **Demosaic** (§10), and optionally **denoise** (§11). These are the steps HW2 asks you to implement.
+6. **Convert camera RGB to a standard color space.** The sensor's own R, G, B filters don't match sRGB's primaries (§6). A 3×3 matrix stored in or derived from the file's metadata converts them.
+   - *Linear-algebra view:* a **change of basis** from the camera's color basis to sRGB's, exactly like §4's RGB → XYZ conversions.
+7. **Gamma-encode** (§12) and quantize to 8 bits for display.
+
+**Useful `dcraw` options** for building a fair comparison:
+
+| Option | What it does |
+|---|---|
+| `-i -v` | Print the file's metadata (camera, filter pattern, white-balance multipliers) without decoding |
+| `-D` | Output the mosaic with no black subtraction, scaling, demosaicking or color conversion. The gamma curve and automatic brightening applied when the file is written still happen unless `-4` is added |
+| `-d` | Like `-D`, but with black-level subtraction and scaling (including the white-balance multipliers) applied ("document mode") |
+| `-4` | Output linear 16-bit data (no gamma curve, no automatic brightening) |
+| `-T` | Write a TIFF instead of dcraw's default PPM/PGM image |
+| `-w` | Use the camera's own ("as shot") white balance |
+| `-o 0` | Leave colors in the camera's raw color space (skip step 6) |
+| `-q 0`…`-q 3` | Demosaicking quality, from bilinear interpolation (0) to AHD (3), an adaptive edge-aware method |
+
+**Comparing like with like.** dcraw's default output also brightens the image and applies its own gamma curve, color matrix and demosaicking method. If you compare it against a pipeline that skips any of those steps, most of the difference you see will come from the skipped step rather than the demosaicking or denoising you implemented. Either switch the matching dcraw steps off (e.g. `-4 -o 0`), or implement them in yours, before judging the result.
+
 ---
 
 ## 10. Demosaicking
@@ -249,6 +288,11 @@ The simplest approach: estimate each missing channel value at a pixel by averagi
 **Term-by-term:** ĝ(x,y) is the *estimated* (hatted, meaning "reconstructed, not directly measured") green value at pixel location (x,y); the sum runs over the four orthogonal offsets, i.e. the four immediate neighbors; each g(x+m,y+n) is an actually-measured green value at one of those neighboring pixels (guaranteed to exist at exactly those four offsets by the Bayer pattern's regular structure). Red and blue are filled in the same way — average of the nearest same-color neighbors — though the exact offset pattern differs slightly since red and blue pixels are sparser (one per 2×2 tile, vs. green's two per tile) and diagonally rather than orthogonally arranged relative to each other in places.
 
 **Implementation note (from PS2).** PS2 suggests two equivalent routes: calling a general 2D interpolation routine (e.g. `scipy.interpolate.interp2d`) separately on each channel's known-sample locations, or — specifically for green, since it's easier — averaging several `np.roll`-shifted copies of the sparse green channel (shifting the array up/down/left/right by one pixel and averaging the shifted copies at each missing location reproduces exactly the four-neighbor average above without needing a general-purpose interpolator). Described here as a technique, not worked through as running code.
+
+**Library warning: `interp2d` no longer exists.** `scipy.interpolate.interp2d`, which both PS2 and HW2 suggest, was removed in SciPy 1.14.0. Calling it on any current SciPy raises `NotImplementedError`. The replacements depend on how the known samples are laid out:
+- **Red and blue:** their known samples sit on a regular sub-grid (e.g. every other row *and* every other column). A regular-grid interpolator fits this directly: `scipy.interpolate.RegularGridInterpolator` with `method="linear"`, or `RectBivariateSpline` with `kx=1, ky=1` (degree-1 splines, i.e. plain linear interpolation along each axis), which SciPy's own error message names as the closest drop-in replacement.
+- **Green:** its known samples form a checkerboard, which is *not* a rectangular grid. Use a scattered-data interpolator (`scipy.interpolate.griddata` with `method="linear"`), or the `np.roll` four-neighbor average above, which is simpler and exactly equivalent at interior pixels.
+- **Edges:** a sub-grid's samples don't reach every border pixel, so whichever routine you use needs a stated rule there. For example, `RegularGridInterpolator(..., bounds_error=False, fill_value=None)` extrapolates linearly instead of raising an error.
 
 Naive interpolation like this tends to introduce visible color fringing/artifacts near edges — each channel is interpolated *independently*, ignoring the fact that a real edge should show up consistently across all three channels at once. §10.3–§10.5 address this in increasingly sophisticated ways.
 
@@ -324,6 +368,15 @@ and the inverse, exactly as the lecture states it structurally:
 - Each row of M is a **linear functional**: a fixed vector you take the dot product with, just like §1's SSF. Row 1 reads off luma; rows 2 and 3 read off the two color differences.
 - Rows 2 and 3 each sum to 0, so any gray (R = G = B) gets 0 from them, which leaves Cb = Cr = 128.
 - The first column of M⁻¹ is (0.004566, 0.004566, 0.004566), i.e. 1/219 in every channel. Changing Y′ alone therefore moves R, G and B by equal amounts, straight along the gray axis. Conversely, Y′ is its own coordinate, so changing Cb or Cr leaves it untouched. That is why smoothing only Cb and Cr can't disturb luma detail.
+
+**Library note: skimage's `rgb2ycbcr` uses this same 8-bit-style scale.** HW2 suggests `skimage.color.rgb2ycbcr`, which applies exactly the formula above. So even when you pass R, G, B as floats in [0, 1], the output is *not* in [0, 1]:
+- Y′ runs from **16** (black) to **235** (white).
+- Cb and Cr run from **16** to **240**, with **128** meaning "no color."
+
+(Checked on scikit-image 0.26: pure black → Y′ = 16, pure white → Y′ = 235, and `ycbcr2rgb` returns the original [0, 1] values to within floating-point round-off.) Practical consequences:
+- Always convert back with `skimage.color.ycbcr2rgb`, not by dividing by 255 yourself. The offsets (16, 128, 128) must be subtracted *before* the matrix is undone, exactly as in the inverse formula above.
+- A median filter or linear low-pass filter on Cb/Cr works the same at any scale: rescaling values doesn't change which neighbor is the median, and a normalized linear filter commutes with rescaling. But any parameter you set in *intensity units* (a threshold, or an intensity σ like the bilateral filter's σ_i, §11.4) has to be chosen for the 16–240 scale, not for [0, 1].
+- HW2 applies this conversion to the *linear* demosaicked image, before gamma correction (§12). Strictly, the primed "Y′" means luma from gamma-encoded values, so here it's a luminance-like channel of linear light instead. That doesn't affect the purpose: the matrix still separates a brightness channel from two color-difference channels, which is all chroma filtering needs.
 
 *(Fact-audit note: the lecture's own slide (p. 73) gives this matrix as Y′ = 65.48R + 128.55G + 24.97B, Cb = −37.80R − 74.20G + 112.00B, Cr = 112.00R − 93.79G − 18.21B, applied to R,G,B on a 0–255 scale and then multiplied by 257/65535 — which equals exactly 1/255 since 255×257 = 65535. That is algebraically the same standard BT.601 matrix given above for R,G,B scaled to [0,1], just re-expressed for 8-bit inputs; a prior draft of this note flagged the slide's coefficients as unreadable, but a fact-checking pass against the rendered slide image confirms the match, including the internal check that the Y′ row's three coefficients sum to 219.00 as BT.601 requires.)*
 
@@ -584,6 +637,26 @@ where N(x) denotes the patch (small neighborhood) centered at x, and the differe
   patch distance = Σ_{m,n} k_mn · (v(N_i)_mn − v(N_j)_mn)²
   ```
   where k_mn are fixed Gaussian weights over the patch's own spatial layout (larger near the patch center, smaller toward its edges) and v(N_i)_mn, v(N_j)_mn are the pixel values at offset (m,n) within patches N_i and N_j. This is stated plainly here as exactly what HW2's own assignment text asks for — not solved further.
+
+**Translating HW2's notation into these notes'.** HW2 writes the non-local means weight as
+
+```
+w(i, j) = (1 / Z(i)) · exp( −‖v(N_i) − v(N_j)‖² / h² ),   for all i ≠ j
+```
+
+which is the same formula as the one above, in different symbols:
+
+| HW2 symbol | Meaning | Same thing in these notes |
+|---|---|---|
+| *i*, *j* | The pixel being denoised, and a candidate pixel | *x*, *x′* |
+| *N_i*, *N_j* | The small patch (window) around each pixel | N(*x*), N(*x′*) |
+| v(*N_i*) | That patch's pixel values, stacked into one vector | N(*x*)'s values |
+| ‖v(*N_i*) − v(*N_j*)‖² | Squared Euclidean distance between the two patch vectors | ‖N(*x′*) − N(*x*)‖² |
+| *h* | **Filtering parameter**: how different two patches may be before their weight collapses toward 0; larger *h* averages more aggressively | Plays σ's role: *h*² = 2σ², i.e. *h* = √2·σ |
+| *Z*(*i*) | Sum of the unnormalized exp(…) weights over every candidate *j* in the search window | §11.1's *normalizer*: dividing by it makes the weights sum to 1, so the result is a true weighted average |
+| "for all *i* ≠ *j*" | The pixel's own patch is left out of the search | Tip (a) above; tip (b) then gives it the largest neighbor weight |
+
+HW2's second formula replaces the plain squared distance with tip (c)'s k_mn-weighted sum. That Gaussian-weighted patch distance is also the form used in Buades, Coll & Morel's original paper. **Scale of *h*:** if the k_mn sum to 1, the weighted distance is a weighted *mean* squared difference per pixel, so a sensible *h* is on the scale of the per-pixel noise level. If the k_mn are left unnormalized (or the plain sum is used), the distance grows with patch size, and *h* has to grow with it to keep the same behavior. Choosing the actual value is part of the assignment.
 
 ### 11.6 Comparison: Gaussian vs. Bilateral vs. Non-Local Means
 
