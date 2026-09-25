@@ -293,11 +293,57 @@ charge shifting; CMOS: per-pixel amplifiers, multiplexed readout) and the sensit
 speed/cost trade-off — confirmed directly against Lecture 2 slides 111–113, which state the
 identical trade-off (CCD: "higher sensitivity, lower noise"; CMOS: "faster read-out, lower cost").
 
-**§12 (exposure, ISO):** Exposure as accumulation time, independent of aperture/ISO — confirmed
-via [Exposure (photography)](https://en.wikipedia.org/wiki/Exposure_(photography)) and Lecture 2
-slide 119. ISO as pre-ADC analog gain that amplifies noise along with signal — confirmed via
-[Film speed](https://en.wikipedia.org/wiki/Film_speed) and Lecture 2 slide 118 ("analog gain
-applied before ADC!").
+**§13 (exposure, exposure time, ISO) — re-audited 2026-09-24 after the section was rewritten
+(was §12).** The earlier entry here ("exposure as accumulation time, independent of aperture/ISO")
+is superseded: the notes now use the strict definition *H* = *E*·*t*, which depends on aperture
+through *E* and not on ISO. Confirmed:
+- *H* = *E*·*t* and the camera equation *E* = (π/4)·*L*/*N*² (lens focused at infinity, no
+  transmission losses; real lenses add T-stop losses and cos⁴ falloff) — [F-number § Camera
+  equation](https://en.wikipedia.org/wiki/F-number), [Vignetting](https://en.wikipedia.org/wiki/Vignetting).
+- Equivalent exposures depend only on *t*/*N*²; EV = log₂(*N*²/*t*), one EV = one stop —
+  [Exposure value](https://en.wikipedia.org/wiki/Exposure_value).
+- Reciprocity holds for digital sensors (their long-exposure limit is dark current, not reciprocity
+  failure) — [Reciprocity (photography)](https://en.wikipedia.org/wiki/Reciprocity_(photography)).
+- ISO is, in the usual design, analog gain before the ADC (some "expanded ISO" settings are digital)
+  and does not change *H* — [Film speed § Digital camera ISO speed](https://en.wikipedia.org/wiki/Film_speed)
+  and Lecture 2 slide 118.
+- Slide values: slide 121 ladder f/16 1/8 … f/2 1/500 (three photos, at 1/8, 1/125, 1/500);
+  slide 155 "¼ sec, f/3.3, ISO 200" vs "2 sec, f/6.3, ISO 80" — read from the rendered slides and
+  PDF text. All table/worked-example numbers recomputed by script: ladder *t*/*N*² ratios
+  1.000–1.128 (max 0.174 stop) and EV 10.83–11.00; 16/√2 = 11.31; 62.5× time ratio; slide 155
+  8× time, 0.274× aperture (−1.87 stops), net 2.195× (+1.13), ISO 0.4× (−1.32), final 0.878×
+  (−0.19 stop); streaks 4/16/250/4000 px; burst SNRs 4.29/19.78/17.15; *c* = 0.2998 m/ns,
+  0.150 m per ns of round trip, 100 m → 667 ns, 1 m gate → 6.67 ns, gate/10 ms ≈ 1/1.5 million;
+  null space of [1, −2] is span(2, 1); length-*L* box kernel's DFT has exact zeros at multiples of
+  *n*/*L*.
+- Flutter shutter: binary pseudo-random open/close code makes motion blur broadband/invertible
+  (Raskar, Agrawal & Tumblin, SIGGRAPH 2006; [Coded exposure photography](https://en.wikipedia.org/wiki/Coded_exposure_photography)).
+- LiDAR/ToF: *d* = *c*τ/2, SPAD time-correlated histogramming, CW-ToF phase-shift ranging —
+  [Lidar](https://en.wikipedia.org/wiki/Lidar), [Time-of-flight camera](https://en.wikipedia.org/wiki/Time-of-flight_camera),
+  [Single-photon avalanche diode](https://en.wikipedia.org/wiki/Single-photon_avalanche_diode).
+  Multi-integration-time HDR depth modes exist commercially (e.g. LUCID Helios2+ HDR mode fusing
+  62.5/200/1000 µs; Basler ToF "dual exposure") — [thinklucid.com](https://thinklucid.com/helios-time-of-flight-tof-camera/),
+  [baslerweb.com](https://www.baslerweb.com/en/cameras/basler-tof-camera/).
+- HW1's 15–60 s exposure times — confirmed against the HW1 handout.
+
+Corrected (wording, minimal edits):
+1. ISO paragraph: "it amplifies certain noise sources, like read noise, disproportionately relative
+   to … photon-counting noise" was wrong — pre-ADC gain amplifies shot noise and upstream read
+   noise equally with the signal, and if anything *reduces* the relative impact of downstream
+   (post-amplifier/ADC) noise. Replaced with that statement; "analog gain" qualified "(in the usual
+   camera design)"; glossary ISO entry "applied before the ADC" → "usually applied before the ADC".
+2. §13.7 HDR: "dividing each unclipped pixel value by its known *t*" was misleading — Debevec &
+   Malik (SIGGRAPH 1997) first recover the nonlinear response curve *g*, then ln *E* = *g*(*Z*) − ln Δ*t*,
+   weighted-averaged over frames ([paper](https://people.eecs.berkeley.edu/~malik/papers/debevec-malik97.pdf)).
+3. §13.7 dark frame "capturing the *D·t* term alone" → also contains the sensor's fixed offset.
+4. §13.8 "A pulsed LiDAR fires a pulse, then only opens the bucket in a gate" overgeneralized;
+   now attributed to range gating specifically.
+5. §13.1 HW1 photos "long exposures in exactly this sense [bulb]" — HW1 does not require bulb mode;
+   reworded to "bulb mode or a long timed setting".
+6. Self-check "a million times shorter than either" → "roughly" (a 6.67 ns gate is ~3×10⁵ times
+   shorter than 1/500 s and ~1.9×10⁷ times shorter than 1/8 s).
+
+All 12 Wikipedia links in §13 and its glossary entries return HTTP 200 and are not redirects.
 
 **§13 (dynamic range, bit depth):** RAW 12–14 bits/pixel vs. JPEG 8 bits/channel — confirmed
 directly against Lecture 2 slide 121 ("common bit depths: 12-14 bits RAW / 8 bits JPEG") and

@@ -372,11 +372,217 @@ Both approaches ultimately deliver a per-pixel voltage proportional to accumulat
 
 ---
 
-## 13. Exposure and ISO
+## 13. Exposure, Exposure Time, and ISO
 
-**[Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))** (shutter speed) is simply how *long* the sensor is allowed to accumulate photo-generated charge before readout — typical values range from small fractions of a second (1/250 s, freezing motion) to many seconds or a manually-held "bulb" exposure (as long as the shutter button stays pressed) for very dim scenes, directly recalling HW1's own 15–60 s pinhole-box exposures. Exposure, together with aperture (§8) and ISO (below), jointly determines total light collected.
+"Long exposure" and "short exposure" come up constantly in photography and in computational imaging, because exposure time is the one camera setting that trades *time* for *light*, and time is where motion, noise, and saturation all enter. This section builds the idea from scratch, then shows why it matters beyond photography (HDR, motion deblurring, burst photography, and LiDAR/time-of-flight sensing).
 
-**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is an **analog gain** applied to the sensor's signal *before* it reaches the analog-to-digital converter (ADC, §14). Raising ISO does not make the sensor collect more photons — it electrically amplifies whatever charge was collected, boosting a dim signal up into a usable digital range. Critically, this amplification boosts noise right along with signal (indeed, it amplifies certain noise sources, like read noise, disproportionately relative to the fundamental photon-counting noise of §16) — so raising ISO is a way of trading *cleanliness* for *brightness* on a fixed amount of collected light, not a way of gathering more light in the first place.
+### 13.1 What "exposure" means: three different uses of one word
+
+**Analogy first.** Picture a bucket left out in the rain. How much water ends up in it depends on two things: how hard it's raining (the *rate*) and how long you leave the bucket out (the *time*). A sensor pixel is that bucket, photons are the raindrops, and the photo-generated electrons of §11 are the water collected.
+
+**The shutter.** A **[shutter](https://en.wikipedia.org/wiki/Shutter_(photography))** is whatever decides *when* collection starts and stops. It is either a physical curtain that uncovers and re-covers the sensor, or (in many digital sensors) an **electronic shutter** that simply clears each pixel's charge at the start and reads it out at the end. The same bucket model applies either way: the charge collected is "rate × open time."
+
+The word "exposure" is used in three distinct senses, and mixing them up is the main source of confusion:
+
+| Term | What it means | Units | Who controls it |
+|---|---|---|---|
+| **Exposure time** (a.k.a. **shutter speed**) | How *long* the shutter lets each pixel collect light | seconds (written as 1/250, 1/60, 1, 15…) | You (a setting) |
+| **Exposure** (strict sense, *H*) | The *total* light delivered per unit sensor area during that time — the amount of water per square centimeter of bucket opening | lux·seconds | Set jointly by exposure time, aperture (§8), and scene brightness — **not** ISO |
+| **"An exposure"** (countable noun) | One captured frame (e.g. "take three exposures and merge them") | — | — |
+
+In this section, "exposure" alone always means the strict total-light sense, *H*; the duration is always called "exposure time." ("Shutter speed" is the photographer's name for exposure time: a "fast shutter speed" is a *short* exposure time. The lecture's slide title "Exposure (shutter speed)" uses "exposure" in this time sense.)
+
+**"Bulb" mode** is an exposure time with no preset value: the shutter stays open as long as the shutter button is held. HW1's pinhole-box photos with 15–60 s exposure times are long exposures of this kind (shot in bulb mode or with a long timed setting), needed because a pinhole (§3) lets through very little light per second.
+
+### 13.2 The exposure formula
+
+```
+H = E · t          and, for a lens,          E ≈ (π/4) · L / N²
+so:                H ∝ L · t / N²
+```
+
+**Intuition.** The first equation is just the bucket: total = rate × time. The rate of light arriving per unit sensor area is the **[irradiance](https://en.wikipedia.org/wiki/Irradiance)** *E* (photometric name: **illuminance**). If *E* holds steady while the shutter is open, the total *H* is *E* multiplied by *t*. If *E* changes during the exposure (a flickering lamp, a car's headlights sweeping past), *H* becomes the **area under the E-versus-time curve** over the open interval. "Rate × time" is the special case where that curve is flat.
+
+The second equation says where *E* comes from. A scene patch of fixed brightness *L* sends light toward the lens. The amount collected grows with the aperture's *area* ∝ *D*² (§3, §8). The patch's image is spread over an area that grows with *f*², the focal length squared, by the same inverse-square logic as §3. The ratio is *D*²/*f*² = 1/*N*². So the f-number *N* alone captures everything the lens contributes, which is exactly why photographers use it instead of *D* or *f* separately.
+
+**Term by term:**
+
+- ***H*** — **exposure**: total light energy delivered per unit area of sensor during one capture (lux·s photometrically, J/m² radiometrically). You don't set it directly; it results from the other terms.
+- ***E*** — **image-plane irradiance**: light *power* per unit sensor area at that moment (lux, or W/m²). Fixed by the scene plus the aperture.
+- ***t*** — **exposure time**, in seconds. **You control this.**
+- ***L*** — scene **[luminance](https://en.wikipedia.org/wiki/Luminance)**: how bright the scene patch itself is (candela per m²). Fixed by the scene and its lighting; you don't control it (unless you add light, e.g. a flash, or in LiDAR a laser, §13.8).
+- ***N*** — the **f-number** of §8 (dimensionless). **You control this.** It appears squared because light gathered scales with aperture *area*.
+- ***π/4*** — a geometric constant from integrating over a circular aperture. It never changes, which is why the proportional form (∝) is all a photographer needs. The ≈ hides small real-lens losses: glass transmission below 100%, and dimming toward the image corners (**vignetting**).
+
+**Link to §16.3's SNR formula.** There, *P* (photons per pixel per second) is just *E* expressed in photons and multiplied by one pixel's area. The mean signal *P·Qe·t* is therefore "exposure in photons × quantum efficiency": the same *E·t* product, counted in electrons.
+
+**Reciprocity.** *H* depends only on the product *t*/*N*², so halving *t* and letting in twice the light per second (one stop wider aperture) leaves *H* unchanged. Different (*t*, *N*) pairs that give the same *H* are called **equivalent exposures**. This interchangeability is the **reciprocity law** (*H* depends only on the product of rate and time, not on either separately). For a digital sensor it holds essentially exactly, since electrons just accumulate linearly, until the pixel fills up (§13.4).
+
+### 13.3 Stops of time, and the equivalent-exposure ladder
+
+Exposure time is spaced in the same **stops** as aperture (§8): one stop = a factor of 2 in light. The standard sequence 1/1000, 1/500, 1/250, 1/125, 1/60, 1/30, 1/15, 1/8, 1/4, 1/2, 1 s doubles at every step. Unlike the aperture sequence, there is no √2: exposure time enters *H* directly, not squared.
+
+The lecture's "Depth of Field & Motion Blur" slide prints exactly such a ladder of equivalent exposures. Plugging each pair into *t*/*N*² (relative to the first pair), and into the **exposure value** EV = log₂(*N*²/*t*) (a single number that labels a whole family of equivalent exposures; one EV step = one stop), gives:
+
+| Aperture | Exposure time | *t*/*N*² relative to f/16, 1/8 s | EV |
+|---|---|---|---|
+| f/16 | 1/8 s | 1.000 | 11.00 |
+| f/11 | 1/15 s | 1.128 | 10.83 |
+| f/8 | 1/30 s | 1.067 | 10.91 |
+| f/5.6 | 1/60 s | 1.088 | 10.88 |
+| f/4 | 1/125 s | 1.024 | 10.97 |
+| f/2.8 | 1/250 s | 1.045 | 10.94 |
+| f/2 | 1/500 s | 1.024 | 10.97 |
+
+Every row delivers (within ~13%, or under 0.2 stop) the *same* exposure. The small wobble comes only from the marked numbers being rounded: "f/11" is really 16/√2 ≈ 11.3, and "1/15" is really 1/16. Yet the three photos on that slide look completely different:
+
+- **f/16, 1/8 s:** the aperture is small (deep **depth of field**, §9) and the exposure time is long. The flying pigeons smear into ghostly streaks: **motion blur**.
+- **f/2, 1/500 s:** the aperture is wide (shallow depth of field) and the exposure time is 62.5× shorter. The pigeons are frozen mid-wingbeat.
+
+Exposure fixes only the *brightness*. The *path* you take along the ladder decides what kind of image you get.
+
+**Linear-algebra view (equivalent exposures as a null space).** Take logarithms and the multiplicative formula becomes linear: log₂*H* = log₂*L* + log₂*t* − 2·log₂*N* (+ a constant). Collect your two settings into the vector **s** = (log₂*t*, log₂*N*). The change in log-exposure caused by a change Δ**s** is the row vector **r** = [1, −2] applied to Δ**s**: Δlog₂*H* = **r**·Δ**s**. The set of setting changes that leave exposure *unchanged* is the **null space** of **r**: every multiple of (2, 1). "Open up by one stop of aperture (log₂*N* down by ½), shorten time by one stop (log₂*t* down by 1)" is (−1, −½), which lies on that line. The ladder above is literally a walk along the null space of a 1×2 matrix. Moving *off* that line changes brightness; moving *along* it only trades depth of field against motion blur.
+
+### 13.4 Getting it wrong: underexposure, overexposure, saturation
+
+Each pixel's "bucket" has a finite size: the **full-well capacity**, the maximum number of electrons a photodiode can hold before extra photons have nowhere to go.
+
+- **Overexposure.** Too much *H*: bright regions overflow the well and every pixel there reads the same maximum value. This is **saturation**, or **[clipping](https://en.wikipedia.org/wiki/Clipping_(photography))**. Different brightnesses (a white shirt, the sun behind it) all become one flat "max white," and the detail is gone for good: no processing can recover it, since the sensor never recorded the difference.
+- **Underexposure.** Too little *H*: dark regions collect only a handful of electrons, so the fixed noise floor of §16 (read noise *Nr*, dark current *D·t*) is comparable to or larger than the signal. Detail is technically there but buried in noise. Brightening the image afterward (digitally or via ISO, §13.6) amplifies the noise right along with it.
+- **"Correct" exposure** places the scene's important brightness range inside the window between those two failure modes. That window is exactly the sensor's **dynamic range** (§14). When the scene's own range is wider than the sensor's (a sunlit window inside a dark room), *no* single exposure time works: one choice clips the window, the other buries the room in noise. That is the motivation for **HDR imaging** (Week 4).
+
+### 13.5 Long vs. short exposure: the core trade-off
+
+Holding everything else fixed, lengthening the exposure time collects more light. That helps and hurts in specific, predictable ways:
+
+| | Short exposure (e.g. 1/500 s) | Long exposure (e.g. 1/8 s, 2 s, bulb) |
+|---|---|---|
+| Light collected | Less | More (∝ *t*) |
+| Noise (§16) | Worse SNR; shot-noise-limited SNR ∝ √*t* | Better SNR |
+| Moving subjects | Frozen | Smeared into streaks / trails (**motion blur**) |
+| Camera shake (hand-held) | Negligible | Whole frame blurs unless on a tripod |
+| Bright regions | Less risk of clipping | More risk of saturation |
+| Dark current *D·t* (§16.3) | Negligible | Grows with *t* (matters for very long exposures) |
+| Price you pay elsewhere to keep the same brightness | Wider aperture (shallower depth of field, §9) or higher ISO (amplified noise, §13.6) | Smaller aperture possible (deeper depth of field) |
+| Typical uses | Sports, wildlife, anything fast; bright daylight | Night scenes, astronomy, light trails, "silky" water, HW1's pinhole box |
+
+**Worked example 1 — the lecture's night-highway photos (slide "Exposure (shutter speed)").** Two photos of the same highway at night:
+
+- **Photo A:** 1/4 s at f/3.3, ISO 200. Moving cars show as short, partly-recognizable blurs.
+- **Photo B:** 2 s at f/6.3, ISO 80. The cars have vanished completely, replaced by long continuous red and white **light trails**.
+
+Why do they have similar overall brightness?
+
+1. **Time:** Photo B's exposure time is 2 / 0.25 = **8×** longer (3 stops more light).
+2. **Aperture:** its f-number is larger, so relative light per second is (3.3/6.3)² ≈ 0.27× (≈1.9 stops less).
+3. **Net exposure:** *t*/*N*² gives 2.0/6.3² ÷ 0.25/3.3² ≈ **2.2×** more light collected in Photo B (+1.13 stops).
+4. **ISO:** Photo B uses ISO 80 instead of 200, a 0.4× gain (−1.32 stops). The final rendered brightness ends up at 2.2 × 0.4 ≈ **0.88×** Photo A's, a difference of only ~0.19 stop.
+
+So the two photos look about equally bright, but Photo B spent its "brightness budget" on a much longer exposure time. Every headlight moved a long way *during* the exposure and painted its whole path onto the sensor. The trails are motion blur, used deliberately.
+
+**Worked example 2 — how long is a motion-blur streak?** A moving point spends the exposure sliding across the sensor, leaving a streak:
+
+```
+blur length (pixels) = image-plane speed (pixels/second) × exposure time (seconds)
+```
+
+- *Image-plane speed* is how fast the subject's image moves across the sensor (set by the subject's real speed, its distance, and the focal length). It is fixed by the scene and lens, not by you.
+- *Exposure time* is yours to choose.
+
+Illustrative numbers: a subject that crosses a 4000-pixel-wide frame in 2 s moves at 4000/2 = 2000 px/s. Then:
+
+| Exposure time | Streak length |
+|---|---|
+| 1/500 s | 4 px (looks sharp) |
+| 1/125 s | 16 px (visibly soft) |
+| 1/8 s | 250 px (a smear, like the slide's pigeons) |
+| 2 s | 4000 px (the full frame width: a trail, like Photo B) |
+
+The streak grows *linearly* with exposure time. This is why "freezing motion" is purely a matter of making *t* small enough that the streak is shorter than about one pixel.
+
+**Linear-algebra view (motion blur is a linear filter).** Each recorded pixel is the *time average* of all the scene points that slid past it during the exposure. For uniform motion along one direction, that is the same weighted-sum operation as Week 1's filters: a **convolution** of the sharp image with a **box kernel** (a flat line segment) whose length is the streak length. Stack the image into a vector **x** and blur is one matrix–vector product **y** = **B x**. Here **B** is a banded (Toeplitz) matrix with the box kernel repeated along its diagonals.
+
+Undoing the blur means inverting **B**. That is badly conditioned: a box kernel's Fourier transform (a sinc shape) passes through *exact zeros* at certain image frequencies. Detail at those frequencies is multiplied by zero, lands in **B**'s null space, and is lost. This is precisely the problem **coded exposure** ("flutter shutter," Week 4) attacks: flicking the shutter open and closed in a pseudo-random pattern *during* one exposure turns the box into a code whose Fourier transform has no zeros, so the blur becomes invertible. Deblurring by inverting **B** is the deconvolution topic of Week 5.
+
+**Worked example 3 — why long exposures are cleaner (numbers from §16.3's formula).** In the shot-noise-limited case (bright enough that *Nr* and *D* are negligible), SNR = √(*P·Qe·t*) ∝ √*t*:
+
+- doubling the exposure time improves SNR by √2 ≈ 1.41×
+- 4× the time gives 2×
+- 16× the time gives 4×
+
+Diminishing returns, but steady: to halve the relative noise you need 4× the light.
+
+**Worked example 4 — one long exposure vs. many short ones ("burst photography").** Instead of one long exposure, you could take *k* short ones and add them up afterward: each frame is short enough to avoid blur, and you can re-align frames before summing. Is it as clean? Compare using §16.3's formula with illustrative numbers for a very dim scene: 25 electrons per pixel per short frame, read noise *Nr* = 3 electrons, *k* = 16 frames.
+
+| Capture | Signal | Noise variance | SNR |
+|---|---|---|---|
+| One short frame | 25 | 25 + 3² | **4.29** |
+| One long exposure (16× the time) | 400 | 400 + 3² | **19.78** |
+| 16 short frames, summed | 400 | 400 + 16·3² | **17.15** |
+
+Same total light, but the burst pays read noise 16 times (once per readout) instead of once. Because the variances add (the orthogonality argument of §16.3), its SNR comes out lower. For bright scenes, where shot noise dominates, the difference nearly vanishes. That is why phones can afford to replace one long, blur-prone exposure with a burst of short, well-aligned ones.
+
+### 13.6 ISO: brightness from gain, not from light
+
+**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is (in the usual camera design) an **analog gain** applied to the sensor's signal *before* it reaches the analog-to-digital converter (ADC, §14). Raising ISO does not make the sensor collect more photons — it electrically amplifies whatever charge was collected, boosting a dim signal up into a usable digital range. Critically, this amplification boosts the noise already present (shot noise, and read noise added before the amplifier) right along with the signal, so it cannot raise the signal-to-noise ratio set by the photons collected (§16); at most, amplifying before the ADC keeps the noise added *after* the amplifier from mattering as much — so raising ISO is a way of trading *cleanliness* for *brightness* on a fixed amount of collected light, not a way of gathering more light in the first place.
+
+In the strict sense of §13.1, then, ISO does **not** change the exposure *H*; it changes how bright the *recorded image* comes out for a given *H*. Photographers often speak loosely of an "**exposure triangle**" of aperture, exposure time, and ISO. The table below makes precise what each corner actually does:
+
+| Knob | Changes the light collected (*H*)? | Side effect you pay |
+|---|---|---|
+| Aperture (f-number, §8) | Yes, ∝ 1/*N*² | Depth of field (§9); diffraction at small apertures (§10) |
+| Exposure time | Yes, ∝ *t* | Motion blur, camera shake, saturation risk (§13.5) |
+| ISO (gain) | **No**; scales the output only | Amplified noise; highlights clip sooner at high gain |
+
+### 13.7 Where exposure resurfaces later in the course
+
+- **HDR imaging (Week 4).** Merge several exposures of one scene taken at different exposure times ("**exposure bracketing**"): short ones capture the highlights without clipping, long ones capture the shadows above the noise floor (§13.4). Because *H* = *E·t*, once a pixel value has been converted back to (relative) exposure *H*, dividing by its known *t* puts every frame on a common irradiance scale. Recorded pixel values are usually a *nonlinear* function of *H* (the camera's response curve), so the Debevec & Malik reading first recovers that curve from the bracketed frames, then undoes it and divides by *t* (in log form: ln *E* = *g*(pixel value) − ln *t*), averaging over the unclipped frames.
+- **Coded exposure / flutter shutter (Week 4).** Reshape the *timing* of one exposure so the resulting motion blur can be inverted (§13.5, linear-algebra view).
+- **Rolling shutter (§15).** Each sensor row gets its own exposure-time window, offset from its neighbors'.
+- **Dark-frame subtraction and autoexposure (Week 3's ISP pipeline).** A dark frame is an exposure taken with the shutter closed at the same *t*, capturing the dark-current *D·t* signal (plus the sensor's fixed offset) with no scene light, so it can be subtracted. Autoexposure is the camera picking *t*, *N*, and ISO for you from a quick brightness measurement (**metering**).
+- **Deconvolution (Week 5).** Formal treatment of inverting blur operators like **B**.
+
+### 13.8 Exposure in LiDAR and time-of-flight depth sensing
+
+**[LiDAR](https://en.wikipedia.org/wiki/Lidar)** ("light detection and ranging") and **[time-of-flight (ToF) cameras](https://en.wikipedia.org/wiki/Time-of-flight_camera)** measure *distance* instead of (or alongside) brightness. They send out their own light, typically an infrared laser, and time how long it takes to bounce back. The course's time-of-flight lecture treats them properly. Here the point is that "exposure" is just as central to them, with one big twist.
+
+**Passive vs. active sensing.** An ordinary camera is **passive**: it only collects light already in the scene (sunlight, lamps). A LiDAR is **active**: it supplies its own **active illumination**. The photons it wants are its own laser's echo, and every other photon is unwanted background.
+
+**Analogy.** A passive camera is the rain bucket of §13.1. A LiDAR is trying to catch one specific squirt from its own garden hose *while it's also raining*. Every extra moment the bucket stays open adds more rain (ambient light) without adding any more of the squirt. The rain doesn't just dilute the measurement: its randomness (shot noise, §16.2, ∝ √(ambient photons)) buries the squirt.
+
+**The time–distance link.** Light travels at *c* ≈ 3 × 10⁸ m/s, i.e. **0.30 m per nanosecond** (ns, 10⁻⁹ s). A pulse sent to an object at distance *d* and back travels 2*d*, so
+
+```
+round-trip time  τ = 2d / c          ⇔          d = c·τ / 2
+```
+
+- ***d*** — distance to the object, in meters. The unknown being measured; fixed by the scene.
+- ***τ*** — round-trip time, in seconds. What the sensor actually times.
+- ***c*** — speed of light, a physical constant.
+- The **factor 2** is there because the light goes out *and* back. Forgetting it doubles every distance.
+
+Each nanosecond of round-trip time corresponds to 0.30/2 ≈ **0.15 m** of distance. An object 100 m away echoes back after 2 × 100 / (3 × 10⁸) ≈ 667 ns. Everything happens on a nanosecond scale, a *million* times shorter than photographic exposure times.
+
+**Range gating: an ultra-short exposure.** A **pulsed (direct) time-of-flight** LiDAR fires a short laser pulse; with **range gating**, it then only "opens the bucket" in a narrow time window, or **gate**, when an echo from the distances of interest could be arriving. Opening the detector for a time window *is* an exposure. It's just nanoseconds long and timed relative to the laser pulse. Worked numbers:
+
+- A gate covering a 1 m slice of depth lasts 2 × 1 m / *c* ≈ **6.67 ns**.
+- An ordinary short photographic exposure of 1/100 s is 10 ms.
+- Ambient light arrives continuously, so the gate collects about 6.67 ns / 10 ms ≈ **1/1.5 million** as many background photons as that photo exposure would.
+- The laser echo from inside the slice arrives *entirely within* the gate, so none of the signal is lost.
+
+That is the same exposure trade-off as §13.5, pushed to the extreme: shortening the exposure costs nothing if your signal is guaranteed to land inside it. Choose it short enough and you reject almost all background, a key reason pulsed LiDAR can work outdoors in sunlight.
+
+**Accumulating many pulses: exposure as pulse count.** One laser pulse returns only a few photons from a distant or dark object. Many single-photon LiDARs (using **[single-photon avalanche diodes](https://en.wikipedia.org/wiki/Single-photon_avalanche_diode)**, SPADs, detectors sensitive enough to register individual photons) therefore repeat the measurement over many pulses. They build a **histogram** of photon arrival times, whose peak marks *τ*. The "exposure" is now the total acquisition time, or number of pulses.
+
+The same √*t* rule of worked example 3 applies: 4× as many pulses halves the relative noise of the histogram. The same motion trade-off applies too: anything that moves during acquisition smears its histogram peak, the depth equivalent of motion blur.
+
+**Continuous-wave (indirect) ToF cameras: an "integration time" knob.** Many depth cameras (e.g. in phones and game controllers) don't time individual pulses. They illuminate the scene with light whose brightness is modulated as a wave, and infer distance from the **phase shift** of the returning wave. Each pixel integrates the returning light over an **integration time**, which is these cameras' name for exposure time. It shows exactly the §13.5 trade-offs, now in depth rather than brightness:
+
+- **Too short:** too few collected photons, so noisy depth values.
+- **Too long:** moving objects produce depth errors at their edges (the depth analogue of motion blur).
+- **Saturation (§13.4):** near or highly reflective objects saturate pixels and ruin their depth estimate. This is why such cameras often combine readings from two or more integration times: the depth-sensing counterpart of HDR bracketing.
+
+**Takeaway.** Whether the output is brightness or distance, "exposure" is the same decision: how long to collect before reading out. More time buys lower relative noise (∝ √*t*). It costs motion blur, saturation risk, and, when your own light source is the signal, extra ambient background.
 
 ---
 
@@ -447,3 +653,5 @@ Moved to the project's running, cumulative glossary so terminology previews stay
 If you can explain, in your own words, *why* a wider aperture (smaller f-number) simultaneously gathers more light, produces shallower depth of field, and moves you further from (not closer to) the diffraction limit — using only the words "circle of confusion," "f-number," and "numerical aperture" — you've understood the core trade-off of Week 2.
 
 A second check, specifically for the focal-length/sensor-distance distinction (§4.2–4.3, §5): if a friend asked you "what's the difference between focal length and sensor distance, and why does moving the sensor change what's in focus?", you should be able to answer using only the words "intrinsic," "setup," and "thin lens equation" — without needing to look anything up.
+
+A third check, for exposure (§13): given the lecture's two equivalent-exposure pairs f/16 at 1/8 s and f/2 at 1/500 s, you should be able to explain why both photos come out equally bright but only one freezes the flying pigeons, and why a LiDAR deliberately uses an "exposure" roughly a million times shorter than either, using only the words "t/N²," "motion blur," and "ambient light."
