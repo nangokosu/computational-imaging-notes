@@ -49,6 +49,7 @@ Never compute the specific numeric answers a homework asks the student to derive
 - `FACT_AUDIT.md` — created and updated when fact-checking the artifact against external sources (not on every change, but proactively before major revisions or on request). Lists every factual claim verified, with sources cited. Document its existence in the README table once it exists.
 - `.claude/settings.json` — declares the Claude Code plugins/marketplaces this project's workflow uses (`superpowers`, `document-skills`), so cloning the repo and opening it in Claude Code reproduces the same setup.
 - `.claude/agents/fact-auditor.md` — the custom subagent definition that runs the fact-checking pass behind `FACT_AUDIT.md`.
+- `.claude/agents/diagram-auditor.md` — the custom subagent definition that audits the artifact's diagrams for rendering/formatting defects (overlapping text, clipped elements, duplicate SVG ids, theme bugs) — a layout audit, distinct from `fact-auditor`'s factual/geometric-correctness audit. Fixes confirmed issues directly in the artifact.
 
 ## Published artifact — one running notebook, not one per week
 

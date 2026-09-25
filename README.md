@@ -29,7 +29,7 @@ These notes are written with [Claude Code](https://claude.com/claude-code), driv
 
 Also used, no install required (bundled with Claude Code):
 - **`artifact-design` / `artifact-diagramming`** — govern the visual design and original inline-SVG diagrams in the [published running artifact](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0).
-- **A custom subagent**, [`.claude/agents/fact-auditor.md`](./.claude/agents/fact-auditor.md) — runs the fact-checking pass recorded in `FACT_AUDIT.md`.
+- **Custom subagents**: [`.claude/agents/fact-auditor.md`](./.claude/agents/fact-auditor.md) runs the fact-checking pass recorded in `FACT_AUDIT.md`; [`.claude/agents/diagram-auditor.md`](./.claude/agents/diagram-auditor.md) audits the artifact's diagrams for rendering/formatting defects (a layout audit, distinct from factual correctness) and fixes what it finds.
 
 ## Source
 
