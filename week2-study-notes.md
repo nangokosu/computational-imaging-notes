@@ -329,6 +329,36 @@ The other inputs need the same care. *D* = *f*/*N* (§8) comes out in the unit o
 
 > **Worked example, from lecture (method only — not solved here).** For a Canon 5D Mark III with f = 50 mm, N = 2.8, focused at 5 m, and a 7.5 µm pixel pitch, §9.2's formula gives a curve of circle-of-confusion size (in pixels) vs. object distance. The lecture's own exercise is: "using the graph [of *c* vs. distance], what is the depth of field?" — i.e., read off the distance range where the curve stays under the allowed-blur threshold. Per this project's policy of never computing the specific numeric answers a homework/exercise asks the student to derive, that range is intentionally left uncomputed here — but the *method* is exactly §9.2's formula, evaluated across a range of *O* and compared against a fixed pixel-based threshold *ε*.
 
+### 9.3.1 Near and far distances: the two edges of the depth-of-field range, and how to get each one
+
+§9.3 gave the *width* of the depth-of-field range, `DOF ≈ 2εS/(mD)` — but a homework question (like HW2 Task 1) usually asks for the **near distance** and **far distance** themselves: where the acceptably-sharp zone actually starts and ends in the scene, not just how wide it is. Both come directly out of the same derivation, one step before the small-*k* approximation was taken:
+
+```
+O_near = S / (1 + k)      (near edge)
+O_far  = S / (1 - k)      (far edge)
+where  k = ε / (m·D)
+```
+
+**Intuition.** §9.3's derivation showed *S*/*O* is squeezed between (1−*k*) and (1+*k*) once the circle of confusion is required to stay at or below the threshold *ε*. Solving each inequality boundary for *O* on its own gives one distance per edge: the *nearer* boundary (*O* < *S*) corresponds to dividing *S* by the *larger* factor (1+*k*), and the *farther* boundary (*O* > *S*) corresponds to dividing by the *smaller* factor (1−*k*) — dividing by a smaller number gives a bigger result, which is exactly why the far-edge denominator is the one that can blow up toward infinity as *k* → 1, the case §9.4's hyperfocal distance handles. The compact `DOF = O_far − O_near` relationship from §9.3 is only the *difference* of these two; the two distances themselves are what a "near distance / far distance" question is actually asking for.
+
+**Term-by-term breakdown:**
+- *O_near*, *O_far* — the two boundary object distances (a length, same unit as *S*) marking where the acceptably-sharp zone begins and ends in the scene. These are what "near distance" and "far distance" mean in a depth-of-field question.
+- *S* — the currently-focused object distance (§9.1) — fixed by wherever the lens is focused, not something these formulas solve for.
+- *k* = *ε*/(*m·D*) — the same dimensionless "tolerance fraction" from §9.3's derivation: *ε* is the acceptable circle-of-confusion threshold (as a *length*, after the pixel→length conversion from §9.3's units-trap paragraph), *m* is the magnification at the focused pair (computed as shown in the callout below), and *D* = *f*/*N* is the aperture diameter (§8).
+- Both formulas are exact (no small-*k* approximation), unlike the compact `DOF ≈ 2εS/(mD)` width formula, which *does* rely on *k* being small. When a question specifically asks for near/far distances (not just the width), use these two formulas directly rather than trying to back them out from the approximate width formula and *S* alone — the true near/far edges are asymmetric around *S* (§9.3's caveat), so "*S* ± DOF/2" is **not** the same as (*O_near*, *O_far*).
+- Sanity check: at *k* = 0 (an infinitely small aperture or infinitely loose tolerance — no defocus possible), *O_near* = *O_far* = *S*: the entire "range" collapses to the focal plane itself, as expected.
+
+> **Which distance is "near" and which is "far"?** *O_near* < *S* < *O_far* always (for 0 < *k* < 1): the near distance is *closer* to the camera than the focus plane, the far distance is *farther away* — matching the ordinary photography sense of "the depth of field runs from this near point to that far point, with the subject in between."
+
+**Diagram.** This is a geometric relationship along the optical axis, so picture it directly: on the object side of the lens, mark the focused plane *S*, then the near boundary *O_near* a little closer to the lens, and the far boundary *O_far* a little farther away; an object placed at exactly *O_near* or exactly *O_far* produces a circle of confusion of exactly the threshold diameter *ε* at the sensor (any closer or farther than that, and *c* > *ε* — too blurred to count as "in focus"). See the artifact for the full drawn version, which extends §9.2's circle-of-confusion construction (Fig. 36) with these two boundary planes marked in.
+
+**How to compute the magnification *m* this formula needs.** Both the circle-of-confusion formula (§9.2) and everything in this section use the magnification *m* at the *focused* pair (*S*, *S′*) — not at whatever actual distance *O* a given scene point sits at. A typical problem (including HW2 Task 1) gives you the focal length *f* and the focused distance *S* directly, but *not S′* — so *m* has to be computed in two steps:
+
+1. **Get *S′* from the thin lens equation (§4.1).** Solve `1/S + 1/S' = 1/f` for the sensor distance: `S' = f·S / (S − f)`.
+2. **Get *m* from *S′* and *S* (§4.1).** `m = S'/S` (equivalently `m = (S' − f)/f`, the same quantity from the other similar-triangle relation).
+
+Skipping step 1 — plugging *f* and *S* straight into a magnification-shaped formula without first finding *S′* — is the most common way to get *m* (and therefore every downstream *k*, *O_near*, *O_far*, and DOF value) wrong. As in §9.3's units-trap paragraph, keep *f*, *S*, and *S′* all in one consistent unit throughout both steps.
+
 ### 9.4 Hyperfocal distance
 
 The **hyperfocal distance**, *H*, is the specific focus distance *S* that pushes the *far* edge of the depth-of-field range (§9.3) all the way out to infinity. Deriving it directly from §9.2's circle-of-confusion formula: as the actual object distance *O* → ∞, the ratio |*O* − *S*|/*O* → 1 (the finite *S* becomes negligible next to an infinite *O*), so the circle of confusion an object at infinity would show, if focused at *S* = *H*, is simply *c*<sub>∞</sub> = *m·D* (using the magnification evaluated at that focus distance). Setting this equal to the fixed acceptable threshold and solving for *S* = *H* (using *D* = *f*/*N* from §8, and dropping *f* itself as negligible next to the much larger *H*) gives:

@@ -359,6 +359,28 @@ DOF = 2 · ε · S / (m · D)
 
 ---
 
+### Near and far distance of depth of field (§9.3)
+
+```
+O_near = S / (1 + k)
+O_far  = S / (1 - k)
+k = ε / (m·D)
+```
+
+**Computes:** Gives the two boundary object distances — near and far — where the depth-of-field range begins and ends in the scene, exactly (not just the range's width).
+
+| Term | Meaning |
+|---|---|
+| O_near | near edge of the depth-of-field range — closer to the camera than S |
+| O_far | far edge of the depth-of-field range — farther from the camera than S |
+| S | focused object distance |
+| k | dimensionless tolerance fraction, ε/(mD) |
+| ε | acceptable circle-of-confusion threshold, as a length |
+| m | magnification at the focused pair (S, S') — see the Magnification (§4.1) entry above for how to compute it |
+| D | aperture diameter |
+
+---
+
 ### Hyperfocal distance (§9.4)
 
 ```
