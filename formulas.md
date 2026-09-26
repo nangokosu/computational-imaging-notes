@@ -1035,3 +1035,140 @@ c = T · b
 | T⁻¹ = Tᵀ | Inverse equals transpose because T is orthonormal, so no system needs solving to invert |
 
 ---
+
+## Week 4 — Great Ideas in Computational Photography (HDR imaging, tonemapping, coded imaging)
+*(full derivations and diagrams in [`week4-study-notes.md`](./week4-study-notes.md); this is the lookup-speed reference)*
+
+### Exposure = Gain × Flux × Time (§0)
+
+```
+Exposure = Gain × Flux × Time
+```
+
+**Computes:** How bright a single captured photo looks overall — this is the *loose*, colloquial sense of "exposure" that folds ISO gain in, distinct from Week 2 §13.2's strict physical exposure *H* = *E*·*t* (light energy per unit sensor area), which explicitly excludes ISO (Week 2 §13.6 proves ISO doesn't change the physical light collected, only how it's amplified afterward). Do not confuse the two: this formula is a plain-language recap, not a new physical quantity.
+
+| Term | Meaning |
+|---|---|
+| Exposure | How bright the resulting photo looks (loose sense, not a physical energy-per-area quantity) — computed/perceived output |
+| Gain | ISO setting — amplifies the already-collected signal (and its noise) after the fact; you control this |
+| Flux | Overall light arriving at the sensor, controlled by aperture (f-number, Week 2 §8); you control this |
+| Time | Shutter speed/exposure time; you control this |
+
+---
+
+### Confidence weight function (§4.2)
+
+```
+w(I) = exp( −4·(I − 0.5)² / 0.5² )
+```
+
+**Computes:** Gives how much to trust one bracketed exposure's pixel value when merging an HDR stack — peaking at mid-gray and falling off toward black and white, where noise or clipping make the measurement unreliable.
+
+| Term | Meaning |
+|---|---|
+| I | A single pixel's linear, [0,1]-scaled value from one exposure in the bracketed stack — measured |
+| w(I) | Resulting confidence weight, in (0,1] — computed output |
+| 0.5 | Mid-range value the weight peaks at (fully-confident, correctly-exposed case) — fixed constant |
+| −4 / 0.5² | Sets the fall-off rate; equivalent standard-Gaussian width σ ≈ 0.177 — fixed constant |
+
+---
+
+### HDR merging: log-domain weighted least-squares solution (§4.3)
+
+```
+O(X) = Σᵢ wᵢ · ( log(I_lin,i) − log(tᵢ·X) )²
+
+X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
+```
+
+**Computes:** Recovers, per pixel, the single best-estimate true (relative) scene radiance value from an exposure-bracketed stack, by weighting each exposure's own estimate by how confident it is — the merge step of HDR imaging.
+
+| Term | Meaning |
+|---|---|
+| i = 1...N | Index over the N bracketed exposures of the same pixel — fixed by the bracket (§3) |
+| I_lin,i | Linearized recorded value at this pixel in exposure i — measured (after §5's linearization) |
+| tᵢ | Exposure i's known exposure time — you control this (via bracketing, §3) |
+| wᵢ | Confidence weight for exposure i, = w(I_lin,i) from the confidence weight function above |
+| X | Unknown true scene exposure/radiance value at this pixel — the same for every i; solved for |
+| O(X) | Weighted least-squares objective being minimized over X (in the log domain) |
+| X̂ | The recovered, merged HDR value at this pixel (relative units) — computed output |
+
+---
+
+### Non-linear image formation model and linearization (§5.2)
+
+```
+I_linear(x, y)     = clip[ tᵢ · Φ(x, y) + noise ]
+I_nonlinear(x, y)  = f[ I_linear(x, y) ]
+I_est(x, y)        = f⁻¹[ I_nonlinear(x, y) ]
+```
+
+**Computes:** Models how a camera's internal tone-reproduction curve nonlinearly distorts the linear sensor signal before it's written out, and gives the inversion needed to recover an estimate of the true linear signal (radiometric calibration) before HDR merging.
+
+| Term | Meaning |
+|---|---|
+| Φ(x,y) | True scene flux hitting pixel (x,y) — fixed by the scene/lighting |
+| tᵢ | Exposure i's exposure time — you control this |
+| I_linear | What the sensor would record with no further distortion (after clipping at saturation) |
+| f[·] | Camera's tone reproduction curve — fixed, generally unknown, monotonic nonlinear function baked in by the camera |
+| I_nonlinear | What actually gets written to the output file — measured |
+| f⁻¹[·] | Inverse of the tone reproduction curve, used to linearize |
+| I_est | Recovered estimate of the true linear signal — computed output, fed into §4.3's merge |
+
+---
+
+### Photographic tonemapping curve (§8)
+
+```
+I_display = I_HDR / (1 + I_HDR)
+```
+
+**Computes:** Maps an unbounded, linear HDR intensity value down into a display's finite [0,1) range non-linearly, leaving dark regions essentially untouched (slope 1 near 0) while asymptoting to 1 for arbitrarily bright input — the simplified tonemapping curve.
+
+| Term | Meaning |
+|---|---|
+| I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§4.3) |
+| I_display | Output value sent to the display, guaranteed to lie in [0,1) — computed output |
+
+---
+
+### PSF convolution (image formation) (§13.1)
+
+```
+I_blurred(x, y) = (I_ideal * PSF)(x, y)
+```
+
+**Computes:** Models a real optical system's blurred image as the convolution of the hypothetical perfectly sharp (pinhole) image with the system's point spread function — the formal name for the blur behavior already used informally in Week 2's pinhole/defocus/circle-of-confusion sections.
+
+| Term | Meaning |
+|---|---|
+| I_ideal(x,y) | Hypothetical perfectly sharp image an ideal pinhole would produce (Week 2 §1) |
+| PSF(x,y) | System's blur kernel, normalized to sum/integrate to 1 (redistributes light, adds/removes none) — fixed by the optics |
+| I_blurred(x,y) | Image actually captured — computed output |
+| * | Convolution (sliding weighted sum, Week 1 §12.4.5) |
+
+---
+
+### OTF as the Fourier transform of the PSF, and the primal/Fourier high-pass identity (§13.2, §13.3)
+
+```
+OTF(u, v) = FT{ PSF }(u, v)
+
+I − I * PSF_LP   ≡   Ĩ × (1 − OTF_LP)
+```
+
+**Computes:** Gives, frequency by frequency, how much of each spatial-frequency component of the true scene survives the imaging system (near 1 = passes through, near 0 = destroyed and unrecoverable) — the frequency-domain partner of the PSF; the second line shows the same high-pass-as-complement-of-low-pass filtering identity expressed equivalently in the spatial (primal) domain via subtraction or in the Fourier domain via multiplication by the complementary mask.
+
+| Term | Meaning |
+|---|---|
+| u, v | Image frequencies, cycles per pixel (Week 1 §12.4.2) |
+| PSF | The system's blur kernel (previous entry) |
+| OTF(u,v) | Fourier transform of the PSF — fraction of each frequency that survives imaging; computed from the optics |
+| I | Spatial-domain image |
+| PSF_LP | A low-pass blur kernel (e.g. Gaussian) |
+| OTF_LP | Fourier transform of PSF_LP |
+| Ĩ | Spectrum (Fourier transform) of I |
+| I − I*PSF_LP | Primal-domain high-pass filtering: subtract a low-pass-blurred copy |
+| Ĩ×(1−OTF_LP) | Equivalent Fourier-domain high-pass filtering: multiply by the complementary mask |
+
+---
