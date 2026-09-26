@@ -164,6 +164,8 @@ The thin lens equation `1/S + 1/S' = 1/f` is precisely the constraint linking th
 
 ### 4.3 The inverse relationship: how moving the lens changes what's in focus
 
+**In practice, *S′* is usually the variable you actually know, and *S* is what you calculate.** The lens's physical position — set by the focus ring or autofocus motor — fixes *S′* directly; the object distance that ends up in focus, *S*, is the one this section's rearranged equation solves for. (§4.2 described the thin lens equation from the other direction — "choose a subject distance *S*, then find the *S′* needed" — useful for explaining *why* focusing works at all. This section's direction — "given wherever the ring already is, *S′*, find what's now in focus, *S*" — is the one you'll actually use when tabulating a focus distance from a known lens setting.)
+
 Rearranging the thin lens equation to isolate the object distance that's currently in focus, for whatever sensor distance *S′* the focus ring happens to be set to:
 
 ```
