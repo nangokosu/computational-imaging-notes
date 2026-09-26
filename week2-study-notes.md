@@ -253,6 +253,8 @@ This is the most important technical concept of Week 2 — the direct basis for 
 
 ### 9.1 What "in focus" and "out of focus" mean, precisely
 
+**S is the object distance the lens is currently focused at** — not a free variable, but the one specific distance the thin lens equation names for the lens's current, fixed sensor distance *S′*. Every formula from here through §9.4 (circle of confusion, depth of field, near/far distances, hyperfocal distance) treats *S* as this fixed, chosen quantity — never the varying actual distance of whatever scene point you happen to be evaluating (that's *O*).
+
 Recap from §5: for a lens with a fixed sensor distance *S′*, the thin lens equation (§4.1) names exactly one object distance *S* whose rays converge perfectly at the sensor plane. A real scene point sitting at its own actual distance *O* is perfectly sharp only when *O = S*; at any other *O*, its rays converge either before or after the sensor plane and have re-diverged into a small blurred disc — the **circle of confusion** — by the time they reach the sensor.
 
 ### 9.2 The circle-of-confusion formula, derived
