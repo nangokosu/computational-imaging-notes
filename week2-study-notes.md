@@ -363,6 +363,35 @@ where  k = ε / (m·D)
 
 Skipping step 1 — plugging *f* and *S* straight into a magnification-shaped formula without first finding *S′* — is the most common way to get *m* (and therefore every downstream *k*, *O_near*, *O_far*, and DOF value) wrong. As in §9.3's units-trap paragraph, keep *f*, *S*, and *S′* all in one consistent unit throughout both steps.
 
+### 9.3.2 Why depth of field is a range, and why the near and far edges aren't mirror images
+
+**Why there's a range at all, not just one sharp plane.** §9.2's formula makes *c* a continuous function of the actual object distance *O*: *c*(*O*) = *m*·*D*·|1 − *S*/*O*|. It hits exactly zero at the single point *O* = *S*, but it doesn't jump straight from 0 to "obviously blurred" the instant *O* moves away from *S* — being continuous, *c*(*O*) has to pass through small values immediately around *S* before growing further. Because the acceptable-blur threshold *ε* (§9.3) is some fixed, nonzero size — set by how fine a blur the sensor's pixel grid (or the eye) can even register — there is necessarily a whole neighborhood of *O* around *S* where *c*(*O*) stays at or below *ε*. That neighborhood, not a single plane, is the depth of field. If *ε* were zero (an idealized, infinitely fine sensor), the "range" would collapse to the single point *O* = *S* — exactly the §9.3.1 sanity check at *k* = 0.
+
+**How c(O) actually changes across that neighborhood.** Split the formula at *O* = *S*, since the absolute value behaves differently on each side:
+
+```
+O < S (near side):  c(O) = m·D·(S/O − 1)
+O > S (far side):   c(O) = m·D·(1 − S/O)
+```
+
+Both hit *c* = 0 at *O* = *S*, and both grow as *O* moves away from *S* — but *S*/*O* is a **reciprocal**, not a straight-line function of *O*, so the growth is not a straight ramp on either side, and it isn't the same shape on the two sides:
+
+- **Near side.** As *O* shrinks toward the lens, *S*/*O* keeps growing without limit, so *c*(*O*) grows without limit too — *c*(*O*) → ∞ as *O* → 0. Physically: an object close enough to the lens sends such a steeply diverging cone of rays that no finite acceptable-blur threshold can survive close enough approach; *c* grows *faster than linearly* as *O* shrinks (its slope |d*c*/d*O*| = *m*·*D*·*S*/*O*² itself grows as *O* shrinks).
+- **Far side.** As *O* grows toward infinity, *S*/*O* shrinks toward 0, so *c*(*O*) climbs toward a **finite ceiling**, *c*<sub>∞</sub> = *m*·*D* — the same *c*<sub>∞</sub> that §9.4 sets equal to the acceptable threshold to define the hyperfocal distance *H*. No matter how far away the object is pushed, its circle of confusion never exceeds *m*·*D*; the curve flattens out (diminishing returns) rather than diverging.
+
+**Is the growth symmetric?** Only locally, and only approximately. Write *O* = *S*(1+*δ*) for a small fractional deviation *δ* (*δ* > 0 on the far side, *δ* < 0 on the near side) and expand *c*(*O*)/(*m·D*) = |*δ*/(1+*δ*)| for small *δ*:
+
+```
+far side (δ>0):  c/(mD) ≈ δ − δ²
+near side (δ<0): c/(mD) ≈ |δ| + δ²
+```
+
+To *first order* in *δ* — i.e., for deviations small enough that §9.3's small-*k* approximation applies — both sides grow at the same rate *m*·*D*·|*δ*|, which is exactly why the compact `DOF ≈ 2εS/(mD)` formula can afford to treat the near and far edges as symmetric around *S*. But the *second-order* term has opposite sign on the two sides: it *subtracts* from growth on the far side (bending the curve down, toward saturation) and *adds* to it on the near side (bending the curve up, toward blow-up). So the exact curve is asymmetric even for a "small" deviation, and that asymmetry only gets more pronounced the farther *O* strays from *S* — culminating in the extreme case already worked out in §9.3.1 and §9.4: as the tolerance fraction *k* → 1, *O_far* = *S*/(1−*k*) is driven all the way to infinity while *O_near* = *S*/(1+*k*) only ever contracts down to the finite floor *S*/2 (which is *H*/2, evaluated at *S* = *H*). The far edge can be pushed arbitrarily far out; the near edge can only ever collapse halfway to the lens, never past it. That one-sided floor versus unbounded ceiling is the same asymmetry as the reciprocal 1/*O* dependence in the thin lens equation itself (§4.1) — depth of field inherits its lopsidedness from the same "distances add as reciprocals, not linearly" structure that gives the thin lens equation its own shape.
+
+> **Illustrative example (arbitrary S, not any homework's numbers).** Take *S* = 5 (any consistent unit) and watch *O_near* = *S*/(1+*k*), *O_far* = *S*/(1−*k*) as the tolerance fraction *k* widens: at *k* = 0.1, (*O_near*, *O_far*) ≈ (4.55, 5.56) — nearly symmetric, matching the small-*k* approximation. At *k* = 0.5, (*O_near*, *O_far*) = (3.33, 10) — already lopsided, with the far edge having moved five times farther from *S* than the near edge. In the limit *k* → 1, (*O_near*, *O_far*) → (2.5, ∞) — the near edge stalls at *S*/2 while the far edge diverges.
+
+**Diagram.** The construction is the same object-axis picture as Fig. 37 (§9.3.1), but plotting *c* itself as a curve over *O* rather than marking just the two threshold crossings: a V-shaped curve touching zero at *S*, rising steeply and without bound toward the lens on the near side, and rising toward a flat asymptote at height *m*·*D* on the far side — with the acceptable threshold *ε* as a horizontal line whose two crossings are exactly *O_near* and *O_far*, positioned asymmetrically around *S*. See the artifact for the full drawn version.
+
 ### 9.4 Hyperfocal distance
 
 The **hyperfocal distance**, *H*, is the specific focus distance *S* that pushes the *far* edge of the depth-of-field range (§9.3) all the way out to infinity. Deriving it directly from §9.2's circle-of-confusion formula: as the actual object distance *O* → ∞, the ratio |*O* − *S*|/*O* → 1 (the finite *S* becomes negligible next to an infinite *O*), so the circle of confusion an object at infinity would show, if focused at *S* = *H*, is simply *c*<sub>∞</sub> = *m·D* (using the magnification evaluated at that focus distance). Setting this equal to the fixed acceptable threshold and solving for *S* = *H* (using *D* = *f*/*N* from §8, and dropping *f* itself as negligible next to the much larger *H*) gives:
