@@ -396,6 +396,8 @@ H = f² / (N·c)
 | N | f-number — setup-chosen |
 | c | fixed acceptable circle-of-confusion threshold (not the general variable of §9.2) |
 
+**Note:** evaluating §9.3's near-distance formula O_near = S/(1+k) at S = H (where k = 1 by H's own definition) gives O_near(H) = H/2 — the classical "H/2 to infinity" depth-of-field rule.
+
 ---
 
 ### Diffraction limit (Abbe's formula) (§10)

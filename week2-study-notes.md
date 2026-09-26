@@ -367,7 +367,19 @@ The **hyperfocal distance**, *H*, is the specific focus distance *S* that pushes
 H = f² / (N·c)
 ```
 
-where *c* here is the fixed acceptable-circle-of-confusion threshold (the same role §9.3 calls *ε* — the lecture reuses the letter *c* for this constant *and* for §9.2's general, object-distance-dependent circle-of-confusion size; in this one formula, it means the fixed threshold only). Focusing at the hyperfocal distance means everything from roughly *H*/2 out to infinity satisfies the depth-of-field threshold simultaneously — a classic landscape-photography technique for maximizing usable in-focus range without stopping the aperture down so far that diffraction (§2, §10) starts to matter.
+where *c* here is the fixed acceptable-circle-of-confusion threshold (the same role §9.3 calls *ε* — the lecture reuses the letter *c* for this constant *and* for §9.2's general, object-distance-dependent circle-of-confusion size; in this one formula, it means the fixed threshold only).
+
+**The connection to §9.3.1's near and far distances.** *H* is defined above as exactly the focus distance *S* at which the far edge of the depth-of-field range, *O_far* = *S*/(1−*k*) (§9.3.1), diverges to infinity — which happens precisely when *k* = 1 (the denominator hits zero). That isn't a separate fact to check — it *is* what the derivation above already says: setting the object-at-infinity circle of confusion *c*<sub>∞</sub> = *m·D* equal to the acceptable threshold *ε* is exactly the statement *k* = *ε*/(*mD*) = 1, evaluated at *S* = *H*.
+
+Since *k* = 1 at *S* = *H*, plug that directly into §9.3.1's *exact* near-distance formula:
+
+```
+O_near(H) = H / (1 + k) = H / (1 + 1) = H/2
+```
+
+This is where the familiar "focus at the hyperfocal distance and everything from *H*/2 to infinity is acceptably sharp" rule comes from — it isn't a separate empirical fact, it falls straight out of §9.3.1's *O_near* formula evaluated at the one specific focus distance where *k* happens to equal 1. (The "*H*/2" result inherits the same one approximation already used to get the closed-form *H* = *f*²/(*N·c*) above — dropping *f* as negligible next to the much larger *H* — so it's exact *given* that approximate *H*, not a second independent approximation stacked on top.)
+
+Focusing at the hyperfocal distance means everything from exactly *H*/2, as just derived, out to infinity satisfies the depth-of-field threshold simultaneously — a classic landscape-photography technique for maximizing usable in-focus range without stopping the aperture down so far that diffraction (§2, §10) starts to matter.
 
 ---
 
