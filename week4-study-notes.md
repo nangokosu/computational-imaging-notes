@@ -384,7 +384,7 @@ I_nonlinear(x, y)  = f[ I_linear(x, y) ]
 
 **Term-by-term.** Φ(*x*,*y*) is the real scene flux hitting pixel (*x*,*y*) (fixed by the scene and lighting — this is §1.2's *E*, image-plane irradiance, restated per pixel); *tᵢ* is exposure *i*'s exposure time (you control this, §4); *I_linear* is what the sensor *would* record if nothing further distorted it, after the sensor's own clipping at saturation (§1.4); *f*[·] is the camera's tone reproduction curve — some fixed, generally unknown, monotonic nonlinear function baked in by the camera's internal processing; *I_nonlinear* is what actually gets written to the output file.
 
-**Linearization.** Since merging (§4) needs linear values, and only *I_nonlinear* is available, recovering an estimate of the true linear signal requires the *inverse* of that curve:
+**Linearization.** Since merging (§5) needs linear values, and only *I_nonlinear* is available, recovering an estimate of the true linear signal requires the *inverse* of that curve:
 
 ```
 I_est(x, y) = f⁻¹[ I_nonlinear(x, y) ]
