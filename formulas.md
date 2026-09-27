@@ -419,81 +419,7 @@ d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 
 ---
 
-### Exposure (§13.2)
-
-```
-H = E · t
-E ≈ (π/4) · L / N²
-H ∝ L · t / N²
-```
-
-**Computes:** Gives the total light energy collected per unit sensor area during a capture — the quantity that sets image brightness.
-
-| Term | Meaning |
-|---|---|
-| H | exposure, total light per unit area (lux·s) |
-| E | image-plane irradiance, light power per unit area (lux) |
-| t | exposure time (seconds) — you control this |
-| L | scene luminance — fixed by the scene |
-| N | f-number — you control this |
-| π/4 | geometric constant from integrating over a circular aperture |
-
----
-
-### Exposure value (§13.3)
-
-```
-EV = log₂(N² / t)
-```
-
-**Computes:** Gives a single number labeling a whole family of equivalent (aperture, time) exposure settings; one EV step equals one stop.
-
-| Term | Meaning |
-|---|---|
-| EV | exposure value |
-| N | f-number |
-| t | exposure time (seconds) |
-
----
-
-### Motion blur streak length (§13.5)
-
-```
-blur length (pixels) = image-plane speed (pixels/second) × exposure time (seconds)
-y = B x
-```
-
-**Computes:** Gives the length of the streak a moving point leaves on the sensor, and (in matrix form) shows motion blur is a convolution of the sharp image with a box kernel.
-
-| Term | Meaning |
-|---|---|
-| blur length | length of the motion streak, in pixels |
-| image-plane speed | how fast the subject's image moves across the sensor — fixed by scene motion, distance, and focal length |
-| exposure time | duration of the capture — you control this |
-| y | blurred image, as a vector |
-| B | banded (Toeplitz) matrix implementing convolution with the box kernel of length = streak length |
-| x | sharp image, as a vector |
-
----
-
-### LiDAR range equation (§13.8)
-
-```
-τ = 2d / c   ⇔   d = c·τ / 2
-```
-
-**Computes:** Converts a measured round-trip light travel time into distance to an object — the core ranging equation behind LiDAR and time-of-flight sensing.
-
-| Term | Meaning |
-|---|---|
-| d | distance to the object (meters) — the unknown being measured |
-| τ | round-trip time (seconds) — what the sensor times |
-| c | speed of light, physical constant |
-| 2 | factor accounting for the light travelling out and back |
-
----
-
-### Shot noise (Poisson statistics) (§16.2)
+### Shot noise (Poisson statistics) (§15.2)
 
 ```
 f(k; λ) = λᵏe⁻λ/k!
@@ -512,7 +438,7 @@ f(k; λ) = λᵏe⁻λ/k!
 
 ---
 
-### Signal-to-noise ratio (§16.3)
+### Signal-to-noise ratio (§15.3)
 
 ```
 SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
@@ -531,7 +457,7 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 
 ---
 
-### Noise as an additive vector (§16.3, Linear-algebra view)
+### Noise as an additive vector (§15.3, Linear-algebra view)
 
 ```
 y = A x + n
@@ -1045,7 +971,7 @@ c = T · b
 Exposure = Gain × Flux × Time
 ```
 
-**Computes:** How bright a single captured photo looks overall — this is the *loose*, colloquial sense of "exposure" that folds ISO gain in, distinct from Week 2 §13.2's strict physical exposure *H* = *E*·*t* (light energy per unit sensor area), which explicitly excludes ISO (Week 2 §13.6 proves ISO doesn't change the physical light collected, only how it's amplified afterward). Do not confuse the two: this formula is a plain-language recap, not a new physical quantity.
+**Computes:** How bright a single captured photo looks overall — this is the *loose*, colloquial sense of "exposure" that folds ISO gain in, distinct from this file's own §1.2 strict physical exposure *H* = *E*·*t* (light energy per unit sensor area), which explicitly excludes ISO (§1.6 proves ISO doesn't change the physical light collected, only how it's amplified afterward). Do not confuse the two: this formula is a plain-language recap, not a new physical quantity.
 
 | Term | Meaning |
 |---|---|
@@ -1056,7 +982,81 @@ Exposure = Gain × Flux × Time
 
 ---
 
-### Confidence weight function (§4.2)
+### Exposure (§1.2)
+
+```
+H = E · t
+E ≈ (π/4) · L / N²
+H ∝ L · t / N²
+```
+
+**Computes:** Gives the total light energy collected per unit sensor area during a capture — the quantity that sets image brightness.
+
+| Term | Meaning |
+|---|---|
+| H | exposure, total light per unit area (lux·s) |
+| E | image-plane irradiance, light power per unit area (lux) |
+| t | exposure time (seconds) — you control this |
+| L | scene luminance — fixed by the scene |
+| N | f-number — you control this |
+| π/4 | geometric constant from integrating over a circular aperture |
+
+---
+
+### Exposure value (§1.3)
+
+```
+EV = log₂(N² / t)
+```
+
+**Computes:** Gives a single number labeling a whole family of equivalent (aperture, time) exposure settings; one EV step equals one stop.
+
+| Term | Meaning |
+|---|---|
+| EV | exposure value |
+| N | f-number |
+| t | exposure time (seconds) |
+
+---
+
+### Motion blur streak length (§1.5)
+
+```
+blur length (pixels) = image-plane speed (pixels/second) × exposure time (seconds)
+y = B x
+```
+
+**Computes:** Gives the length of the streak a moving point leaves on the sensor, and (in matrix form) shows motion blur is a convolution of the sharp image with a box kernel.
+
+| Term | Meaning |
+|---|---|
+| blur length | length of the motion streak, in pixels |
+| image-plane speed | how fast the subject's image moves across the sensor — fixed by scene motion, distance, and focal length |
+| exposure time | duration of the capture — you control this |
+| y | blurred image, as a vector |
+| B | banded (Toeplitz) matrix implementing convolution with the box kernel of length = streak length |
+| x | sharp image, as a vector |
+
+---
+
+### LiDAR range equation (§1.8)
+
+```
+τ = 2d / c   ⇔   d = c·τ / 2
+```
+
+**Computes:** Converts a measured round-trip light travel time into distance to an object — the core ranging equation behind LiDAR and time-of-flight sensing.
+
+| Term | Meaning |
+|---|---|
+| d | distance to the object (meters) — the unknown being measured |
+| τ | round-trip time (seconds) — what the sensor times |
+| c | speed of light, physical constant |
+| 2 | factor accounting for the light travelling out and back |
+
+---
+
+### Confidence weight function (§5.2)
 
 ```
 w(I) = exp( −4·(I − 0.5)² / 0.5² )
@@ -1073,7 +1073,7 @@ w(I) = exp( −4·(I − 0.5)² / 0.5² )
 
 ---
 
-### HDR merging: log-domain weighted least-squares solution (§4.3)
+### HDR merging: log-domain weighted least-squares solution (§5.3)
 
 ```
 O(X) = Σᵢ wᵢ · ( log(I_lin,i) − log(tᵢ·X) )²
@@ -1085,9 +1085,9 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 | Term | Meaning |
 |---|---|
-| i = 1...N | Index over the N bracketed exposures of the same pixel — fixed by the bracket (§3) |
-| I_lin,i | Linearized recorded value at this pixel in exposure i — measured (after §5's linearization) |
-| tᵢ | Exposure i's known exposure time — you control this (via bracketing, §3) |
+| i = 1...N | Index over the N bracketed exposures of the same pixel — fixed by the bracket (§4) |
+| I_lin,i | Linearized recorded value at this pixel in exposure i — measured (after §6's linearization) |
+| tᵢ | Exposure i's known exposure time — you control this (via bracketing, §4) |
 | wᵢ | Confidence weight for exposure i, = w(I_lin,i) from the confidence weight function above |
 | X | Unknown true scene exposure/radiance value at this pixel — the same for every i; solved for |
 | O(X) | Weighted least-squares objective being minimized over X (in the log domain) |
@@ -1095,7 +1095,7 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 ---
 
-### Non-linear image formation model and linearization (§5.2)
+### Non-linear image formation model and linearization (§6.2)
 
 ```
 I_linear(x, y)     = clip[ tᵢ · Φ(x, y) + noise ]
@@ -1113,11 +1113,11 @@ I_est(x, y)        = f⁻¹[ I_nonlinear(x, y) ]
 | f[·] | Camera's tone reproduction curve — fixed, generally unknown, monotonic nonlinear function baked in by the camera |
 | I_nonlinear | What actually gets written to the output file — measured |
 | f⁻¹[·] | Inverse of the tone reproduction curve, used to linearize |
-| I_est | Recovered estimate of the true linear signal — computed output, fed into §4.3's merge |
+| I_est | Recovered estimate of the true linear signal — computed output, fed into §5.3's merge |
 
 ---
 
-### Photographic tonemapping curve (§8)
+### Photographic tonemapping curve (§9)
 
 ```
 I_display = I_HDR / (1 + I_HDR)
@@ -1127,12 +1127,12 @@ I_display = I_HDR / (1 + I_HDR)
 
 | Term | Meaning |
 |---|---|
-| I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§4.3) |
+| I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§5.3) |
 | I_display | Output value sent to the display, guaranteed to lie in [0,1) — computed output |
 
 ---
 
-### PSF convolution (image formation) (§13.1)
+### PSF convolution (image formation) (§14.1)
 
 ```
 I_blurred(x, y) = (I_ideal * PSF)(x, y)
@@ -1149,7 +1149,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 
 ---
 
-### OTF as the Fourier transform of the PSF, and the primal/Fourier high-pass identity (§13.2, §13.3)
+### OTF as the Fourier transform of the PSF, and the primal/Fourier high-pass identity (§14.2, §14.3)
 
 ```
 OTF(u, v) = FT{ PSF }(u, v)
