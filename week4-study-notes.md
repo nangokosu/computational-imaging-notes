@@ -2,6 +2,7 @@
 
 **Topic:** Great Ideas in Computational Photography — HDR Imaging, Tone Mapping, Coded Imaging
 **Source:** Lecture 4 slides (D. Lindell, CSC2529, Fall 2026); Problem Session 3 ("PS3," a TA problem session covering HW4), Task 1 only (image filtering: PSF, OTF, primal-domain vs. Fourier-domain filtering). §1 (exposure, exposure time, and ISO) is sourced from Lecture 2, moved here from Week 2's notes for a coherent flow with the HDR/coded-exposure material that depends on it — see that section's own note for details.
+**HW3 supplements:** §1.9, §§5.4–5.5, §§6.5–6.6, §§9.1–9.2, and §19.3 go beyond the lecture slides and exist to cover what HW3 (HDR fusion, burst denoising SNR, flutter shutter SNR) needs. They explain methods and set up quantities but never compute the assignment's own answers.
 **Scope:** Announcements, the HW4/project-proposal reminders, and the problem-session plug are skipped — notes start from "Motivation" (the exposure-sequence teaser). PS3's Tasks 2–3 (deconvolution/inverse filtering/Wiener deconvolution, and gradient descent/SGD) are **not** covered here: they belong to the formal inverse-problem material Week 3 §15 already flagged as "genuinely Week 5–6 material," and this file's §22 explains exactly where each piece lands (Wiener deconvolution and inverse filtering in Week 5, "Sampling, Linear Systems, Deconvolution"; gradient descent/SGD in Week 6, "Regularized Inverse Problems with ADMM"). Only PS3's Task 1 is used, since it directly supports this lecture's coded-aperture PSF/OTF material (§14).
 **Exam note:** two words get used loosely in this lecture before being pinned down precisely — flagged explicitly where each first appears: (1) "**Exposure**" opens this file meaning "how bright the captured photo looks" (this lecture's own "Gain × Flux × Time" framing, §0) — a *looser* sense than §1.1's strict *H* (light energy per unit sensor area), which explicitly **excludes** ISO gain (§1.6). (2) "**HDR imaging**" is used to mean five different things across this very lecture, by its own admission — §11 lists and disambiguates all five once the building blocks (§§2–10) are in place to make the distinctions meaningful.
 
@@ -238,6 +239,31 @@ The same √*t* rule of worked example 3 applies: 4× as many pulses halves the 
 
 **Takeaway.** Whether the output is brightness or distance, "exposure" is the same decision: how long to collect before reading out. More time buys lower relative noise (∝ √*t*). It costs motion blur, saturation risk, and, when your own light source is the signal, extra ambient background.
 
+### 1.9 Noise statistics of summed and averaged frames (supports HW3 Task 2)
+
+*(Beyond the lecture's slides: the probability rules behind §1.5's worked example 4, stated in general form so they can be applied to any combination of noise sources. Applying them to HW3's specific noise models is left to the assignment.)*
+
+**Vocabulary, from scratch.** A pixel's recorded value is a **random variable**: re-photograph the same scene and you get a slightly different number each time. Its **mean** μ is the average over many repeats (the "true signal"); its **variance** σ² is the average squared deviation from that mean, and its **standard deviation** σ = √variance is the typical size of the wobble, in the same units as the pixel value. **SNR** = μ/σ (Week 2 §15.3). Two noise models matter here (Week 2 §15.2):
+
+- **Gaussian (normal) noise**, written 𝒩(μ, σ²): a bell curve with mean μ and variance σ². Read noise is modeled this way; σ does not depend on the signal.
+- **Poisson noise**, written Pois(λ): counts of randomly timed events (photon arrivals) with average rate λ. Its mean and its variance are **both** λ, so its standard deviation is √λ.
+
+**Three rules.** For *independent* random variables (one noise draw does not influence another):
+
+1. **Sums.** Means add and variances add: the sum has mean μ₁ + μ₂ and variance σ₁² + σ₂². Standard deviations do **not** add; they combine like the sides of a right triangle (Week 2 §15.3's orthogonality picture). Two special cases keep their family: 𝒩(μ₁, σ₁²) + 𝒩(μ₂, σ₂²) = 𝒩(μ₁ + μ₂, σ₁² + σ₂²), and Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂). The Poisson rule says that splitting a photon count across several frames and adding the frames back up is statistically the same as counting once.
+2. **Scaling.** Multiplying by a constant *c* multiplies the mean by *c* but the variance by *c*²: *c*·𝒩(μ, σ²) = 𝒩(*c*μ, *c*²σ²). (Why squared: variance is a *squared* deviation, so a factor-*c* stretch of the deviations is a factor *c*² on the variance.) A scaled Poisson variable is **no longer** Poisson, since its variance (*c*²λ) no longer equals its mean (*c*λ); to average Poisson counts, apply rule 1 first and then rule 2, rather than treating the average as Poisson.
+3. **A pixel with several noise sources** (shot, dark current, read) has total variance equal to the sum of the individual variances, exactly the denominator of Week 2 §15.3's SNR formula.
+
+**Averaging *K* aligned frames, derived.** Let each of *K* independent frames have mean μ and variance σ² (σ² may itself be a sum, by rule 3). The *sum* has mean *K*μ and variance *K*σ² (rule 1). The *average* divides the sum by *K* (rule 2 with *c* = 1/*K*): mean *K*μ/*K* = μ unchanged, variance *K*σ²/*K*² = **σ²/*K***. So averaging leaves the signal alone and shrinks the noise variance by the number of frames; the standard deviation shrinks by √*K*. How SNR then scales with *K* depends on what σ² is made of, which is the exercise HW3 Task 2 poses for its two noise models. (Rule 2 scales the mean and the standard deviation by the same factor *c*, so a constant rescale never changes a signal-to-noise *ratio*: the sum and the average of the same frames have the same SNR, even though their pixel values and noise sizes differ by the factor *K*. Keep the two distinct when reporting the *mean* or *σ* themselves.)
+
+**Linear-algebra view.** Averaging *K* frames is a dot product with the weight vector **a** = (1/*K*, ..., 1/*K*). If the *K* noise values are independent with equal variance σ², their covariance matrix is σ²**I** (diagonal, by independence), and the output variance of any linear combination **a**ᵀ**n** is **a**ᵀ(σ²**I**)**a** = σ²‖**a**‖². Here ‖**a**‖² = *K*·(1/*K*)² = 1/*K*, reproducing σ²/*K*. This is the same "uncorrelated noise behaves like orthogonal vectors" fact as Week 2 §15.3: the squared length of the output is the sum of the squared lengths of its parts.
+
+> **Worked example (a mixed-noise case, deliberately not either of HW3's cases).** Per frame: mean 20 photons, Poisson shot noise (variance 20) plus Gaussian read noise of σ = 4 (variance 16), and *K* = 4 frames.
+> - One frame: variance 20 + 16 = 36, σ_total = 6, SNR = 20/6 ≈ **3.33**.
+> - Average of 4: mean 20; variance 36/4 = 9, so σ_total = 3; SNR = 20/3 ≈ **6.67**, a factor 2 = √4 better than one frame.
+>
+> The √*K* gain here holds because the *total* per-frame variance (shot plus read) is the same in every frame; HW3's flutter-shutter-vs-burst comparison (§19.3) differs in that the burst's per-frame variance is itself smaller than the single exposure's.
+
 ---
 
 ## 2. Light Metering
@@ -367,6 +393,28 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 **Linear-algebra view (this is the simplest possible weighted least-squares problem).** Treat the *N* values *yᵢ* = log(*I_lin,i*) − log(*tᵢ*) as *N* noisy observations of a single unknown constant *μ* = log *X*. Minimizing Σᵢ *wᵢ*(*yᵢ* − *μ*)² is ordinary weighted linear regression whose "design matrix" is just a column of *N* ones (since the model "*μ*, the same for every observation" has no other free parameter) — the general weighted normal equations **Aᵀ W A** *μ* = **Aᵀ W y** collapse, for this all-ones **A**, to exactly the weighted-average formula above. Every pixel in the image runs this identical 1-parameter regression independently; nothing here is more exotic than fitting a mean.
 
+### 5.4 Debevec's triangle weight, and displaying the weights (supports HW3 Task 1.1)
+
+*(Beyond the lecture's slides, which print §5.2's Gaussian bump.)* The weight in the original Debevec–Malik HDR method is a **triangle (hat) function** of the pixel value *z* ∈ [0, 1]:
+
+```
+w(z) = z        if z ≤ 0.5
+w(z) = 1 − z    if z > 0.5        (equivalently  w(z) = min(z, 1 − z))
+```
+
+**Intuition.** It encodes the same trust rule as §5.2's Gaussian (peak at mid-gray, fall to the extremes), with straight lines instead of a bell. Term-by-term: *z* is one pixel's value in one exposure on a [0, 1] scale, fixed by the data; the peak is *w* = 0.5 at *z* = 0.5, and the weight is exactly 0 at *z* = 0 and *z* = 1, so completely black or clipped values receive **zero** trust (§5.2's Gaussian only gets close to zero, ≈ 0.018 at the ends). Both shapes are valid instances of the idea in §5.1, and the merge formula of §5.3 takes either unchanged; which one your submission should use is decided by the assignment's problem session, which these notes cannot see.
+
+**Which values go in?** §5.2 evaluates the weight on the *linear* value; the original Debevec–Malik method evaluates it on the *stored* (non-linear) pixel value. Pick one, apply it consistently across all 16 exposures, and say which in your write-up.
+
+**Weight images.** To "show the weights" of an exposure, evaluate *w* at every pixel of that exposure and display the resulting array as a grayscale image (bright = trusted, dark = ignored), one image per exposure (one per color channel if the weights are per channel, §5.2). What to expect when you check your own output: in the shortest exposure the weights are high on the bright parts of the scene (they land mid-range) and low on dark parts (near the noise floor); in the longest exposure it is the reverse; so across the stack every scene point should be trusted by at least a few exposures. If a region is dark in *every* weight image, the stack has no trustworthy measurement there (see §5.5).
+
+### 5.5 Two numerical pitfalls when implementing the merge (supports HW3 Task 1.2)
+
+- **log(0).** The merge takes ln of the linearized values (§5.3), but fully black pixels have value exactly 0 and ln 0 = −∞. A single −∞ then poisons the weighted sum (and with a triangle weight of exactly 0 at *z* = 0, you get 0 × (−∞) = **NaN**, "not a number," which spreads through every later step that touches that pixel). The fix is to add a tiny constant before the log, ln(*value* + ε). The assignment prescribes ε = machine epsilon of 32-bit floats, which NumPy gives as `np.finfo(np.float32).eps` (about 1.2 × 10⁻⁷). It is chosen to be far smaller than the smallest nonzero value 8-bit data can produce, so it changes real data negligibly while keeping the log finite; computing it from `np.finfo` rather than typing a number follows this project's rule that constants be derived, not guessed.
+- **All weights zero.** Where every exposure has *w* = 0 at some pixel (e.g. a region that is black in all 16 frames), the denominator Σᵢ *wᵢ* of §5.3's closed form is 0 and the division is 0/0. Guard against it (e.g. clamp the denominator to a small positive floor), otherwise the HDR image contains NaN holes.
+
+**Pipeline order, end to end:** load each PNG → divide by 255 (§6.5) → linearize (§6.5) → compute weights (§5.2 or §5.4) → ln(value + ε) − ln(*t_i*) per exposure → weighted average over exposures (§5.3) → exp → normalize to [0, 1] → tonemap (§9.1, §9.2).
+
 ---
 
 ## 6. Radiometric Calibration
@@ -406,6 +454,28 @@ If no calibration is possible (no ColorChecker, no controlled bracket to fit aga
 
 - **EXIF metadata.** Alongside pixel data, an image file typically stores **[Exif](https://en.wikipedia.org/wiki/Exif)** metadata (Week 3 §9) — and it often also records information about the tone reproduction curve and color space actually used, which can be read directly instead of estimated.
 - **The default gamma model.** Absent any of that, *f* is well approximated as a power law, *f*(*x*) ≈ *x*^γ, with a good default of **γ = 1/2.2** — precisely the same γ ≈ 2.2 human-perceptual constant Week 3 §12 already built from scratch for deliberately *encoding* a linear sensor reading into 8 bits. The role is different here: Week 3 §12 was about a chosen, deliberate encoding step for efficient storage; here, *f* is whatever nonlinear curve the camera silently *already* applied, and γ ≈ 1/2.2 is simply the best generic guess for *what that curve probably was*, so it can be undone (*f*⁻¹, raising to the power ≈2.2) before merging. The lecture's own rule of thumb — "if nothing else, take the square of your image" — is exactly this approximation one step cruder: since 1/(1/2.2) = 2.2 ≈ 2, squaring the nonlinear image roughly approximates the correct *f*⁻¹, close enough to remove most of the tone-curve's effect when no better estimate is available.
+
+### 6.5 Linearizing an sRGB image precisely (supports HW3 Task 1)
+
+*(Beyond the lecture's slides: HW3 states its PNGs are stored in **sRGB**, the standard display color space whose tone curve Week 3 §12 introduced, so an inverse gamma must be applied before merging.)*
+
+Here *f*⁻¹ of §6.2 is not unknown: the file format fixes it. Step by step, for each color channel of each PNG:
+
+1. Convert the stored 8-bit integer to a float in [0, 1] by dividing by the maximum 8-bit code (255). The weight function (§5.2) and the formulas below assume this [0, 1] scale.
+2. Apply the **sRGB decoding curve** *C*_lin = *C*/12.92 if *C* ≤ 0.04045, otherwise ((*C* + 0.055)/1.055)^2.4. Here *C* is the stored value in [0, 1] and *C*_lin the linear value. The tiny straight segment near 0 avoids an infinite slope at black; the rest is a power law whose exponent 2.4, combined with the offset terms, behaves like the plain γ ≈ 2.2 power law of §6.4.
+3. If you use the simpler *C*_lin = *C*^2.2 instead (what the assignment's "inverse gamma curve" wording usually means), the difference from step 2 is small except in the darkest tones, and merging is forgiving of it. Either is defensible as long as you state which you used.
+
+Nothing here is a linear-algebra operation: the curve acts independently on each scalar value, which is exactly why it is called a **point-wise non-linearity**. (Contrast Week 3's color-space *change of basis*, which mixes channels by a matrix.)
+
+### 6.6 Estimating the response curve algorithmically: the "CRF" (supports the HW3 bonus)
+
+*(Beyond the lecture's slides, which only list the calibration setups of §6.3.)* The **camera response function (CRF)** is the name usually given to the curve *f* of §6.2 (or its inverse, depending on the author's convention); this is what OpenCV's calibrate functions estimate.
+
+**Idea.** For one pixel location *j* with true flux *E_j* photographed with known exposure time *t_i*, the model says *f*⁻¹(recorded value *Z_ij*) = *E_j* · *t_i*. Taking logs, *g*(*Z_ij*) = ln *E_j* + ln *t_i*, where *g* = ln *f*⁻¹ is an *unknown function on the 256 possible 8-bit values*. Unknowns: the 256 values of *g* plus one ln *E_j* per sampled pixel. Equations: one per (pixel, exposure) pair.
+
+**Linear-algebra view.** Stacking those equations gives one big overdetermined linear system **A** *u* = **b**, where *u* holds the 256 *g* values and the ln *E_j* values; each row of **A** has just two nonzero entries (one selecting *g*(*Z_ij*), one selecting ln *E_j*), and **b** holds the known ln *t_i*. It is solved by **linear least squares** (weighted by §5.2's confidence weights, and with an extra row-block penalizing the second difference of *g* so the recovered curve is smooth). One extra row pins *g* at mid-gray to 0, because the system only determines *g* up to an additive constant (the null space of **A** contains the "add the same constant to every *g* and subtract it from every ln *E*" direction).
+
+**In practice (bonus only).** OpenCV packages this as a calibrate-then-merge pair: a Debevec calibrate object (`cv2.createCalibrateDebevec`) estimates the curve from the stack and its exposure times, and a Debevec merge object (`cv2.createMergeDebevec`) applies it and fuses the stack into an HDR image, as in the OpenCV HDR tutorial the assignment links. The main HW3 task skips this, since the PNGs' curve is known (§6.5).
 
 ---
 
@@ -461,6 +531,34 @@ I_display = I_HDR / (1 + I_HDR)
 **Diagram.** Plotting *L_display* against *L_world* (the lecture's own axis labels): a straight line of slope 1 near the origin, curving over smoothly and flattening toward an asymptote as *L_world* grows — contrasted directly against the two broken linear-scaling lines of §8, one of which would need to keep climbing past 1 (impossible, hence clipping) and one of which starts too shallow (hence looking dark). (See Fig. — companion diagram of the photographic tonemapping curve, with the two failed linear-scaling lines overlaid for contrast.)
 
 **Worked comparison.** The lecture's side-by-side examples show photographic tonemapping recovering *both* the highlight and shadow detail that either linear-scaling choice (§8) individually sacrificed — matching a high-exposure LDR shot's shadow detail and a low-exposure LDR shot's highlight detail, simultaneously, in one image.
+
+### 9.1 The two-knob gamma tonemapper (supports HW3 Task 1.2)
+
+*(Beyond the lecture's slides: the simplest tonemapper HW3 asks you to build and tune yourself.)*
+
+**Analogy.** Brightening a dim photo with a "brightness" slider (multiply everything) and then a "gamma" slider (lift the shadows more than the highlights). Two sliders, applied in that order.
+
+```
+I_display = clip( (s · I_HDR)^γ , 0, 1 )
+```
+
+**Intuition, step by step.**
+
+1. *I_HDR* is first normalized so its values sit in [0, 1] (divide by its maximum), as HW3 specifies.
+2. Multiply by the **scale** *s*. This is a pure linear exposure change (§8): *s* > 1 pushes more of the image upward; anything that ends up above 1 will clip to flat white in step 4.
+3. Raise to the power **γ**. For 0 < γ < 1 the curve rises steeply near 0 and flattens toward 1, so shadows are lifted much more than highlights. That is the same shape of non-linearity as Week 3 §12's gamma *encoding* (γ ≈ 1/2.2) and, like §9's I/(1+I), it satisfies the "dark detail gets more room" goal, but unlike §9's curve it does **not** asymptote: values can exceed 1.
+4. **clip** to [0, 1]: since the curve can exceed 1, anything above is cut to 1 (and negatives, if any, to 0). Multiplying by the display's maximum code (the number of 8-bit levels minus one, 255) and rounding gives the displayable 8-bit image.
+
+**Term-by-term.** *I_HDR*: normalized linear HDR value from the merge (§5), fixed by the data. *s*: dimensionless linear gain, **you choose it**; larger *s* brightens but clips more highlights. *γ*: dimensionless exponent, **you choose it**; smaller γ lifts shadows more and flattens contrast overall. *clip*: forces the result into the displayable range. There is no single correct pair: the assignment asks you to tune both by eye and report the values you chose, so the specific numbers are yours to find.
+
+**Trade-off to expect while tuning.** *s* trades highlight clipping against overall brightness; γ trades shadow visibility against flattened mid-tone contrast. Because the same *I_HDR* value always maps to the same output value (the curve depends on nothing else), this is a **global** operator (next subsection), so extreme settings cannot recover local contrast the way §10's methods do.
+
+### 9.2 Global vs. local tonemapping, and OpenCV's built-in tonemappers
+
+- A **global** tonemapping operator applies one fixed curve to every pixel: the output depends only on that pixel's own value. §8's linear scaling, §9's I/(1+I), and §9.1's (*s*·*I*)^γ are all global.
+- A **local** tonemapping operator lets the output depend on a pixel's neighbors too, which lets it compress large-scale brightness differences while keeping local contrast. §10's base/detail split, bilateral filtering, and gradient-domain methods are the lecture's local examples.
+
+HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-vision library) built-in tonemappers. OpenCV ships several, created through `cv2.createTonemap` (a simple gamma operator), `cv2.createTonemapDrago` (an adaptive-logarithmic operator), `cv2.createTonemapReinhard`, and `cv2.createTonemapMantiuk` (a gradient-domain operator, the family of §10 step 5). You do not need to implement any of them for HW3: the assignment only asks you to run the one in the starter code and compare its output with your own two-knob result from §9.1. These notes cannot say which one the starter code calls, since that depends on the starter file, not the lecture.
 
 ---
 
@@ -673,6 +771,30 @@ Two brief forward pointers to where coded apertures show up outside ordinary cam
 **Linear-algebra view (extending §1.5 with this week's OTF vocabulary).** Both the box-shutter blur and the flutter-shutter blur are the *same kind* of matrix — a banded Toeplitz convolution matrix **B** (§1.5) — differing only in *which* kernel fills its bands. The box kernel's **B** has eigenvalues (its own DFT, i.e. its OTF) that hit exactly zero at the sinc's zero-crossing frequencies — a **nontrivial null space**, meaning those directions in image space are genuinely unrecoverable, exactly as in §15.2's circular-PSF case. The coded kernel's **B** has an OTF that is nonzero at every frequency — a **trivial null space** — so, in principle, **B** is invertible everywhere, and the deconvolution problem becomes *well-posed* rather than fundamentally impossible (though, as with any real inversion, frequencies where the OTF is merely *small* rather than exactly zero still amplify noise heavily when inverted — a preview of exactly the trade-off Wiener deconvolution, Week 5, is built to manage).
 
 **Application: license plate retrieval.** The lecture demonstrates flutter shutter recovering legible license-plate text from a photograph of a fast-moving car that a conventional (box-shutter) long exposure would have rendered as an unreadable smear — a direct, concrete payoff of trading the box kernel's unrecoverable null-space frequencies for the coded kernel's fully invertible spectrum.
+
+### 19.3 What the flutter shutter costs in light, and how that compares to a burst of short exposures (supports HW3 Task 3)
+
+*(This subsection goes beyond the lecture's slides: it builds the noise bookkeeping HW3 Task 3 asks you to do. It sets up the quantities and the comparison logic only; plugging in the assignment's specific numbers and filling its table is left to the assignment.)*
+
+**Analogy.** Two ways to photograph a runner without blur. **Flutter shutter:** keep one bucket in the rain, but hold a lid over it for a pre-chosen half of the time, then read the bucket once. **Burst:** use a bucket per short interval, no lid ever, and read every bucket separately. The lid wastes rain; the many buckets each pay a fixed reading fee. Which wins depends on whether the fee or the rain's own randomness is the bigger noise source.
+
+**Setup, in symbols.** Let the full, unmodulated exposure collect *n* photons on average at one pixel (HW3's definition of *n*). Let the **duty cycle** *d* be the fraction of the exposure during which the flutter shutter is open (HW3 fixes it at 50%, i.e. *d* = 0.5). Split the exposure into *M* equal time slots (HW3: slots of the shutter's switching period); the shutter is open in a fraction *d* of them.
+
+- **Flutter shutter signal.** Light only arrives during open slots, so the mean recorded value is **μ_flutter = d · n**. Closed slots throw light away, which is the price paid for a broadband kernel (§19.2).
+- **Flutter shutter readouts.** The sensor is read out **once**, so read noise (variance σ²) is paid once.
+- **Burst signal.** Each of *M* frames is exposed for one slot, with no gaps, so across all frames the total light is the full *n* (a factor 1/*d* more than the flutter shutter), and each frame holds *n*/*M* on average.
+- **Burst readouts.** Every frame is read out, so read noise is paid *M* times (once per frame, §1.5's worked example 4); the frames are then combined as in §1.9.
+
+**Which noise formula to use.** The per-frame noise comes from §1.9's rules, and which rule applies depends on the noise model the question specifies:
+
+- **Gaussian read noise only:** the noise variance does not depend on the signal; what changes between the two schemes is only the signal size and how many independent read-noise samples get combined.
+- **Poisson shot noise only:** the variance equals the mean number of photons collected, so it scales with how much light the scheme actually collects (and §1.9's Poisson-sum rule says splitting the light into frames and re-adding them loses nothing).
+
+Each scheme's SNR is then its mean divided by the square root of its total noise variance (§1.9).
+
+**Why the comparison is not a foregone conclusion.** The flutter shutter collects less light (factor *d*) but reads out once; the burst collects more light but reads out *M* times. When read noise dominates, the burst's *M* readouts hurt it; when shot noise dominates, the flutter shutter's lost light hurts it and the extra readouts barely matter. That crossover is exactly what the two cameras in HW3's table (a read-noise-limited consumer camera and a shot-noise-limited scientific sensor) are chosen to expose.
+
+**Caveats the idealized homework model leaves out.** (1) The SNR above is the SNR of the *recorded* image; actually deblurring a flutter-shutter image multiplies the noise by an extra code-dependent amplification when the blur matrix **B** (§19.2) is inverted, a topic the Wiener-deconvolution material of Week 5 handles. (2) Burst frames of a *moving* object only combine cleanly after alignment (the motion in each short frame is small, but it is nonzero between frames). Both are modeling assumptions to state explicitly in a write-up, not numbers to compute.
 
 ---
 

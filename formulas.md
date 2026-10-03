@@ -1056,6 +1056,25 @@ y = B x
 
 ---
 
+### Sum, scaling, and average of independent noisy values (§1.9)
+
+```
+Var(X₁ + X₂) = σ₁² + σ₂²        Var(c·X) = c²·σ²        Var(mean of K) = σ²/K
+Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂)
+```
+
+**Computes:** The noise variance left after adding, rescaling, or averaging independent noisy measurements, which is the bookkeeping behind any burst-denoising or SNR comparison.
+
+| Term | Meaning |
+|---|---|
+| X₁, X₂ | Independent random pixel values (independent noise draws), e.g. two frames |
+| σ², σ₁², σ₂² | Variances of those values, in squared pixel-value (or squared photon) units; fixed by the noise model |
+| c | A constant multiplier, e.g. 1/K when averaging; chosen by you |
+| K | Number of independent frames averaged; chosen by you |
+| Pois(λ) | Poisson distribution with mean = variance = λ photons; fixed by scene brightness |
+
+---
+
 ### Confidence weight function (§5.2)
 
 ```
@@ -1095,6 +1114,22 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 ---
 
+### Debevec triangle weight (§5.4)
+
+```
+w(z) = min( z, 1 − z )
+```
+
+**Computes:** How much to trust one pixel value from one exposure when merging an HDR stack, peaking at mid-range and reaching exactly zero at black and at saturation (the alternative to the Gaussian weight of §5.2).
+
+| Term | Meaning |
+|---|---|
+| z | One pixel's value in one exposure on a [0, 1] scale; measured |
+| w(z) | Confidence weight in [0, 0.5], computed output |
+| 0.5 | Value at which the weight peaks; fixed |
+
+---
+
 ### Non-linear image formation model and linearization (§6.2)
 
 ```
@@ -1117,6 +1152,23 @@ I_est(x, y)        = f⁻¹[ I_nonlinear(x, y) ]
 
 ---
 
+### sRGB decoding (inverse gamma) (§6.5)
+
+```
+C_lin = C / 12.92                    if C ≤ 0.04045
+C_lin = ((C + 0.055) / 1.055)^2.4    otherwise
+```
+
+**Computes:** The linear-light value of a stored sRGB value, undoing the display tone curve so the merge of §5.3 operates on values proportional to scene light.
+
+| Term | Meaning |
+|---|---|
+| C | Stored sRGB value for one channel, in [0, 1] (the 8-bit code divided by 255); measured |
+| C_lin | Linear value for that channel; computed output |
+| 12.92, 0.04045, 0.055, 1.055, 2.4 | Constants fixed by the sRGB standard |
+
+---
+
 ### Photographic tonemapping curve (§9)
 
 ```
@@ -1129,6 +1181,23 @@ I_display = I_HDR / (1 + I_HDR)
 |---|---|
 | I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§5.3) |
 | I_display | Output value sent to the display, guaranteed to lie in [0,1) — computed output |
+
+---
+
+### Two-knob gamma tonemapper (§9.1)
+
+```
+I_display = clip( (s · I_HDR)^γ , 0, 1 )
+```
+
+**Computes:** A displayable [0, 1] image from a normalized linear HDR image, with s setting overall brightness and γ setting how strongly shadows are lifted.
+
+| Term | Meaning |
+|---|---|
+| I_HDR | Normalized linear HDR value in [0, 1] from the merge; fixed by the data |
+| s | Linear scale (gain) applied before the curve; you choose it |
+| γ | Exponent, usually below 1 to lift shadows; you choose it |
+| clip(·, 0, 1) | Forces values into the displayable range |
 
 ---
 
@@ -1170,5 +1239,21 @@ I − I * PSF_LP   ≡   Ĩ × (1 − OTF_LP)
 | Ĩ | Spectrum (Fourier transform) of I |
 | I − I*PSF_LP | Primal-domain high-pass filtering: subtract a low-pass-blurred copy |
 | Ĩ×(1−OTF_LP) | Equivalent Fourier-domain high-pass filtering: multiply by the complementary mask |
+
+---
+
+### Flutter shutter light budget (§19.3)
+
+```
+μ_flutter = d · n        (one readout)
+```
+
+**Computes:** The mean recorded value of a coded-exposure image, used as the signal term when comparing a flutter shutter against a burst of short exposures.
+
+| Term | Meaning |
+|---|---|
+| n | Mean photons collected over a full, unmodulated exposure; fixed by the scene and exposure time |
+| d | Duty cycle, the fraction of the exposure the shutter is open; set by the code you choose |
+| μ_flutter | Mean recorded value of the coded image; computed output |
 
 ---
