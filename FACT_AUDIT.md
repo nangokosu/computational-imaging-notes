@@ -873,3 +873,113 @@ SciPy 1.18.1 and scikit-image 0.26.0, the Buades–Coll–Morel CVPR 2005 PDF, a
 **Uncertain / not checked:** what the HW2 and PS2 handouts themselves say (that `interp2d` is
 suggested, HW2's exact weight formula and notation, HW2 applying YCbCr to linear data). The
 handouts were not available.
+
+---
+---
+
+# Week 4 Audit — 2026-10-02
+
+**Last audited:** 2026-10-02
+
+**Scope:** `week4-study-notes.md` (full file), the `## Week 4` section of `glossary.md`, and the
+`week-4` block plus `#glossary-week-4` card of the live artifact, including Fig. 78-97. Extra
+attention to the HW3 supplements (§1.9, §5.4-5.5, §6.5-6.6, §9.1-9.2, §19.3, the 10 new glossary
+entries, Figs. 83, 86, 87, 89, 97). Other weeks were not audited or edited (their artifact blocks
+and this file's earlier sections were only read because the whole page must be read to republish).
+
+**Source limitation:** `lecture4.pdf` exceeds the 10 MB fetch limit and no local PDF tool was
+available, so slide-only claims could not be re-read. They are Unverifiable below. Slides read
+directly: [PS3](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/PS3.pdf) (HDR, tonemapping,
+burst/flutter-shutter SNR), [PS4](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/PS4.pdf)
+(filtering, deconvolution, gradient descent), and the MIT 6.098 HDR lecture
+([08_HDR_6.pdf](https://groups.csail.mit.edu/graphics/classes/CompPhoto06/html/lecturenotes/08_HDR_6.pdf)).
+
+**Summary (grouped counting): about 104 claims/diagrams audited: 73 confirmed / 19 corrected / 12 unverifiable.**
+
+## Corrected
+
+1. **Problem-session attribution.** Notes said the PSF/OTF filtering, deconvolution and gradient-descent
+   material was "PS3 (covering HW4)". The course schedule and slides show it is **PS4** (HW4); PS3 is the
+   HDR/SNR session (HW3). Changed PS3 to PS4 in md header, §14, §14.1, §14.3, §22 and the artifact
+   (header, §14.3, §22). Added PS3 as the source for the HW3 supplements. Sources: course schedule,
+   PS3/PS4 slides above. PS4's benchmark (spatial 0.003 s to 5 s, Fourier flat ~0.035 s) confirms the "three orders" claim.
+2. **§2 "camera assumes 18% reflectance."** Wikipedia Light meter: calibration is via exposure constants,
+   implied reflectance roughly 12-18%. Now stated as the conventional round figure (md, artifact, glossary.md, glossary card).
+   Source: [Light meter](https://en.wikipedia.org/wiki/Light_meter), [Middle gray](https://en.wikipedia.org/wiki/Middle_gray).
+3. **§4.1 ranges.** Shutter "6 orders" -> about 5 (30 / (1/4000) = 120,000); ISO 100-1600 "1.5 orders" -> about 1.2 (x16);
+   f-stop kept at ~3 with arithmetic (22/0.98)^2 ~ 500. "Shutter by far the widest range" -> "very wide range" (ND is 6 orders). md + artifact.
+4. **§7.3 Radiance .hdr storage.** "Roughly half of three floats" -> 32 vs 96 bits, one third.
+   Source: [RGBE image format](https://en.wikipedia.org/wiki/RGBE_image_format). md, artifact, glossary.md.
+5. **§6.3 ColorChecker bottom row.** "Log-reflectance increases linearly" is false: six neutral grays, OD 0.05, 0.23, 0.44, 0.70, 1.05, 1.50
+   (steps 0.18-0.45). Source: [Imatest](https://docs.imatest.com/docs/colorcheck). md, artifact, glossary.md.
+6. **§20.2 hardware.** Notes: "lever of variable radius on a rotating platform... arc of a long lever arm". Levin et al. 2008 Fig. 7/§4:
+   camera on a rotating platform (vertical axis through optical center); a rotating cam with parabolic edge radius pushes a lever. Rewritten.
+   §20.1 now says "within the range the sweep covers". Source: [Motion-invariant photography (PDF)](https://webee.technion.ac.il/people/anat.levin/papers/MotInv-s-LevinEtAl-SIGGRAPH08.pdf).
+7. **§1.5 / §19.2 null-space exactness.** "Detail lands in B's null space" is exact only for periodic images (or circulant B);
+   a truncated finite B has tiny singular values. Qualified in md and artifact.
+8. **§18 x-rays.** "x-rays and gamma rays cannot be focused" -> hard x-rays and gamma rays (grazing-incidence mirrors focus soft x-rays).
+   Source: [NASA Swift BAT](https://imagine.gsfc.nasa.gov/observatories/learning/swift/mission/bat.html).
+9. **§5.2 "small fraction within 0.18 of the extremes."** w(0.18) = exp(-16 x 0.32^2) = 0.19, so "about a fifth of peak." md.
+10. **Wikipedia links with wrong targets.** `Transfer_function` (control theory, not camera tone curves) and
+    `Radiometric_calibration` (ionizing radiation / satellites, not HDR response; used 3 times incl. CRF) unlinked in md, artifact, glossary.md.
+    `Local_Laplacian_filter` returns HTTP 404; unlinked. No matching Wikipedia article was found.
+11. **Fig. 88 (tonemapping curves).** The drawn hyperbola ended at y=46, above the 1.0 line (y=60), contradicting "never reaches 1";
+    redrawn from computed I/(1+I) points. The two linear-scaling labels were swapped relative to §8 (max->1 is the underexposed, shallow line;
+    10th-percentile->1 is the clipping, steep line). Fixed.
+12. **Fig. 91 (PSF).** Pinhole panel showed two rays converging through the hole (lens-like); now one ray passes, others blocked (dashed).
+    Lens panel rays landed at random scattered points and the on-axis ray was deflected; rays now land at heights linear in lens height
+    (focus at x=373, sensor beyond it), on-axis ray straight. Caption updated.
+13. **Fig. 94 (focal sweep).** Object/focus distances violated a single thin lens (implied f = 61, 89, 93 px) and the swept band covered only the
+    middle focus. Foci now f = 61.2 px (x = 520, 359, 345) and the band spans all three.
+14. **Fig. 81 (right) and Fig. 95 (left), sinc.** Zeros were unevenly spaced and the hollow "zero" markers sat at lobe extrema. Redrawn from
+    sin(pi u)/(pi u): zeros at +-n/W spaced 50 px. Fig. 95 now plots |sinc| (it is captioned "Fourier magnitude"; it dipped below the axis).
+15. **Fig. 96 (B_box / B_coded).** B_coded was labelled band [1,0,1] but drawn [0,1,0] (the identity, no blur); [1,0,1] itself has a spectral zero at pi/2.
+    Redrawn as 8x8 circulant 4-tap matrices, box [1/4 x4] (DFT zeros at k=2,4,6 of 8) vs code [1,1,0,1]/3 (|DFT| min 1/3, no zero), so the
+    null-space tags are exact. Caption no longer claims "the exact matrix from Fig. 81" (that is 10x10).
+16. **Fig. 92.** |OTF_1| and |OTF_3| must be equal for a real PSF; shading made equal.
+17. **Artifact stale cross-references (drift from md).** "§2 builds exposure" -> §1; "(§§2-7)" -> "(§§2, 4-7)"; "§18.2" -> §19.2; "§9's gradient matrix" -> §10;
+    skip note "§21" -> §22.
+18. **§6.5 / §5.4 / §9.2 sentences that PS3 now settles.** "HW3 states PNGs are sRGB" made conditional (PS3 says "linearize using gamma of 2.2");
+    "which weight the problem session uses, cannot see" -> PS3 prints the Gaussian of §5.2; "cannot say which tonemapper" -> PS3 names Drago.
+19. **§3 "8-bit display only ~50x".** Independent source (MIT 6.098): a typical picture is 1:20-1:50, max 1:500; this conflicts with the section's own
+    LCD 1,000:1 row unless read as picture-level contrast. Clarifying note added (md, artifact); the slide's own wording could not be re-read.
+## Confirmed (with sources)
+
+- **Exposure (§1):** H = E t, lux-seconds ([Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))); E = (pi/4) L / N^2 cos^4 (camera equation, UMass/Columbia radiometry notes);
+  EV = log2(N^2/t), one EV = one stop ([Exposure value](https://en.wikipedia.org/wiki/Exposure_value)); reciprocity ([Reciprocity](https://en.wikipedia.org/wiki/Reciprocity_(photography)));
+  null space of [1,-2] = span(2,1) (hand check, and Fig. 79 slope 0.5 verified from pixel coordinates).
+- **Arithmetic re-derived by hand:** EV table (11.00-10.83), t/N^2 ratios, 62.5x, night-highway example (8x, 0.274x, 2.2x, 0.4x, 0.88x), streak lengths 4/16/250/4000 px,
+  burst SNRs 4.29/19.78/17.15, ToF numbers (0.15 m/ns, 667 ns, 6.67 ns, 1/1.5 million), mixed-noise example 3.33 -> 6.67, bracket t0/4..4t0 = 16x.
+- **§1.9 probability rules** (sum of variances, scaling c^2, Poisson sum, average sigma^2/K) and PS3's burst-SNR slide state the same rules.
+- **Merge (§5):** weight exp(-4(I-0.5)^2/0.5^2), sigma = 0.177, w(0) = exp(-4) = 0.0183, objective and closed form: identical to PS3 slides 6-7 and to
+  [Debevec & Malik 1997](https://www.pauldebevec.com/Research/HDR/debevec-siggraph97.pdf) (hat weight on stored Z, g = ln f^-1 over 256 values, smoothness term, g(Zmid)=0).
+  Triangle weight min(z,1-z): confirmed. Fig. 86 curve points checked (0.0182 at ends, 0.3679 at z=0.25). Fig. 85 and Fig. 87 matrix structure checked row by row.
+- **§6.5 sRGB:** thresholds 0.04045 / 0.0031308, 12.92, 1.055, 2.4 ([sRGB](https://en.wikipedia.org/wiki/SRGB)); eps = np.float32 eps = 1.19e-7; 0 x (-inf) = NaN.
+- **§9.1 / Fig. 89:** curve is (1.5 I)^0.5 (clip at I = 0.667, value 1.2247 at I = 1), I/(1+I) points, slope-1 line: all verified from coordinates.
+  Reinhard L/(1+L) and its photoreceptor-response (Naka-Rushton) connection: search sources. OpenCV `createTonemap`, `Drago` (adaptive logarithmic), `Reinhard`,
+  `Mantiuk` (gradient-domain-inspired) exist as described ([OpenCV docs](https://docs.opencv.org/3.4/d3/db7/tutorial_hdr_imaging.html), Mantiuk 2006).
+- **§19.3 / Fig. 97:** consumer camera (many photons, high read noise) vs sCMOS (few photons, low read noise), flutter vs burst with no delay: matches PS3 slides 15-18. 4 open of 8 slots = d 0.5 checked.
+- **PS4 content:** Task 1 formulas (I - I*PSF_LP, I~ x (1 - OTF_LP)), normalize to sum 1, runtime chart, Task 2 Wiener, Task 3 GD/SGD: confirmed against the slides.
+- **Lecture-adjacent numbers:** world range 10^-6..10^6 cd/m^2, "1:100,000 in a scene", bracket 1 / 1,500 / 25,000 / 400,000 / 2,000,000,000 (Debevec slide): MIT 6.098 slides.
+- **Figures checked from coordinates:** 78, 79, 80, 82, 83, 84 (45 px/decade; 50x = 1.7 decades), 85, 86, 87, 89, 90, 92, 93, 97; figure numbers 78-97 sequential in document order.
+- **Papers/people:** Raskar et al. 2006 (fluttered shutter), Veeraraghavan et al. 2007 (Dappled Photography, coded aperture), Nagahara et al. 2008 (detector motion, wide aperture, SNR), Levin et al. 2008
+  (parabolic motion), Dowski & Cathey (wavefront coding, [Wikipedia](https://en.wikipedia.org/wiki/Wavefront_coding)), Chang & Wetzstein ICCV 2019, Ikoma et al. ICCP 2021, Godard et al. CVPR 2017,
+  Martel et al. 2020, Hasinoff et al. SIGGRAPH Asia 2016 (HDR+), Durand-style bilateral/Paris 2011, Swift BAT and INTEGRAL/SPI coded masks, double-helix PSF (Pavani et al. PNAS 2009).
+- **Other:** circle of confusion c = m D |O-S|/O and the 833/1250 mm example; DFT of a box has zeros at n/W; MATLAB reads Radiance .hdr (`hdrread`); PFM is the 32-bit IEEE float extension of Netpbm;
+  OD = -log10 T; ND OD 6 = 10^-6; center-weighted/spot metering; dark frame definition; bulb mode.
+- **Wikipedia links fetched and matching:** Bracketing, Bulb, Long-exposure, Shutter_speed, Reciprocity, Burst_mode, Dark-frame_subtraction, Box_blur, Reflection_mapping, Clipping_(signal_processing),
+  Coded_exposure_photography, Triangular_function, Weighted_least_squares, Poisson's_equation, Wavefront_coding, RGBE_image_format, Netpbm#File_formats, Optical_density, Duty_cycle,
+  High_dynamic_range#Capture, CIE_1931_color_space#CIE_xyY_color_space, Exposure_value, Light_meter, Metering_mode, SRGB. Others (Lidar, Time-of-flight_camera, SPAD, Irradiance etc.) checked by title only.
+
+## Unverifiable
+
+1. Lecture-slide-only items (lecture4.pdf not fetchable): the −4/−2/+2/+4 stop teaser, the 4.1 ranges as printed on the slide (f/0.98-f/22, ISO 100-1600), the "50x" slide wording, the device contrast table (10:1 ... 100,000:1; only the print/paint and scene figures are corroborated by MIT 6.098),
+   "Preserves High Frequencies!!!", license-plate demo, the failure case in §20.2.
+2. Night-highway settings (1/4 s f/3.3 ISO 200; 2 s f/6.3 ISO 80) and the f/16..f/2 ladder were recorded as verified against Lecture 2 slides in the earlier Week 2 audit; not re-checked here.
+3. HW3 handout details: PNGs stored in sRGB, eps = float32 machine epsilon prescribed, duty cycle fixed at 50%, definition of n, HW1's 15-60 s.
+4. Fig. 84 sensor bar (4.5 decades) vs the table's DSLR 2,000:1 (3.3) and 14-bit (4.2): schematic, left unchanged.
+5. Cross-week figure references inside Fig. 81/90/96 (Figs. 22, 29, 47) not checked (other weeks out of scope).
+
+## Markdown / artifact drift
+
+Fixed: artifact's stale section references (item 17). The artifact's glossary card merges tone reproduction curve, ColorChecker, xyY, wavefront coding and focal sweep into other entries, while glossary.md lists them separately (structure only; left as is). The markdown carries Wikipedia links despite CLAUDE.md; left. All other claims agree between md, glossary and artifact.
