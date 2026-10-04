@@ -1090,13 +1090,13 @@ c = T · b
 ## Week 4 — Great Ideas in Computational Photography (HDR imaging, tonemapping, coded imaging)
 *(full derivations and diagrams in [`week4-study-notes.md`](./week4-study-notes.md); this is the lookup-speed reference)*
 
-### Exposure = Gain × Flux × Time (§0)
+### Exposure = Gain × Flux × Time (§2.1)
 
 ```
 Exposure = Gain × Flux × Time
 ```
 
-**Computes:** How bright a single captured photo looks overall — this is the *loose*, colloquial sense of "exposure" that folds ISO gain in, distinct from this file's own §1.2 strict physical exposure *H* = *E*·*t* (light energy per unit sensor area), which explicitly excludes ISO (§1.6 proves ISO doesn't change the physical light collected, only how it's amplified afterward). Do not confuse the two: this formula is a plain-language recap, not a new physical quantity.
+**Computes:** How bright a single captured photo looks overall — this is the *loose*, colloquial sense of "exposure" that folds ISO gain in, distinct from this file's own §2.2 strict physical exposure *H* = *E*·*t* (light energy per unit sensor area), which explicitly excludes ISO (§2.5 proves ISO doesn't change the physical light collected, only how it's amplified afterward). Do not confuse the two: this formula is a plain-language recap, not a new physical quantity.
 
 | Term | Meaning |
 |---|---|
@@ -1107,7 +1107,7 @@ Exposure = Gain × Flux × Time
 
 ---
 
-### Exposure (§1.2)
+### Exposure (§2.2)
 
 ```
 H = E · t
@@ -1128,7 +1128,7 @@ H ∝ L · t / N²
 
 ---
 
-### Exposure value (§1.3)
+### Exposure value (§2.3)
 
 ```
 EV = log₂(N² / t)
@@ -1144,44 +1144,7 @@ EV = log₂(N² / t)
 
 ---
 
-### Motion blur streak length (§1.5)
-
-```
-blur length (pixels) = image-plane speed (pixels/second) × exposure time (seconds)
-y = B x
-```
-
-**Computes:** Gives the length of the streak a moving point leaves on the sensor, and (in matrix form) shows motion blur is a convolution of the sharp image with a box kernel.
-
-| Term | Meaning |
-|---|---|
-| blur length | length of the motion streak, in pixels |
-| image-plane speed | how fast the subject's image moves across the sensor — fixed by scene motion, distance, and focal length |
-| exposure time | duration of the capture — you control this |
-| y | blurred image, as a vector |
-| B | banded (Toeplitz) matrix implementing convolution with the box kernel of length = streak length |
-| x | sharp image, as a vector |
-
----
-
-### LiDAR range equation (§1.8)
-
-```
-τ = 2d / c   ⇔   d = c·τ / 2
-```
-
-**Computes:** Converts a measured round-trip light travel time into distance to an object — the core ranging equation behind LiDAR and time-of-flight sensing.
-
-| Term | Meaning |
-|---|---|
-| d | distance to the object (meters) — the unknown being measured |
-| τ | round-trip time (seconds) — what the sensor times |
-| c | speed of light, physical constant |
-| 2 | factor accounting for the light travelling out and back |
-
----
-
-### Sum, scaling, and average of independent noisy values (§1.9)
+### Sum, scaling, and average of independent noisy values (§3)
 
 ```
 Var(X₁ + X₂) = σ₁² + σ₂²        Var(c·X) = c²·σ²        Var(mean of K) = σ²/K
@@ -1204,62 +1167,44 @@ Var(X₁ + … + X_K) = K·σ²        Var(mean) = (1/K)² · K·σ² = σ²/K  
 
 ---
 
-### Confidence weight function (§5.2)
+### Motion blur streak length (§4.3, §23.1)
 
 ```
-w(I) = exp( −4·(I − 0.5)² / 0.5² )
+blur length (pixels) = image-plane speed (pixels/second) × exposure time (seconds)
+y = B x
 ```
 
-**Computes:** Gives how much to trust one bracketed exposure's pixel value when merging an HDR stack — peaking at mid-gray and falling off toward black and white, where noise or clipping make the measurement unreliable.
+**Computes:** Gives the length of the streak a moving point leaves on the sensor, and (in matrix form) shows motion blur is a convolution of the sharp image with a box kernel.
 
 | Term | Meaning |
 |---|---|
-| I | A single pixel's linear, [0,1]-scaled value from one exposure in the bracketed stack — measured |
-| w(I) | Resulting confidence weight, in (0,1] — computed output |
-| 0.5 | Mid-range value the weight peaks at (fully-confident, correctly-exposed case) — fixed constant |
-| −4 / 0.5² | Sets the fall-off rate; equivalent standard-Gaussian width σ ≈ 0.177 — fixed constant |
+| blur length | length of the motion streak, in pixels |
+| image-plane speed | how fast the subject's image moves across the sensor — fixed by scene motion, distance, and focal length |
+| exposure time | duration of the capture — you control this |
+| y | blurred image, as a vector |
+| B | banded (Toeplitz) matrix implementing convolution with the box kernel of length = streak length |
+| x | sharp image, as a vector |
 
 ---
 
-### HDR merging: log-domain weighted least-squares solution (§5.3)
+### LiDAR range equation (§5.1)
 
 ```
-O(X) = Σᵢ wᵢ · ( log(I_lin,i) − log(tᵢ·X) )²
-
-X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
+τ = 2d / c   ⇔   d = c·τ / 2
 ```
 
-**Computes:** Recovers, per pixel, the single best-estimate true (relative) scene radiance value from an exposure-bracketed stack, by weighting each exposure's own estimate by how confident it is — the merge step of HDR imaging.
+**Computes:** Converts a measured round-trip light travel time into distance to an object — the core ranging equation behind LiDAR and time-of-flight sensing.
 
 | Term | Meaning |
 |---|---|
-| i = 1...N | Index over the N bracketed exposures of the same pixel — fixed by the bracket (§4) |
-| I_lin,i | Linearized recorded value at this pixel in exposure i — measured (after §6's linearization) |
-| tᵢ | Exposure i's known exposure time — you control this (via bracketing, §4) |
-| wᵢ | Confidence weight for exposure i, = w(I_lin,i) from the confidence weight function above |
-| X | Unknown true scene exposure/radiance value at this pixel — the same for every i; solved for |
-| O(X) | Weighted least-squares objective being minimized over X (in the log domain) |
-| X̂ | The recovered, merged HDR value at this pixel (relative units) — computed output |
+| d | distance to the object (meters) — the unknown being measured |
+| τ | round-trip time (seconds) — what the sensor times |
+| c | speed of light, physical constant |
+| 2 | factor accounting for the light travelling out and back |
 
 ---
 
-### Debevec triangle weight (§5.4)
-
-```
-w(z) = min( z, 1 − z )
-```
-
-**Computes:** How much to trust one pixel value from one exposure when merging an HDR stack, peaking at mid-range and reaching exactly zero at black and at saturation (the alternative to the Gaussian weight of §5.2).
-
-| Term | Meaning |
-|---|---|
-| z | One pixel's value in one exposure on a [0, 1] scale; measured |
-| w(z) | Confidence weight in [0, 0.5], computed output |
-| 0.5 | Value at which the weight peaks; fixed |
-
----
-
-### Non-linear image formation model and linearization (§6.2)
+### Non-linear image formation model and linearization (§9.2)
 
 ```
 I_linear(x, y)     = clip[ tᵢ · Φ(x, y) + noise ]
@@ -1277,18 +1222,18 @@ I_est(x, y)        = f⁻¹[ I_nonlinear(x, y) ]
 | f[·] | Camera's tone reproduction curve — fixed, generally unknown, monotonic nonlinear function baked in by the camera |
 | I_nonlinear | What actually gets written to the output file — measured |
 | f⁻¹[·] | Inverse of the tone reproduction curve, used to linearize |
-| I_est | Recovered estimate of the true linear signal — computed output, fed into §5.3's merge |
+| I_est | Recovered estimate of the true linear signal — computed output, fed into §10.3's merge |
 
 ---
 
-### sRGB decoding (inverse gamma) (§6.5)
+### sRGB decoding (inverse gamma) (§9.5)
 
 ```
 C_lin = C / 12.92                    if C ≤ 0.04045
 C_lin = ((C + 0.055) / 1.055)^2.4    otherwise
 ```
 
-**Computes:** The linear-light value of a stored sRGB value, undoing the display tone curve so the merge of §5.3 operates on values proportional to scene light.
+**Computes:** The linear-light value of a stored sRGB value, undoing the display tone curve so the merge of §10.3 operates on values proportional to scene light.
 
 | Term | Meaning |
 |---|---|
@@ -1298,22 +1243,77 @@ C_lin = ((C + 0.055) / 1.055)^2.4    otherwise
 
 ---
 
-### Photographic tonemapping curve (§9)
+### Confidence weight function (§10.2)
+
+```
+w(I) = exp( −4·(I − 0.5)² / 0.5² )
+```
+
+**Computes:** Gives how much to trust one bracketed exposure's pixel value when merging an HDR stack — peaking at mid-gray and falling off toward black and white, where noise or clipping make the measurement unreliable.
+
+| Term | Meaning |
+|---|---|
+| I | A single pixel's linear, [0,1]-scaled value from one exposure in the bracketed stack — measured |
+| w(I) | Resulting confidence weight, in (0,1] — computed output |
+| 0.5 | Mid-range value the weight peaks at (fully-confident, correctly-exposed case) — fixed constant |
+| −4 / 0.5² | Sets the fall-off rate; equivalent standard-Gaussian width σ ≈ 0.177 — fixed constant |
+
+---
+
+### HDR merging: log-domain weighted least-squares solution (§10.3)
+
+```
+O(X) = Σᵢ wᵢ · ( log(I_lin,i) − log(tᵢ·X) )²
+
+X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
+```
+
+**Computes:** Recovers, per pixel, the single best-estimate true (relative) scene radiance value from an exposure-bracketed stack, by weighting each exposure's own estimate by how confident it is — the merge step of HDR imaging.
+
+| Term | Meaning |
+|---|---|
+| i = 1...N | Index over the N bracketed exposures of the same pixel — fixed by the bracket (§8) |
+| I_lin,i | Linearized recorded value at this pixel in exposure i — measured (after §9's linearization) |
+| tᵢ | Exposure i's known exposure time — you control this (via bracketing, §8) |
+| wᵢ | Confidence weight for exposure i, = w(I_lin,i) from the confidence weight function above |
+| X | Unknown true scene exposure/radiance value at this pixel — the same for every i; solved for |
+| O(X) | Weighted least-squares objective being minimized over X (in the log domain) |
+| X̂ | The recovered, merged HDR value at this pixel (relative units) — computed output |
+
+---
+
+### Debevec triangle weight (§10.4)
+
+```
+w(z) = min( z, 1 − z )
+```
+
+**Computes:** How much to trust one pixel value from one exposure when merging an HDR stack, peaking at mid-range and reaching exactly zero at black and at saturation (the alternative to the Gaussian weight of §10.2).
+
+| Term | Meaning |
+|---|---|
+| z | One pixel's value in one exposure on a [0, 1] scale; measured |
+| w(z) | Confidence weight in [0, 0.5], computed output |
+| 0.5 | Value at which the weight peaks; fixed |
+
+---
+
+### Photographic tonemapping curve (§14)
 
 ```
 I_display = I_HDR / (1 + I_HDR)
 ```
 
-**Computes:** Maps an unbounded, linear HDR intensity value down into a display's finite [0,1) range non-linearly, leaving dark regions essentially untouched (slope 1 near 0) while asymptoting to 1 for arbitrarily bright input — the simplified tonemapping curve (a tone curve in the sense of Week 4 §8.1: input brightness to output brightness).
+**Computes:** Maps an unbounded, linear HDR intensity value down into a display's finite [0,1) range non-linearly, leaving dark regions essentially untouched (slope 1 near 0) while asymptoting to 1 for arbitrarily bright input — the simplified tonemapping curve (a tone curve in the sense of Week 4 §13.1: input brightness to output brightness).
 
 | Term | Meaning |
 |---|---|
-| I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§5.3) |
+| I_HDR | Input HDR intensity at one pixel — linear, non-negative, unbounded above; from the merge (§10.3) |
 | I_display | Output value sent to the display, guaranteed to lie in [0,1) — computed output |
 
 ---
 
-### Two-knob gamma tonemapper (§9.1)
+### Two-knob gamma tonemapper (§14.1)
 
 ```
 I_display = clip( (s · I_HDR)^γ , 0, 1 )
@@ -1330,7 +1330,7 @@ I_display = clip( (s · I_HDR)^γ , 0, 1 )
 
 ---
 
-### PSF convolution (image formation) (§14.1)
+### PSF convolution (image formation) (§18.1)
 
 ```
 I_blurred(x, y) = (I_ideal * PSF)(x, y)
@@ -1347,7 +1347,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 
 ---
 
-### OTF as the Fourier transform of the PSF, and the primal/Fourier high-pass identity (§14.2, §14.3)
+### OTF as the Fourier transform of the PSF, and the primal/Fourier high-pass identity (§18.2, §18.3)
 
 ```
 OTF(u, v) = FT{ PSF }(u, v)
@@ -1371,7 +1371,7 @@ I − I * PSF_LP   ≡   Ĩ × (1 − OTF_LP)
 
 ---
 
-### Flutter shutter light budget (§19.3)
+### Flutter shutter light budget (§23.3)
 
 ```
 μ_flutter = d · n        (one readout)

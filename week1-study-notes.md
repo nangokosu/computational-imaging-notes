@@ -214,7 +214,7 @@ This large gap between what the eye can perceive and what a standard display can
 
 ### 10.1 Stops, EV, and the photographer's "+2 / −4" notation
 
-**Why this section is here.** The word "stop" already appeared above, and it returns in every camera-related week (aperture in Week 2 §8, exposure time and ISO in Week 4 §1.3). Photographers also write brightness changes as "+2", "−1", "−4 EV" or "f/2.8" without explanation. This is the one place where the whole shorthand is explained from scratch.
+**Why this section is here.** The word "stop" already appeared above, and it returns in every camera-related week (aperture in Week 2 §8, exposure time and ISO in Week 4 §2.3). Photographers also write brightness changes as "+2", "−1", "−4 EV" or "f/2.8" without explanation. This is the one place where the whole shorthand is explained from scratch.
 
 **Analogy first: musical octaves.** Notes an octave apart differ by a factor of 2 in vibration frequency, yet you hear that as one equal-sized "step" up. Light brightness works the same way: your eye and a camera's settings both care about *ratios*, not differences, so photographers count brightness in *doublings*. One doubling is one **stop**.
 
@@ -254,23 +254,23 @@ stops = log₂(ratio)          ratio = 2^stops
 **"EV" has two uses; keep them apart.**
 
 - **Exposure compensation** (the dial that reads "−2 … 0 … +2" on a camera). A value like **+2** (or "+2 EV") means "make the photo 2 stops, i.e. 2² = 4 times, brighter than the camera's automatic **meter** (its built-in light measurement) would have chosen". "−4" means 2⁻⁴ = 1/16 as bright. This is a *relative* instruction, an offset from the meter's suggestion.
-- **Exposure value** (absolute EV, a single number labelling a combination of aperture and shutter time). It is defined in Week 4 §1.3; one step of it is again one stop.
+- **Exposure value** (absolute EV, a single number labelling a combination of aperture and shutter time). It is defined in Week 4 §2.3; one step of it is again one stop.
 
 **The three physical controls, and what one stop of each looks like.** (All three are defined properly later; this is the lookup you need now.)
 
 | Control | What it is, in one line | One stop *more* light (or brightness) | Where deepened |
 |---|---|---|---|
 | **Aperture**, written f/N | the adjustable opening in the lens, f/N meaning opening diameter = focal length ÷ N (the slash is "divided by") | f/4 → f/2.8 (N shrinks by √2 ≈ 1.41, because light follows opening *area*, which goes as diameter²) | Week 2 §8 |
-| **Shutter time** (exposure time) | how long the sensor collects light | 1/125 s → 1/60 s (time doubles; the printed numbers are rounded powers of 2) | Week 4 §1.3 |
-| **ISO** | an electronic amplification of the recorded signal (brightens the picture without collecting more light) | ISO 100 → ISO 200 | Week 4 §1.6 |
+| **Shutter time** (exposure time) | how long the sensor collects light | 1/125 s → 1/60 s (time doubles; the printed numbers are rounded powers of 2) | Week 4 §2.3 |
+| **ISO** | an electronic amplification of the recorded signal (brightens the picture without collecting more light) | ISO 100 → ISO 200 | Week 4 §2.5 |
 
-Because each control moves in stops, they trade off exactly: one stop opened on the aperture can be paid back by one stop faster on the shutter, leaving the picture's brightness unchanged (called **reciprocity**, Week 4 §1.2).
+Because each control moves in stops, they trade off exactly: one stop opened on the aperture can be paid back by one stop faster on the shutter, leaving the picture's brightness unchanged (called **reciprocity**, Week 4 §2.2).
 
 > **Worked example (a generic one, not a homework case).** A meter suggests f/4, 1/125 s, ISO 100. You want a faster shutter to freeze motion: 1/500 s is 2 stops faster (125 → 250 → 500 is two doublings, so 1/4 as much light). To pay those 2 stops back you can open the aperture 2 stops: f/4 → f/2.8 → f/2. Result: f/2, 1/500 s, ISO 100, same brightness as the meter's pick. Now add exposure compensation of +1: the camera will deliver 2× the light of that pick, for instance by slowing the shutter to 1/250 s.
 
 > **Why this matters for HDR (Week 4).** A bracket "at −4, −2, +2, +4 stops" is just the multipliers 1/16, 1/4, 4, 16 from the table, applied to one baseline exposure; the whole spread is 8 stops, a 256× range.
 
-The formulas above are in `formulas.md` (Week 1). Week 2 §8 gives the aperture sequence, and Week 4 §1.3 and §1.6 give the shutter and ISO sequences and absolute EV.
+The formulas above are in `formulas.md` (Week 1). Week 2 §8 gives the aperture sequence, and Week 4 §2.3 and §2.5 give the shutter and ISO sequences and absolute EV.
 
 ---
 
@@ -479,7 +479,7 @@ Concretely, since rows index *v* and columns index *u*, each of the raw array's 
 
 ### 12.4.4a Convolution from scratch (the operation §12.4.5 and §13 secretly rely on)
 
-§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §2 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §14 (PSF/OTF) and §19 (flutter shutter), and in LiDAR ranging (Part 9 below).
+§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §2 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §18 (PSF/OTF) and §23 (flutter shutter), and in LiDAR ranging (Part 9 below).
 
 **Part 1 — Analogy: a stamp, and a sliding window.**
 - *Stamp view (each point spreads its light).* Imagine a row of light bulbs of different brightness, photographed out of focus. Each bulb does not land on the sensor as one dot; it lands as a small soft blob. The photo is every bulb's blob added together, where a brighter bulb stamps a stronger blob. The blob's shape is the **kernel**. Convolution is "stamp a copy of the kernel at every input sample, scaled by that sample's value, and add all the stamps."
@@ -504,7 +504,7 @@ Concretely, since rows index *v* and columns index *u*, each of the raw array's 
 | `(x * h)[n]` | the filtered / blurred output at position `n` | same as signal | computed |
 | `*` | the convolution operator (not ordinary multiplication) | | |
 
-- *Complexity.* A kernel with `K` nonzero entries costs `K` multiplies per output sample, so `N` samples cost about `N·K` work. In 2D with a `K×K` kernel it is about `N·K²` (the cost Week 4 §14.3 compares against the FFT route).
+- *Complexity.* A kernel with `K` nonzero entries costs `K` multiplies per output sample, so `N` samples cost about `N·K` work. In 2D with a `K×K` kernel it is about `N·K²` (the cost Week 4 §18.3 compares against the FFT route).
 
 **Part 3 — Fully worked 1D example (stamp view and window view agree).** Signal `x = [1, 3, 2, 5, 4]` (positions 0 to 4), kernel `h = [¼, ½, ¼]` (positions 0 to 2; a weighted 3-point average). Zero-pad: treat everything outside the signal as 0.
 
@@ -528,7 +528,7 @@ Window view check at `n = 3`: `h[0]·x[3] + h[1]·x[2] + h[2]·x[1] = 0.25·5 + 
 
 Observations: (1) The output has length `5 + 3 − 1 = 7` (**full** convolution: signal length plus kernel length minus 1), because the blur spreads the signal past both ends. (2) The jagged input `1, 3, 2, 5, 4` became the smoother `1.25, 2.25, 3, 4, 3.25` in the middle: it is a low-pass filter. (3) The kernel sums to 1, so the total brightness is preserved away from the edges.
 
-**Impulse example (why the flip matters, and why "impulse response" is a name).** Feed in a **unit impulse** (also called a **delta**): a signal that is 0 everywhere except a single 1, here `[0, 0, 1, 0, 0]`. With the *asymmetric* kernel `h = [1, 2, 3]` the output is `[0, 0, 1, 2, 3, 0, 0]`: the output is simply a copy of the kernel placed where the impulse was, not reversed. This is why the kernel is also called the system's **impulse response** (what comes out when you put a single spike in), and why a camera's blur kernel is called a **point spread function** (the "impulse" is a single point of light; Week 4 §14.1). **Cross-correlation** is the near-twin operation that slides the kernel *without* reversing it; on the same impulse it returns `[0, 0, 3, 2, 1, 0, 0]`, the kernel backwards. Many libraries (including most deep-learning "convolution" layers) actually compute correlation; for a symmetric kernel the two coincide.
+**Impulse example (why the flip matters, and why "impulse response" is a name).** Feed in a **unit impulse** (also called a **delta**): a signal that is 0 everywhere except a single 1, here `[0, 0, 1, 0, 0]`. With the *asymmetric* kernel `h = [1, 2, 3]` the output is `[0, 0, 1, 2, 3, 0, 0]`: the output is simply a copy of the kernel placed where the impulse was, not reversed. This is why the kernel is also called the system's **impulse response** (what comes out when you put a single spike in), and why a camera's blur kernel is called a **point spread function** (the "impulse" is a single point of light; Week 4 §18.1). **Cross-correlation** is the near-twin operation that slides the kernel *without* reversing it; on the same impulse it returns `[0, 0, 3, 2, 1, 0, 0]`, the kernel backwards. Many libraries (including most deep-learning "convolution" layers) actually compute correlation; for a symmetric kernel the two coincide.
 
 **Part 4 — Tiny 2D example.** Images are convolved the same way, with the kernel sliding in both directions: each output pixel is a weighted sum over a small 2D neighborhood. Take the `3×3` image and a `2×2` kernel whose four weights are all `¼` (a 4-pixel average):
 
@@ -577,7 +577,7 @@ DFT{ x * h } = DFT{ x } · DFT{ h }        (entry-by-entry multiplication, one f
 
 - *Term by term.* `DFT{x}` is the input spectrum (how much of each wave is in the signal; units of the signal); `DFT{h}` is the kernel's spectrum, its **frequency response** (a unitless scale factor per frequency, 1 means "passes unchanged", 0 means "erased"); `DFT{x*h}` is the output's spectrum. *You* control `h`, so you control `DFT{h}`.
 - *Exactness caveat.* The DFT assumes a wrap-around signal, so the identity is exact for **circular** convolution. For the ordinary (zero-padded) convolution, zero-pad the signal and kernel to at least `N + K − 1` samples before transforming and it is exact there too.
-- *Why it is useful.* Spatial convolution costs about `N·K` multiplies; in the frequency domain it costs two FFTs plus one multiply per frequency, independent of `K` (compared in Week 4 §14.3). It is also what lets you *see* what a kernel does: look at where `|DFT{h}|` is near 1 (kept) or near 0 (removed).
+- *Why it is useful.* Spatial convolution costs about `N·K` multiplies; in the frequency domain it costs two FFTs plus one multiply per frequency, independent of `K` (compared in Week 4 §18.3). It is also what lets you *see* what a kernel does: look at where `|DFT{h}|` is near 1 (kept) or near 0 (removed).
 - *Numeric check (same 4-sample example).* Directly, `x = [3, 1, −1, 1]` convolved circularly with `[½, ¼, 0, ¼]` gives `[2, 1, 0, 1]`. Through the spectra: `[4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2]`, and the inverse DFT of that is `[2, 1, 0, 1]`. The two routes match.
 
 **Linear-algebra view (convolution as a banded Toeplitz matrix).** Write the 5-sample signal as a vector **x** and the full convolution as `y = H x`, where **H** is a `7×5` matrix whose column `j` is the kernel placed starting at row `j` (that column is the stamp from `x[j]`):
@@ -595,8 +595,8 @@ DFT{ x * h } = DFT{ x } · DFT{ h }        (entry-by-entry multiplication, one f
 Same pattern in every column, shifted down one row each time: constant along diagonals, a **Toeplitz** matrix; with wrap-around edges it becomes the **circulant** matrix of §12.4.5. The Fourier basis vectors (§12.4.1) are its eigenvectors; the eigenvalues are `DFT{h}`; so in the Fourier basis the whole matrix is a diagonal list of scale factors, and applying `H` costs one multiply per frequency. That diagonalization *is* the convolution theorem. Inverting `H` (deconvolution, next subsection) is therefore "divide by each eigenvalue," which fails exactly where an eigenvalue is 0.
 
 **Part 8 — Where this shows up, so you know why it is worth the detour.**
-- Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §2, §5, §9; formalized in Week 4 §14).
-- Motion blur is a convolution with a box along the motion direction (Week 4 §1.5, §19).
+- Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §2, §5, §9; formalized in Week 4 §18).
+- Motion blur is a convolution with a box along the motion direction (Week 4 §4.3, §23).
 - Denoising/smoothing filters such as the Gaussian (Week 3 §11) are convolutions; the median and bilateral filters are *not* (they are non-linear).
 - Demosaicking's interpolation and unsharp masking (Week 3 §10.1, §11.8) are convolutions.
 - Hybrid images (§13) are a convolution (blur) and its complement.
@@ -610,15 +610,15 @@ Same pattern in every column, shifted down one row each time: constant along dia
 **How it works in the simplest case: divide in the Fourier domain.** The theorem (Part 7) says blurring multiplies each frequency by `DFT{h}`. To undo it, divide each frequency of the blurred spectrum by `DFT{h}` and inverse-transform. This is the **inverse filter**. Linear-algebra view: it is applying `H⁻¹`, and in the Fourier basis `H⁻¹` is a diagonal matrix of `1/DFT{h}`.
 
 **Why it is hard (an ill-posed problem).** A problem is **ill-posed** if it has no solution, many solutions, or a solution that changes wildly when the data change slightly. Deconvolution suffers from the last two:
-- *Exact zeros (information destroyed).* Where `DFT{h} = 0`, the blurred spectrum is 0 whatever the original was, so many different originals give the *same* blurred image (the null space, Week 4 §14.2). Division by 0 is undefined. (A box kernel, such as ordinary motion blur or a plain circular aperture, has such zeros, which is why Week 4 §15 and §19 engineer kernels without them.)
-- *Near-zeros (noise amplification).* Where `DFT{h}` is small but not zero, dividing by it multiplies any noise present at that frequency by `1/DFT{h}`, a large number. Real measurements always contain noise (Week 2 §15, Week 4 §1.9), so the "recovered" image can be dominated by amplified noise.
+- *Exact zeros (information destroyed).* Where `DFT{h} = 0`, the blurred spectrum is 0 whatever the original was, so many different originals give the *same* blurred image (the null space, Week 4 §18.2). Division by 0 is undefined. (A box kernel, such as ordinary motion blur or a plain circular aperture, has such zeros, which is why Week 4 §19 and §23 engineer kernels without them.)
+- *Near-zeros (noise amplification).* Where `DFT{h}` is small but not zero, dividing by it multiplies any noise present at that frequency by `1/DFT{h}`, a large number. Real measurements always contain noise (Week 2 §15, Week 4 §3), so the "recovered" image can be dominated by amplified noise.
 - *Regularization* is the family of remedies: add a preference (a prior) for plausible answers (for instance, "do not trust frequencies where the blur has nearly removed the signal," or "natural images are mostly smooth"), trading a little sharpness for stability. The **Wiener filter** (Week 5) is the first, noise-aware version: instead of `1/H` it uses a damped factor that falls toward 0 where `H` is small. Week 6's ADMM-based methods use richer priors.
-- *Non-blind vs. blind.* **Non-blind** deconvolution means the kernel is known (measured or calibrated). **Blind** deconvolution means the kernel is unknown too and must be estimated along with the sharp image, a much harder problem (which is why Week 4 §20's motion-invariant camera tries to make the unknown blur known in advance).
+- *Non-blind vs. blind.* **Non-blind** deconvolution means the kernel is known (measured or calibrated). **Blind** deconvolution means the kernel is unknown too and must be estimated along with the sharp image, a much harder problem (which is why Week 4 §24's motion-invariant camera tries to make the unknown blur known in advance).
 
-**Small numeric illustration with a LiDAR flavor (a pulse-shape blur).** A pulsed LiDAR fires a short laser pulse and records, with a detector sampled at fixed time ticks, when reflections come back (Week 4 §1.8). The recorded waveform is *not* the scene's reflections themselves: every reflection arrives smeared by the pulse's own shape and the detector's response (together, the **system impulse response**), so the measured signal is `measured = (true returns) * (impulse response)` plus noise. A convolution again, here along *time* instead of space (the "frequency" in this example is the temporal frequency of the return waveform, not image frequency or light's wavelength).
+**Small numeric illustration with a LiDAR flavor (a pulse-shape blur).** A pulsed LiDAR fires a short laser pulse and records, with a detector sampled at fixed time ticks, when reflections come back (Week 4 §5). The recorded waveform is *not* the scene's reflections themselves: every reflection arrives smeared by the pulse's own shape and the detector's response (together, the **system impulse response**), so the measured signal is `measured = (true returns) * (impulse response)` plus noise. A convolution again, here along *time* instead of space (the "frequency" in this example is the temporal frequency of the return waveform, not image frequency or light's wavelength).
 
 Numbers (chosen small by hand; `c` is the speed of light):
-- Sample the waveform every 1 ns. Each tick of round-trip time is `c·Δt/2 ≈ 3×10⁸ × 1×10⁻⁹ / 2 = 0.15 m` of range (the round-trip rule `d = c·τ/2` of Week 4 §1.8).
+- Sample the waveform every 1 ns. Each tick of round-trip time is `c·Δt/2 ≈ 3×10⁸ × 1×10⁻⁹ / 2 = 0.15 m` of range (the round-trip rule `d = c·τ/2` of Week 4 §5.1).
 - True scene: two surfaces, e.g. a branch and a wall behind it, 2 ticks apart (0.30 m): strength 1.0 at tick 3, strength 0.5 at tick 5. As a list over 8 ticks: `[0, 0, 0, 1, 0, 0.5, 0, 0]`.
 - Impulse response (pulse + detector blur), a 3-tap kernel centered on each return: `[0.2, 0.6, 0.2]`.
 - Measured (circular convolution; the returns sit away from the ends so wrap-around is harmless): `[0, 0, 0.2, 0.6, 0.3, 0.3, 0.1, 0]`. One fat peak at tick 3 with a flat shoulder: a peak finder would see one surface, and the second one is almost hidden.
@@ -626,11 +626,11 @@ Numbers (chosen small by hand; `c` is the speed of light):
 - Dividing the measured spectrum by this and transforming back gives `[0, 0, 0, 1, 0, 0.5, 0, 0]`: both returns, at the right ticks and strengths. Two peaks 0.30 m apart that the raw waveform could not separate are now resolved.
 - Noise sensitivity: add a faint ±0.02 alternating wiggle (the fastest frequency, where the kernel passes only 0.2 of the signal) to the measurement. Dividing by 0.2 multiplies that wiggle by 5, so the recovered waveform becomes `[0.1, −0.1, 0.1, 0.9, 0.1, 0.4, 0.1, −0.1]`: spurious ±0.1 bumps, 20% as strong as the weaker real return. Real systems add a regularizer for exactly this reason.
 
-**Related operation: matched filtering (cross-correlation).** To *detect* a known pulse shape buried in noise, a LiDAR receiver slides a copy of the expected pulse over the waveform and records how well it matches at each offset: a cross-correlation. This is the best linear detector for a known pulse in white noise, but it does not sharpen: for the numbers above, correlating with `[0.2, 0.6, 0.2]` convolves the returns with the pulse's autocorrelation `[0.04, 0.24, 0.44, 0.24, 0.04]`, which is *wider* than the pulse. Matched filtering answers "is there a return, and about when?"; deconvolution tries to answer "what are the separate returns, finely resolved?". Continuous-wave ToF sensors correlate the received light with the sent modulation for the same reason (Week 4 §1.8; the dedicated ToF lecture later).
+**Related operation: matched filtering (cross-correlation).** To *detect* a known pulse shape buried in noise, a LiDAR receiver slides a copy of the expected pulse over the waveform and records how well it matches at each offset: a cross-correlation. This is the best linear detector for a known pulse in white noise, but it does not sharpen: for the numbers above, correlating with `[0.2, 0.6, 0.2]` convolves the returns with the pulse's autocorrelation `[0.04, 0.24, 0.44, 0.24, 0.04]`, which is *wider* than the pulse. Matched filtering answers "is there a return, and about when?"; deconvolution tries to answer "what are the separate returns, finely resolved?". Continuous-wave ToF sensors correlate the received light with the sent modulation for the same reason (Week 4 §5; the dedicated ToF lecture later).
 
 **Why deconvolution matters for this course (map).**
-- *Defocus and motion blur* (Week 2 §5, §9; Week 4 §1.5): the blur is a known-ish kernel, and sharpening the photo is deconvolution.
-- *Coded aperture, extended depth of field, flutter shutter, parabolic sweep* (Week 4 §15 to §20): these all choose the blur kernel on purpose so its spectrum has no exact zeros (is **broadband**) and a later deconvolution can recover the scene. The camera hardware and the deconvolution software are designed together.
+- *Defocus and motion blur* (Week 2 §5, §9; Week 4 §4.3): the blur is a known-ish kernel, and sharpening the photo is deconvolution.
+- *Coded aperture, extended depth of field, flutter shutter, parabolic sweep* (Week 4 §19 to §24): these all choose the blur kernel on purpose so its spectrum has no exact zeros (is **broadband**) and a later deconvolution can recover the scene. The camera hardware and the deconvolution software are designed together.
 - *LiDAR / time-of-flight:* resolving closely spaced returns, sharpening range peaks beyond the pulse width, and handling multipath (several surfaces in one pixel) are deconvolution problems along the time axis.
 - *Everywhere noise matters:* the better the kernel's spectrum behaves, the less noise is amplified.
 
