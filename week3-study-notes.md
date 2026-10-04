@@ -20,6 +20,8 @@ The lecture's own review slides (sensors as buckets integrating incident light; 
 
 ## 1. Spectral Sensitivity Function (SSF)
 
+**What problem this solves.** A sensor cannot report a whole spectrum, only one number, so we need a rule for how a spectrum becomes that number. The SSF integral is that rule. Input: the light's power at every wavelength and the sensor's responsiveness at every wavelength. Output: one scalar reading *R*. Analogy: a hearing-aid-style equalizer that boosts some pitches and mutes others, then reports one total loudness.
+
 **Setup.** Any light sensor — a cone cell in the retina, a photodiode under a Bayer filter, a spectrometer, anything that turns incident light into a single number — responds differently to light at different wavelengths. That per-wavelength responsiveness is the sensor's **spectral sensitivity function (SSF)**, written *f*(λ): a curve giving "how strongly does this sensor respond to one unit of light at wavelength λ," for every wavelength λ the sensor can detect at all.
 
 Incoming light itself is described by its **spectral power distribution (SPD)**, written Φ(λ): how much power the light source emits (or how much radiance reaches the sensor) at each wavelength. This is a *physical* description of the light, with no reference to any sensor or observer — the same SPD illuminates every sensor in the room identically; what differs is how each sensor's own *f*(λ) reacts to it.
@@ -77,6 +79,8 @@ This geometric picture **formalizes Week 1 §3's metamerism**: since the map fro
 
 ## 3. CIE Color Matching Experiments
 
+**What problem this solves.** Cone responses cannot be read out of a living eye, yet we need a measurable definition of color. Color matching functions provide one. Input: a pure test wavelength. Output: the three primary strengths a person needs to mix to match it. Analogy: describing a paint color by a recipe ("2 parts red, 1 part blue") that you tune until it looks the same as the sample.
+
 Section 2 described the space of achievable colors abstractly, in terms of cone responses no one can observe directly. The **CIE color matching experiment** is the practical procedure used to *measure* that space using only what an observer can report: whether two lights look the same.
 
 **Setup.** Pick a small fixed set of reference lights, the **primaries** (in the classic experiment, three fixed, nameable lights). Also pick a **test light** — the color to be matched. An observer views a split field: primaries mixed together on one side, the test light on the other. The experimenter adjusts the *strengths* (intensities) of the primaries — how much of each is mixed in — until the combined primary mixture looks visually identical to the test light. "Looks identical" here means exactly what §2 built: the primary mixture and the test light produce the same (S, M, L) triplet, i.e. they are metamers of each other, even though the primary mixture's own spectrum is (in general) nothing like the test light's spectrum. This identity is written with an equality symbol meaning "has the same retinal color as" / "is metameric to," not "is the same physical spectrum as."
@@ -126,6 +130,8 @@ These are the same underlying fact seen from two directions: a set of color matc
 
 ## 5. CIE xy Chromaticity Diagram
 
+**What problem this solves.** To compare colors by hue and saturation, you need to ignore brightness. Input: a color's (X, Y, Z) coordinates. Output: two numbers (x, y) that are the same for a color at any brightness. Analogy: describing where a flashlight beam points regardless of how bright the bulb is, direction only, not strength.
+
 CIE XYZ (§4) is a 3D space, and one of its three axes, *Y*, is specifically designed to carry the color's overall **luminance/brightness**. Often what's wanted for comparing colors is not "how bright is it" but purely "what hue and saturation is it" — the same color, brighter or dimmer, should be treated as "the same color." The **CIE xy chromaticity coordinates** strip out the brightness dimension:
 
 ```
@@ -173,7 +179,7 @@ A device's **gamut** is the set of colors it can actually produce (a display) or
 
 Putting §4's fundamental problem and §6's gamut-triangle geometry together: **no RGB space can simultaneously have physically realizable (non-negative) primaries and guarantee non-negative coordinates for every real color.** Any triangle built from three real, physical primary points is strictly smaller than the full horseshoe of achievable chromaticities (§2, §5) — some real colors always fall outside it. The only way to *cover* every real color with non-negative coordinates (as CIE XYZ does) is to give up on the primaries themselves being physically producible light.
 
-This is precisely why **consumer devices disagree on color without calibration**: different cameras, displays, and printers use different physical primaries, hence different gamut triangles, hence different mappings from "RGB numbers" to actual chromaticity. A raw RGB triplet carries no meaning at all unless you also know *which* device's primaries it's expressed relative to — the same three numbers mean a different actual color on two different uncalibrated screens. Standards like sRGB exist to fix one agreed-upon triangle that everyone is supposed to target, but a consumer display that isn't calibrated to actually hit sRGB's specific primaries will still render the same RGB numbers as a visibly different color than a calibrated one.
+This is precisely why **consumer devices disagree on color without calibration**: different cameras, displays, and printers use different physical primaries, hence different gamut triangles, hence different mappings from "RGB numbers" to actual chromaticity. A raw RGB triplet carries no meaning at all unless you also know *which* device's primaries it's expressed relative to — the same three numbers mean a different actual color on two different uncalibrated screens. (**Calibration** means comparing a device's readings or outputs against reference targets whose true values are known, to learn the mapping between the two; Week 4 §6.1 develops this from scratch.) Standards like sRGB exist to fix one agreed-upon triangle that everyone is supposed to target, but a consumer display that isn't calibrated to actually hit sRGB's specific primaries will still render the same RGB numbers as a visibly different color than a calibrated one.
 
 > **Worked example: the same RGB numbers on two different standards (slide 49: "RGB values have no meaning if the primaries between devices are not the same").** Compare two real standards that share the same white point (D65, a standardized daylight white) but use different primaries:
 > - **sRGB** (standard IEC 61966-2-1): red primary at xy = (0.640, 0.330), green (0.300, 0.600), blue (0.150, 0.060).
@@ -279,6 +285,8 @@ Demosaicking (Week 1 §4) is the reconstruction step that turns a single-channel
 
 ### 10.1 Naive (Linear) Interpolation
 
+**What problem this solves.** Each pixel measured only one color, so two of its three values are missing. Naive interpolation fills them in. Input: the sparse Bayer mosaic. Output: a full-color image whose missing values are guesses. Analogy: a classroom where each student only knows one answer on a three-question quiz, and the missing answers are filled by asking the nearest neighbors who did measure them.
+
 The simplest approach: estimate each missing channel value at a pixel by averaging the nearest neighboring pixels that *did* measure that channel. For the green channel specifically (present at every other pixel in the Bayer mosaic — Week 1 §4's "RGGB," green doubled), the four nearest green-measuring neighbors of any non-green pixel are its four orthogonal (up/down/left/right) neighbors:
 
 ```
@@ -335,6 +343,8 @@ Many sensors sit behind an **optical low-pass filter (OLPF)**, also called an op
 **The trade-off.** An OLPF removes the risk of aliasing, but it does so by removing genuine fine detail along with it — a straightforward resolution-vs-aliasing trade, the same tension Week 2 §2 already encountered between geometric blur and diffraction for pinhole size, now appearing as a deliberate design choice rather than an unavoidable physical limit. Because it's a *choice*, some photographers physically remove the OLPF from their camera ("hot-rodding") to trade back some aliasing risk for maximum resolution, and manufacturers sometimes sell otherwise-identical camera models with and without the OLPF installed, aimed at photographers who have made that trade-off deliberately.
 
 ### 10.3 Chrominance Low-Pass Demosaicking
+
+**What problem this solves.** Naive interpolation leaves colored fringes at edges. Chrominance low-pass demosaicking cleans them up. Input: a naive-demosaicked RGB image. Output: the same image with color errors smoothed but brightness detail preserved. Analogy: a watercolor painting over a pencil sketch; blurring the paint slightly barely hides the sketch lines that carry the detail.
 
 Naive per-channel interpolation (§10.1) still leaves color-fringing artifacts, especially near edges, because red, green, and blue are each interpolated independently with no shared structure. The lecture (slide 71) names the root cause as a **sampling problem that persists despite the OLPF**: red and blue are the sparsest channels (one sample per 2×2 tile), so any fine detail they receive is "(too) high-frequency" for their sampling — high *image* frequency, in cycles per pixel, exactly as in §10.2's worked example. Their interpolation errors therefore come out as fine, pixel-scale color speckle and colored fringes along edges.
 
@@ -454,6 +464,8 @@ This last point sets up Malvar, He & Cutler (2004): what is the best *linear* fi
 
 ### 10.5 Malvar–He–Cutler (2004) High-Quality Linear Interpolation
 
+**What problem this solves.** Naive interpolation ignores that edges appear in every color channel, so it blurs edges in the channels it fills in. Malvar–He–Cutler fixes this while staying linear and cheap. Input: the Bayer mosaic. Output: a full-color image with sharper edges than §10.1. Analogy: when one witness saw an edge clearly, you use their report to correct what the others, who only glimpsed it, guess.
+
 This method stays entirely **linear** (each output pixel is still a fixed weighted sum of input pixels — no data-dependent branching like a median or an edge classifier), but improves on naive interpolation (§10.1) by adding a correction term built from a gradient measured in a *different*, already-measured channel at that same location.
 
 **The core assumption.** Sharp edges in a natural image tend to show up strongly across essentially every channel at once — a hard edge is rarely a green-only edge with no correlate in red or blue. So a strong local gradient (second-difference/Laplacian-like curvature) measured in whichever channel *is* actually sampled at a given pixel is a useful predictor that the *missing* channels at that same pixel also have a gradient there — even though those channels weren't directly measured, their local curvature can be estimated by borrowing the curvature already visible in the one channel that was.
@@ -487,6 +499,8 @@ D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (�
 **PS2's practical framing.** Although there are several interpolation cases above, by symmetry there are only **4 unique filter shapes** needed in total (several cases are the same filter rotated or with color roles swapped). PS2 also flags a genuinely useful implementation detail: many of the filter coefficients that fall out of this derivation are **dyadic rationals** — fractions with a power-of-two denominator (e.g. 1/2, 3/4, 5/8, 3/2), not necessarily powers of two themselves — which, in fixed-point hardware, means a multiplication can be implemented with cheap bit-shifts and additions instead of a general multiply, a real reason this specific linear filter design became popular in actual camera ISPs, not just an academic curiosity.
 
 ### 10.6 PSNR and MSE
+
+**What problem this solves.** "It looks better" is subjective; to compare reconstruction methods you need one number for how far an estimated image is from the true one. Input: an estimated image and the ground-truth image. Output: MSE (average squared error) and PSNR (that error re-expressed in decibels, higher is better). Analogy: a dartboard score, where MSE is the average squared distance from the bullseye and PSNR flips it so a higher score means better aim.
 
 HW2 compares its several demosaicking methods (§10.1, §10.3, §10.5) **numerically**, not just by eye, using two standard error metrics.
 
@@ -539,15 +553,15 @@ The simplest choice of *w*: weight depends **only on spatial distance** between 
 w(x, x') = exp( −|x − x'|² / (2σ²) )
 ```
 
-Nearby pixels get high weight, distant pixels get vanishingly small weight, and *nothing* about the pixels' actual intensity values enters the weight at all — this is exactly the low-pass filtering idea already built in Week 1 §13.1 (blurring by averaging neighbors), here formalized as one specific, spatially-weighted instance of §11.1's general framework. Because the weights don't depend on the noisy image's own values, this is both **linear** (the output is a fixed linear combination of inputs, regardless of what those inputs are) and purely **local** (weight decays with distance alone). (Slide 86 calls it a "Gaussian low-pass filter": low-pass in image frequency, cycles per pixel, per §10.3.1.)
+Nearby pixels get high weight, distant pixels get vanishingly small weight, and *nothing* about the pixels' actual intensity values enters the weight at all — this is exactly the low-pass filtering idea already introduced in Week 1 §13.1 (blurring by averaging neighbors), which Week 1 §12.4.4a formalizes as **convolution** with a **kernel** (a small grid of weights slid over the image). Here the Gaussian is one specific, spatially-weighted instance of §11.1's general framework, and its weights *are* the kernel. Because the weights don't depend on the noisy image's own values, this is both **linear** (the output is a fixed linear combination of inputs, regardless of what those inputs are) and purely **local** (weight decays with distance alone). (Slide 86 calls it a "Gaussian low-pass filter": low-pass in image frequency, cycles per pixel, per §10.3.1.)
 
-**Linear-algebra view: Gaussian filtering is a fixed matrix.** Stack the image into a vector **i**. The filtered image is G_σ**i**, where G_σ is a square matrix whose row for pixel x holds the normalized weights w(x, x′)/normalizer. In §11.4's 5-pixel example (σ = 1 px), the middle pixel's row is (0.0545, 0.2442, 0.4026, 0.2442, 0.0545). Every row has the same pattern shifted over by one pixel, which makes G_σ a **convolution matrix**: convolving *is* multiplying by it, although code never builds it explicitly. G_σ doesn't depend on **i**, so the filter is linear: G_σ(a**i**₁ + b**i**₂) = aG_σ**i**₁ + bG_σ**i**₂.
+**Linear-algebra view: Gaussian filtering is a fixed matrix.** Stack the image into a vector **i**. The filtered image is G_σ**i**, where G_σ is a square matrix whose row for pixel x holds the normalized weights w(x, x′)/normalizer. In §11.4's 5-pixel example (σ = 1 px), the middle pixel's row is (0.0545, 0.2442, 0.4026, 0.2442, 0.0545). Every row has the same pattern shifted over by one pixel, which makes G_σ a **convolution matrix** (Week 1 §12.4.4a, Part 7: a matrix built by repeating one kernel, shifted one position per row): convolving *is* multiplying by it, although code never builds it explicitly. G_σ doesn't depend on **i**, so the filter is linear: G_σ(a**i**₁ + b**i**₂) = aG_σ**i**₁ + bG_σ**i**₂.
 
 **Term-by-term:** *x* and *x′* are pixel positions; |x − x′| is their distance in pixels; **σ** (sigma) is the spatial standard deviation of the Gaussian, in pixels, and is **the knob you control**. The factor 2σ² sets the scale: a neighbor exactly σ pixels away gets weight exp(−1/2) ≈ 0.61 of the center's.
 
 **What σ does.** Analogy: σ is the radius of a "neighborhood vote." Small σ means only immediate neighbors get a say, so noise is averaged over few pixels and only slightly reduced, but edges stay fairly crisp. Large σ means pixels farther away also vote. More noise is averaged away, but more genuine detail is averaged away too. In short, a **larger σ → wider kernel → more smoothing → lower cutoff frequency** (finer detail is removed).
 
-**Why it is a low-pass filter: a Gaussian's Fourier transform is a Gaussian.** Week 1 §12.4.5's convolution theorem says blurring with a kernel multiplies the image's spectrum by the kernel's own Fourier transform (its *frequency response*: how much of each image frequency survives). For a Gaussian kernel of spatial width σ (in pixels), that frequency response is another Gaussian:
+**Why it is a low-pass filter: a Gaussian's Fourier transform is a Gaussian.** Week 1 §12.4.4a's convolution theorem (applied to filtering in §12.4.5) says blurring with a kernel multiplies the image's spectrum by the kernel's own Fourier transform (its *frequency response*: how much of each image frequency survives). For a Gaussian kernel of spatial width σ (in pixels), that frequency response is another Gaussian:
 
 ```
 H(f) = exp( −f² / (2σ_f²) ),   σ_f = 1 / (2πσ)
@@ -729,6 +743,8 @@ sharpened = i + k·(i − G_σ i) = (Id + k·(Id − G_σ))·i = ((1+k)·Id − 
 
 ## 12. Gamma Correction
 
+**What problem this solves.** Storing brightness with only 256 levels wastes most of them if they are spaced evenly in physical light, because the eye is far more sensitive to differences in dark tones than in bright ones. A gamma curve re-spaces the levels to match the eye. Input: a linear light value in [0, 1]. Output: an encoded value in [0, 1] that gives dark tones more of the available codes. Analogy: a ruler with fine tick marks near zero and coarse ones far out, so the marks you read are evenly spaced in how bright they look rather than in how much light they carry.
+
 **Why encode with a gamma curve at all.** A camera's RAW sensor readout is roughly linear in physical light intensity (twice the photons in, twice the digital count out — Week 2 §15). But storage is finite: a consumer image format typically allocates only 8 bits per channel (256 levels) to represent what a 12–14-bit RAW captured (Week 2 §13). If those 256 levels were spaced *linearly* in physical intensity, most of them would be wasted on the brightest stops of the image (where human vision barely notices small brightness differences) while the darkest, most perceptually sensitive regions would be crushed into only a handful of distinct code values. Human sensitivity to luminance is, to a good first approximation, itself a power-law-like relationship rather than linear — roughly **γ ≈ 2.2** — so encoding brightness with a matching gamma curve spaces the 256 available code values so that **equal steps in code value correspond to roughly equal steps in perceived brightness**, not equal steps in physical light intensity. This is the encoding-side analog of an idea Week 1 already leaned on repeatedly (§10's log-scale dynamic range, §12's contrast-driven sensitivity): human perception of intensity is fundamentally non-linear, so any finite-precision representation aimed at a human viewer should be spaced to match perception, not physics.
 
 **Two variants appear in the source material — disambiguated explicitly:**
@@ -760,7 +776,7 @@ C_sRGB = (1 + α) · C_linear^(1/2.4) − α            if C_linear > 0.0031308,
 > | (a) Power law, 0.18^(1/2.2) | 0.4587 | 116.96 | 117 |
 > | (b) sRGB piecewise, 1.055·0.18^(1/2.4) − 0.055 | 0.4614 | 117.65 | 118 |
 >
-> Stored linearly, mid gray gets code 46, so only 46 of the 256 codes are spent on everything darker than mid gray. With either gamma curve it lands near the middle (117 or 118), so roughly half the codes describe the darker half of the perceived tones, which is what "perceptually even spacing" means. The two curves differ by only one code value here, consistent with the sRGB curve approximating γ ≈ 2.2. Decoding recovers the input exactly: 0.4587^2.2 = 0.180000 and the inverse sRGB formula applied to 0.4614 also gives 0.180000.
+> Stored linearly, mid gray gets code 46, so only 46 of the 256 codes are spent on everything darker than mid gray. With either gamma curve it lands near the middle (117 or 118), so roughly half the codes describe the darker half of the perceived tones (a *tone* is just a brightness level from dark to light; Week 4 §8.1), which is what "perceptually even spacing" means. The two curves differ by only one code value here, consistent with the sRGB curve approximating γ ≈ 2.2. Decoding recovers the input exactly: 0.4587^2.2 = 0.180000 and the inverse sRGB formula applied to 0.4614 also gives 0.180000.
 
 **The round trip.** The encoding exponent 1/2.2 mirrors the eye's roughly-2.2 perceptual response, so code values are spread evenly in *perceived* brightness. The display then applies the inverse, decoding curve (raising to the power ≈ 2.2, or the exact inverse of the sRGB formula) before emitting light. Encode then decode is the identity, so the light leaving the screen is again proportional to the light the sensor recorded: the overall chain is linear. Gamma encoding is a storage trick, not a change in the picture.
 
@@ -786,7 +802,7 @@ A camera sensor's native color response is defined by its own physical filters, 
 [X; Y; Z] = C · [R_cam; G_cam; B_cam]
 ```
 
-*C* is a 3×3 color matrix found by **calibration**: photograph targets with known XYZ values (e.g. a color chart) and fit the matrix that best maps the camera's readings onto them. It is **camera-specific** (different sensors have different filters), fixed by the manufacturer or calibration, not something the photographer sets. Because the camera's SSFs are generally not exact linear combinations of the standard observer's matching functions, a 3×3 matrix is a best fit, not an exact conversion.
+*C* is a 3×3 color matrix found by **calibration** (comparing readings against a **calibration target**, an object whose true values are known; Week 4 §6.1): photograph targets with known XYZ values (e.g. a color chart) and fit the matrix that best maps the camera's readings onto them. It is **camera-specific** (different sensors have different filters), fixed by the manufacturer or calibration, not something the photographer sets. Because the camera's SSFs are generally not exact linear combinations of the standard observer's matching functions, a 3×3 matrix is a best fit, not an exact conversion.
 
 **Step 2: CIE XYZ → linear sRGB.** This matrix is standardized (IEC 61966-2-1) and doesn't need to be looked up. It follows from sRGB's primaries and D65 white by the same construction as §7's worked example: build the sRGB → XYZ matrix column by column, then invert it. Shown below are the left matrix as computed and, on the right, the inverse as the standard publishes it (rounded to 4 decimals; the exact inverse differs in the fourth decimal, see the linear-algebra view below):
 
@@ -832,6 +848,8 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 
 ## 14. JPEG Compression
 
+**What problem this solves.** A raw full-color image is huge, and most of that data describes detail the eye cannot see. JPEG shrinks the file by discarding exactly that detail. Input: an RGB image. Output: a much smaller file that looks nearly identical. Analogy: summarizing a book by keeping the plot and dropping the sentences nobody would miss.
+
 JPEG compression is lecture content, not one of HW2's tasks, so this is covered at a lighter, conceptual level. The standard pipeline:
 
 1. **Transform to Y′CbCr** — exactly the same luma/chrominance representation built in §10.3, now used for compression rather than demosaicking.
@@ -853,7 +871,9 @@ No full DCT derivation is needed here — the conceptual shape (transform → su
 
 ## 15. Deblurring / Deconvolution — A One-Slide Preview
 
-The lecture shows exactly one slide on this topic, with no formula: a single example (from Heide et al. 2016) showing a blurred input image and its deblurred/deconvolved reconstruction, alongside a short list of common blur sources — out-of-focus (defocus) blur, geometric distortion, spherical aberration, chromatic aberration (Week 2 §6 covered the optical causes of the aberrations by name), and coma. Nothing about *how* the deblurring itself works is given at this point in the course. Full treatment of deconvolution — the actual inverse-problem formulation, and how a known or estimated blur can be computationally undone — is genuinely Week 5–6 material (Week 1 §12.4.5 already forward-pointed to this); this section is only a preview that the topic exists and roughly what causes the blur it will eventually undo.
+The lecture shows exactly one slide on this topic, with no formula: a single example (from Heide et al. 2016) showing a blurred input image and its deblurred/deconvolved reconstruction, alongside a short list of common blur sources — out-of-focus (defocus) blur, geometric distortion, spherical aberration, chromatic aberration (Week 2 §6 covered the optical causes of the aberrations by name), and coma. Nothing about *how* the deblurring itself works is given at this point in the course. Full treatment of deconvolution — the actual inverse-problem formulation, and how a known or estimated blur can be computationally undone — is genuinely Week 5–6 material (Week 1 §12.4.4b gives a first-look primer); this section is only a preview that the topic exists and roughly what causes the blur it will eventually undo.
+
+**One-paragraph orientation (so the word is not opaque).** Every blur source on that slide behaves like **convolution**: each sharp scene point is replaced by a small blob (the blur **kernel**, or point spread function), and the photo is the sum of all the blobs (Week 1 §12.4.4a; named formally in Week 4 §14). **Deconvolution** is the reverse problem: given the blurry photo, estimate the sharp one. It is *non-blind* when the kernel is known and *blind* when it must be guessed too. It is hard because the blur multiplies each spatial frequency by a factor that is small or zero for fine detail, and dividing that factor back out also amplifies noise (an **ill-posed** problem, handled with **regularization** such as the Wiener filter in Week 5 and image priors in Week 6; Week 1 §12.4.4b works a small numeric case). It matters for this course because defocus, motion blur, coded apertures, flutter shutter, extended depth of field (Week 4 §14 to §20), and the recovery of closely spaced LiDAR returns all reduce to it.
 
 ---
 

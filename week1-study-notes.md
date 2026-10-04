@@ -169,6 +169,8 @@ This is the lecture's worked example of turning the acuity concept (§8) into a 
 
 **Setup:** if the eye can just resolve a visual angle of α (≈1 arcmin, from §8), and the viewer sits at distance *d* from a screen, what is the physical size *p* of the smallest resolvable feature (pixel) on that screen?
 
+**What problem this solves.** It converts an angle your eye can resolve into a physical size on a screen, so a display maker knows how small pixels need to be. Input: viewing distance *d* and angle α. Output: pixel size *p*. Analogy: a coin held at arm's length covers a small angle, and the same coin across a room covers a smaller one; this formula runs that relationship backwards from angle to size.
+
 **Formula:**
 
 ```
@@ -210,9 +212,71 @@ From the lecture:
 
 This large gap between what the eye can perceive and what a standard display can reproduce is exactly the motivation for **HDR (high dynamic range) imaging and displays** (Week 4 topic) — e.g., "Sunnybrook" style HDR displays that add a secondary low-resolution backlight array behind an LCD panel to multiply the achievable contrast ratio.
 
+### 10.1 Stops, EV, and the photographer's "+2 / −4" notation
+
+**Why this section is here.** The word "stop" already appeared above, and it returns in every camera-related week (aperture in Week 2 §8, exposure time and ISO in Week 4 §1.3). Photographers also write brightness changes as "+2", "−1", "−4 EV" or "f/2.8" without explanation. This is the one place where the whole shorthand is explained from scratch.
+
+**Analogy first: musical octaves.** Notes an octave apart differ by a factor of 2 in vibration frequency, yet you hear that as one equal-sized "step" up. Light brightness works the same way: your eye and a camera's settings both care about *ratios*, not differences, so photographers count brightness in *doublings*. One doubling is one **stop**.
+
+**Definition.** A **stop** is a factor of 2 in the amount of light (or in a ratio of brightnesses, such as dynamic range). Counting stops is just counting how many times you doubled or halved.
+
+```
+stops = log₂(ratio)          ratio = 2^stops
+```
+
+**Intuition.** Start from a ratio of 1 (no change) and double it once: ratio 2, which is 1 stop. Double again: ratio 4, 2 stops. Each extra stop multiplies the ratio by 2, so after *n* stops the ratio is 2 multiplied by itself *n* times, i.e. 2ⁿ. The logarithm base 2 is simply the question "how many doublings gives this ratio?", the inverse of that multiplication. A negative number of stops is halvings: −1 stop is ×½, −2 stops is ×¼.
+
+**Terms.**
+
+| Symbol | Meaning | Units | Who controls it |
+|---|---|---|---|
+| ratio | how many times more (or fewer, if below 1) light, or brighter/darker, one thing is than another | dimensionless | fixed by the scene or your settings |
+| stops | the same comparison counted in doublings; positive = more light, negative = less | "stops" (also written EV, see below) | what you dial in |
+
+**Stops-to-light-multiplier table** (computed as 2^stops; the "+" and "−" are the same signs you see on a camera's exposure-compensation dial):
+
+| Stops | Light multiplier | Reads as |
+|---|---|---|
+| −4 | 1/16 = 0.0625 | one-sixteenth as much light |
+| −3 | 1/8 = 0.125 | |
+| −2 | 1/4 = 0.25 | |
+| −1 | 1/2 = 0.5 | |
+| 0 | 1 | no change |
+| +1 | 2 | twice the light |
+| +2 | 4 | four times the light |
+| +3 | 8 | |
+| +4 | 16 | sixteen times the light |
+
+**Converting between orders of magnitude and stops.** One order of magnitude is a factor of 10, and log₂(10) ≈ 3.32, so 1 order of magnitude ≈ 3.32 stops. This is the unit conversion used in the summary slide check in §17: 14 orders ≈ 14 × 3.32 ≈ 46.5 stops.
+
+**Third-stop steps.** Cameras usually move in fractions of a stop, most often one third. A "+1/3 stop" step multiplies the light by 2^(1/3) ≈ 1.26, "+2/3" by 2^(2/3) ≈ 1.59, and three such steps give 2^(3/3) = 2, a full stop again. Every step is the same *multiplier*, not the same added amount (that is the octave idea: equal-sounding steps are equal ratios).
+
+**"EV" has two uses; keep them apart.**
+
+- **Exposure compensation** (the dial that reads "−2 … 0 … +2" on a camera). A value like **+2** (or "+2 EV") means "make the photo 2 stops, i.e. 2² = 4 times, brighter than the camera's automatic **meter** (its built-in light measurement) would have chosen". "−4" means 2⁻⁴ = 1/16 as bright. This is a *relative* instruction, an offset from the meter's suggestion.
+- **Exposure value** (absolute EV, a single number labelling a combination of aperture and shutter time). It is defined in Week 4 §1.3; one step of it is again one stop.
+
+**The three physical controls, and what one stop of each looks like.** (All three are defined properly later; this is the lookup you need now.)
+
+| Control | What it is, in one line | One stop *more* light (or brightness) | Where deepened |
+|---|---|---|---|
+| **Aperture**, written f/N | the adjustable opening in the lens, f/N meaning opening diameter = focal length ÷ N (the slash is "divided by") | f/4 → f/2.8 (N shrinks by √2 ≈ 1.41, because light follows opening *area*, which goes as diameter²) | Week 2 §8 |
+| **Shutter time** (exposure time) | how long the sensor collects light | 1/125 s → 1/60 s (time doubles; the printed numbers are rounded powers of 2) | Week 4 §1.3 |
+| **ISO** | an electronic amplification of the recorded signal (brightens the picture without collecting more light) | ISO 100 → ISO 200 | Week 4 §1.6 |
+
+Because each control moves in stops, they trade off exactly: one stop opened on the aperture can be paid back by one stop faster on the shutter, leaving the picture's brightness unchanged (called **reciprocity**, Week 4 §1.2).
+
+> **Worked example (a generic one, not a homework case).** A meter suggests f/4, 1/125 s, ISO 100. You want a faster shutter to freeze motion: 1/500 s is 2 stops faster (125 → 250 → 500 is two doublings, so 1/4 as much light). To pay those 2 stops back you can open the aperture 2 stops: f/4 → f/2.8 → f/2. Result: f/2, 1/500 s, ISO 100, same brightness as the meter's pick. Now add exposure compensation of +1: the camera will deliver 2× the light of that pick, for instance by slowing the shutter to 1/250 s.
+
+> **Why this matters for HDR (Week 4).** A bracket "at −4, −2, +2, +4 stops" is just the multipliers 1/16, 1/4, 4, 16 from the table, applied to one baseline exposure; the whole spread is 8 stops, a 256× range.
+
+The formulas above are in `formulas.md` (Week 1). Week 2 §8 gives the aperture sequence, and Week 4 §1.3 and §1.6 give the shutter and ISO sequences and absolute EV.
+
 ---
 
 ## 11. Contrast
+
+**What problem this solves.** To study how well the eye detects a pattern, you need a single number saying "how strong is this brightness difference?" Contrast is that number. Input: the brightness (luminance) values in a scene or pattern. Output: one dimensionless contrast value, larger meaning easier to see. Analogy: contrast is like a signal-to-background ratio, how loudly someone speaks relative to the room's noise, since the same absolute brightness step is obvious on a dark background and invisible on a bright one.
 
 Before you can even define a "contrast sensitivity function," you need a numeric definition of contrast itself — and there isn't just one:
 
@@ -302,6 +366,8 @@ This number is now fixed too — it stays 50 cycles/inch no matter how far anyon
 
 ### 12.3 The CSF curve itself
 
+**What problem this solves.** Visual acuity (§8) says only the *smallest* detail you can resolve, but real images contain stripes and textures of every size and every strength. The contrast sensitivity function (CSF) answers: for each stripe density, how faint can the stripes get before you stop seeing them? Input: a spatial frequency in cycles per degree (cpd). Output: contrast sensitivity, the reciprocal of the faintest contrast you can still detect. Analogy: it is an equalizer curve for vision, like a hearing test that finds the quietest audible volume at each pitch, except the "pitch" is stripe density and the "volume" is contrast.
+
 **Setup:** Campbell & Robson (1968) showed subjects sinusoidal gratings (the "smoothly-fading" version of the light/dark stripe idea above, rather than sharp-edged bars) at different **spatial frequencies** and different **[contrasts](https://en.wikipedia.org/wiki/Contrast_(vision))** (§11), and found the *minimum contrast* at which a subject could just barely detect the stripes at all. The reciprocal of that minimum detectable contrast is the subject's **[contrast sensitivity](https://en.wikipedia.org/wiki/Contrast_(vision)#Contrast_sensitivity)** at that spatial frequency: a *low* minimum-detectable-contrast means you're very sensitive (you can spot even a faint pattern), so sensitivity = 1 / (that minimum contrast).
 
 **Shape of the CSF curve (contrast sensitivity, on the y-axis, plotted against spatial frequency in cpd, on the x-axis):**
@@ -325,7 +391,7 @@ It also names a genuine reframing worth being explicit about, since it's exactly
 
 Computational imaging routinely switches to a completely different representation of the *same* image: not "what color is here," but "how much of each possible wave pattern is present, across the whole image at once?" That second representation is the **frequency domain**. The Fourier transform converts between the two — nothing is lost in the conversion; it's an equally complete, alternative description of the same image, and an *inverse* Fourier transform converts back.
 
-**Scope note:** this is genuinely a Week 5 topic ("Sampling, Linear Systems, Deconvolution"), formalized properly there. What follows is a deliberately partial, HW1-driven preview — just enough to use `fft2`/`fftshift` with real understanding and to see precisely how hybrid images work. Left for Week 5: the exact discrete Fourier transform formula, the sampling theorem, Nyquist rate/aliasing, why the FFT algorithm is fast, and blur as convolution with a point spread function (PSF) plus its first inverse, the Wiener filter. Left for Week 6: deconvolution with natural-image priors. Both reuse the convolution theorem introduced in §12.4.5 below.
+**Scope note:** this is genuinely a Week 5 topic ("Sampling, Linear Systems, Deconvolution"), formalized properly there. What follows is a deliberately partial, HW1-driven preview — just enough to use `fft2`/`fftshift` with real understanding and to see precisely how hybrid images work. Left for Week 5: the exact discrete Fourier transform formula, the sampling theorem, Nyquist rate/aliasing, why the FFT algorithm is fast, and blur as convolution with a point spread function (PSF) plus its first inverse, the Wiener filter. Left for Week 6: deconvolution with natural-image priors. Both reuse the convolution theorem, which §12.4.4a below builds from scratch (with a first look at deconvolution in §12.4.4b) and §12.4.5 then applies.
 
 ### 12.4.1 The 1D idea: any signal is a sum of waves
 
@@ -369,6 +435,8 @@ This is exactly the "image as horizontal and vertical waves" idea: any real imag
 
 ### 12.4.3 What `fft2`'s output actually represents — same shape, different meaning
 
+**What problem this solves.** To separate an image into coarse and fine detail, you need to know how much of each stripe pattern (§12.4.2) the image contains. `fft2` computes exactly that. Input: an *H*×*W* array of pixel brightnesses (one color channel). Output: an *H*×*W* array of complex numbers, one per stripe pattern, giving its strength and shift. Analogy: a prism turns one beam of white light into a rainbow showing how much of each color is present; `fft2` turns a picture into a "rainbow" showing how much of each stripe pattern is present.
+
 This is the single most common point of confusion, worth stating bluntly: when you call `np.fft.fft2` on an *H*-pixel-tall, *W*-pixel-wide image, you get back another array that is also *H*×*W* — but comparing the two arrays entry-by-entry is meaningless, because they represent completely different things.
 
 - In the **input** array, the entry at row *y*, column *x* is the brightness at pixel location `(x, y)`. Spatial domain: index = location.
@@ -401,17 +469,178 @@ This is the precise, computable version of §12.1's qualitative "fine stripes = 
 
 ### 12.4.4 `fftshift`: reordering the output to match intuition
 
+**What problem this solves.** `fft2` stores its output in an order that is awkward to read and to mask. `fftshift` only rearranges that array so zero frequency sits in the center. Input: a raw `fft2` output array. Output: the same numbers, same shape, with the four quadrants swapped diagonally. Analogy: a map printed with its center torn into the four corners; `fftshift` tapes the corners back so the center is in the middle again, and `ifftshift` tears it back apart.
+
 Display a raw `fft2` output's magnitude as an image, and it looks wrong at first: the brightest spot — the **DC component**, meaning zero image frequency, `u = v = 0`, which is just the image's overall average brightness — sits in a *corner*, not the center, and the pattern seems to wrap around the edges.
 
 Why: in how the discrete Fourier transform indexes frequencies, index 0 means frequency 0 as expected, but the far end of the array (index *N*−1) doesn't mean "the highest positive frequency" — it means a small *negative* frequency, because the transform is periodic and treats frequency *N*−1 as identical to frequency −1. So the second half of each axis actually holds the negative frequencies, wrapped around to the far end of the array instead of sitting naturally in front of frequency 0.
 
 Concretely, since rows index *v* and columns index *u*, each of the raw array's four quadrants holds one fixed combination of signs: top-left is `u ≥ 0, v ≥ 0` (and contains the DC corner), top-right is `u < 0, v ≥ 0`, bottom-left is `u ≥ 0, v < 0`, and bottom-right is `u < 0, v < 0`. `fftshift` doesn't touch a single pixel's *value* — it only relocates these four fixed-sign blocks so they meet at a shared center instead of wrapping at the array's outer edges, which is why frequency 0 ends up in the **center** and frequency magnitude increases outward in every direction from there — matching the natural mental picture of a spectrum, and matching how the low-pass/high-pass masks in §12.4.5 are naturally described ("a disc around the center"). `ifftshift` undoes exactly this reordering, and must be applied *before* `ifft2`, since `ifft2` expects the original DC-in-the-corner layout, not the shifted one.
 
+### 12.4.4a Convolution from scratch (the operation §12.4.5 and §13 secretly rely on)
+
+§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §2 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §14 (PSF/OTF) and §19 (flutter shutter), and in LiDAR ranging (Part 9 below).
+
+**Part 1 — Analogy: a stamp, and a sliding window.**
+- *Stamp view (each point spreads its light).* Imagine a row of light bulbs of different brightness, photographed out of focus. Each bulb does not land on the sensor as one dot; it lands as a small soft blob. The photo is every bulb's blob added together, where a brighter bulb stamps a stronger blob. The blob's shape is the **kernel**. Convolution is "stamp a copy of the kernel at every input sample, scaled by that sample's value, and add all the stamps."
+- *Window view (a weighted neighborhood average).* The same arithmetic, read from the output's side: to get one output value, slide a small window of weights over the input, multiply the input values under the window by the weights, and add. This is the "average each pixel with its neighbors" of §13.1, now allowed to use *unequal* weights.
+
+**Part 2 — Definition in 1D (discrete signals).** A 1D signal here is a list of numbers `x[0], x[1], ...` (for example, brightness along one scanline). The convolution of `x` with a kernel `h` is a new list:
+
+```
+(x * h)[n] = sum over m of  h[m] · x[n − m]
+```
+
+- *Intuition, step by step.* (1) The output at position `n` is a weighted sum of input values near `n`. (2) The weight `h[m]` multiplies the input value that sits `m` steps *behind* `n` (index `n − m`). (3) Equivalently, the input sample `x[j]` contributes `x[j]·h[m]` to output position `n = j + m`, which is the stamp view: a copy of `h`, scaled by `x[j]`, starting at position `j`. The two readings are the same sum with the indices relabeled.
+- *Why `n − m` (the "flip").* Walking `m` forward in the kernel walks backward in the input. So in the window view the kernel appears *reversed* relative to the signal. For a symmetric kernel (like `[¼, ½, ¼]`) the reversal changes nothing, so it is easy to miss; for an asymmetric kernel it matters (see the impulse example in Part 3).
+- *Term by term.*
+
+| Symbol | Meaning | Units | Controlled by you? |
+|---|---|---|---|
+| `x[j]` | the input signal's value at position `j` (a pixel's brightness) | same as the signal (e.g. brightness) | fixed by the scene |
+| `h[m]` | the kernel's weight at offset `m` | unitless weight | **yes**: it is the filter you design, or the blur the optics impose |
+| `n` | the output position being computed | pixels (or samples) | the index you loop over |
+| `m` | offset into the kernel (how many steps from the center or start) | pixels | summation variable |
+| `(x * h)[n]` | the filtered / blurred output at position `n` | same as signal | computed |
+| `*` | the convolution operator (not ordinary multiplication) | | |
+
+- *Complexity.* A kernel with `K` nonzero entries costs `K` multiplies per output sample, so `N` samples cost about `N·K` work. In 2D with a `K×K` kernel it is about `N·K²` (the cost Week 4 §14.3 compares against the FFT route).
+
+**Part 3 — Fully worked 1D example (stamp view and window view agree).** Signal `x = [1, 3, 2, 5, 4]` (positions 0 to 4), kernel `h = [¼, ½, ¼]` (positions 0 to 2; a weighted 3-point average). Zero-pad: treat everything outside the signal as 0.
+
+Stamp view. Each input sample stamps `h` scaled by its value, starting at its own position:
+
+| Input sample | Stamp (scaled kernel) | Lands on output positions |
+|---|---|---|
+| `x[0] = 1` | `[0.25, 0.5, 0.25]` | 0, 1, 2 |
+| `x[1] = 3` | `[0.75, 1.5, 0.75]` | 1, 2, 3 |
+| `x[2] = 2` | `[0.5, 1.0, 0.5]` | 2, 3, 4 |
+| `x[3] = 5` | `[1.25, 2.5, 1.25]` | 3, 4, 5 |
+| `x[4] = 4` | `[1.0, 2.0, 1.0]` | 4, 5, 6 |
+
+Adding the stamps position by position:
+
+| Output position `n` | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| `(x*h)[n]` | 0.25 | 1.25 | 2.25 | 3.00 | 4.00 | 3.25 | 1.00 |
+
+Window view check at `n = 3`: `h[0]·x[3] + h[1]·x[2] + h[2]·x[1] = 0.25·5 + 0.5·2 + 0.25·3 = 1.25 + 1 + 0.75 = 3.00`. Same number.
+
+Observations: (1) The output has length `5 + 3 − 1 = 7` (**full** convolution: signal length plus kernel length minus 1), because the blur spreads the signal past both ends. (2) The jagged input `1, 3, 2, 5, 4` became the smoother `1.25, 2.25, 3, 4, 3.25` in the middle: it is a low-pass filter. (3) The kernel sums to 1, so the total brightness is preserved away from the edges.
+
+**Impulse example (why the flip matters, and why "impulse response" is a name).** Feed in a **unit impulse** (also called a **delta**): a signal that is 0 everywhere except a single 1, here `[0, 0, 1, 0, 0]`. With the *asymmetric* kernel `h = [1, 2, 3]` the output is `[0, 0, 1, 2, 3, 0, 0]`: the output is simply a copy of the kernel placed where the impulse was, not reversed. This is why the kernel is also called the system's **impulse response** (what comes out when you put a single spike in), and why a camera's blur kernel is called a **point spread function** (the "impulse" is a single point of light; Week 4 §14.1). **Cross-correlation** is the near-twin operation that slides the kernel *without* reversing it; on the same impulse it returns `[0, 0, 3, 2, 1, 0, 0]`, the kernel backwards. Many libraries (including most deep-learning "convolution" layers) actually compute correlation; for a symmetric kernel the two coincide.
+
+**Part 4 — Tiny 2D example.** Images are convolved the same way, with the kernel sliding in both directions: each output pixel is a weighted sum over a small 2D neighborhood. Take the `3×3` image and a `2×2` kernel whose four weights are all `¼` (a 4-pixel average):
+
+```
+image            kernel (2x2 box)       output, "valid" region only (2x2)
+1 2 3            0.25 0.25              3 4
+4 5 6            0.25 0.25              6 7
+7 8 9
+```
+
+Top-left output: `(1 + 2 + 4 + 5)/4 = 3`; the other three follow the same way. "Valid" means only positions where the kernel fits entirely inside the image (output smaller than input: `3−2+1 = 2` per side). 2D impulse: a `3×3` image that is all 0 except a single `4` in the center, convolved with the same box kernel (full output, `4×4`), gives a `2×2` block of `1`s (`4 × ¼`) in the middle: a copy of the kernel scaled by the impulse's value. That copy is the 2D PSF in action.
+
+**Part 5 — Terminology, in one place.**
+
+| Term | Plain meaning |
+|---|---|
+| **Kernel** (also **filter**, **mask**, **template**; for optics, **PSF**; for signals, **impulse response**) | the small list/grid of weights `h` that gets slid over the signal. "Mask" is also used for the 0/1 frequency masks of §12.4.5, which is a different object (it lives in the frequency domain). |
+| **Tap** | one entry of the kernel; a 3-tap kernel has 3 weights. |
+| **Support** | the positions where the kernel is nonzero; its width is how far one point's light can spread (3 for `[¼, ½, ¼]`). |
+| **Normalization** | scaling the kernel so its weights sum to 1; then flat regions keep their brightness and total light is conserved. |
+| **Boundary handling / padding** | what to assume outside the signal where the window overhangs the edge: zeros (**zero-padding**, used above), repeat the edge value, mirror, or wrap around to the opposite side (**circular**, which is what the DFT silently assumes; §12.4.4's wrap-around). |
+| **Full / same / valid** | which output positions to keep: all (length `N+K−1`), the central `N`, or only those where the kernel fully fits (`N−K+1`). |
+| **Impulse / delta** | the signal that is a single 1 and zeros elsewhere. |
+| **Linear** | scaling or adding inputs scales or adds outputs: `(a·x₁ + b·x₂)*h = a·(x₁*h) + b·(x₂*h)`. |
+| **Shift-invariant** (time-invariant for signals in time) | shifting the input by `d` shifts the output by `d`; the same kernel applies everywhere. |
+| **LSI system** (linear shift-invariant) | any system with both properties. **Every LSI system is a convolution with its impulse response**, which is why a camera's blur is fully described by one PSF *when* the blur is the same everywhere. |
+
+**Part 6 — Properties worth knowing (all follow from the definition).**
+- *Commutative:* `x * h = h * x` (signal and kernel are interchangeable roles).
+- *Associative:* `(x * h₁) * h₂ = x * (h₁ * h₂)`: two blurs in a row equal one blur by the combined kernel (two small Gaussians make a wider Gaussian).
+- *Distributive and linear:* `x * (h₁ + h₂) = x*h₁ + x*h₂`; this is what makes "blur, then subtract from the original" (the §13.1 high-pass) itself a convolution, with kernel `δ − h` (`δ` = the delta kernel `[1]`).
+- *Identity:* convolving with the delta returns the signal unchanged: `x * δ = x`.
+- *Shift:* convolving with a delta that sits `d` steps over just translates the signal by `d`.
+
+**Part 7 — The convolution theorem, motivated (not just stated).**
+
+*Step 1: why a sinusoid is special.* Feed a pure wave (say a cosine at one frequency) into an LSI system. Shift-invariance says shifting the input wave shifts the output the same way. A shifted cosine is a mix of that same-frequency cosine and sine. So the output cannot contain any *new* frequency: a wave comes out as **the same-frequency wave, scaled in amplitude and shifted in phase**. In linear-algebra language, sinusoids are the **eigenvectors** of every convolution (§12.4.5's callout), and the scale-and-shift for each frequency is its **eigenvalue**, a complex number `H(f)`.
+
+*Step 2: check on numbers.* Use the 4-sample circular version from §12.4.1/§12.4.5: kernel `[½, ¼, 0, ¼]` and the slow cosine `[1, 0, −1, 0]` (k = 1). Convolving gives `[½, 0, −½, 0]`: the same wave, scaled by `½`. That `½` is exactly the kernel's DFT at `k = 1` (§12.4.5 lists the eigenvalues `[1, ½, 0, ½]`).
+
+*Step 3: assemble.* Any signal is a sum of sinusoids (§12.4.1). Convolution is linear, so convolve each sinusoid separately, and each one only gets multiplied by its own number `H(f)`. Re-adding gives the result. The bookkeeping is:
+
+```
+DFT{ x * h } = DFT{ x } · DFT{ h }        (entry-by-entry multiplication, one frequency at a time)
+```
+
+- *Term by term.* `DFT{x}` is the input spectrum (how much of each wave is in the signal; units of the signal); `DFT{h}` is the kernel's spectrum, its **frequency response** (a unitless scale factor per frequency, 1 means "passes unchanged", 0 means "erased"); `DFT{x*h}` is the output's spectrum. *You* control `h`, so you control `DFT{h}`.
+- *Exactness caveat.* The DFT assumes a wrap-around signal, so the identity is exact for **circular** convolution. For the ordinary (zero-padded) convolution, zero-pad the signal and kernel to at least `N + K − 1` samples before transforming and it is exact there too.
+- *Why it is useful.* Spatial convolution costs about `N·K` multiplies; in the frequency domain it costs two FFTs plus one multiply per frequency, independent of `K` (compared in Week 4 §14.3). It is also what lets you *see* what a kernel does: look at where `|DFT{h}|` is near 1 (kept) or near 0 (removed).
+- *Numeric check (same 4-sample example).* Directly, `x = [3, 1, −1, 1]` convolved circularly with `[½, ¼, 0, ¼]` gives `[2, 1, 0, 1]`. Through the spectra: `[4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2]`, and the inverse DFT of that is `[2, 1, 0, 1]`. The two routes match.
+
+**Linear-algebra view (convolution as a banded Toeplitz matrix).** Write the 5-sample signal as a vector **x** and the full convolution as `y = H x`, where **H** is a `7×5` matrix whose column `j` is the kernel placed starting at row `j` (that column is the stamp from `x[j]`):
+
+```
+[0.25   .    .    .    .  ]   [1]   [0.25]
+[0.5  0.25   .    .    .  ]   [3]   [1.25]
+[0.25 0.5  0.25   .    .  ]   [2]   [2.25]
+[ .   0.25 0.5  0.25   .  ] x [5] = [3.00]
+[ .    .   0.25 0.5  0.25 ]   [4]   [4.00]
+[ .    .    .   0.25 0.5  ]         [3.25]
+[ .    .    .    .   0.25 ]         [1.00]       ( . = 0 )
+```
+
+Same pattern in every column, shifted down one row each time: constant along diagonals, a **Toeplitz** matrix; with wrap-around edges it becomes the **circulant** matrix of §12.4.5. The Fourier basis vectors (§12.4.1) are its eigenvectors; the eigenvalues are `DFT{h}`; so in the Fourier basis the whole matrix is a diagonal list of scale factors, and applying `H` costs one multiply per frequency. That diagonalization *is* the convolution theorem. Inverting `H` (deconvolution, next subsection) is therefore "divide by each eigenvalue," which fails exactly where an eigenvalue is 0.
+
+**Part 8 — Where this shows up, so you know why it is worth the detour.**
+- Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §2, §5, §9; formalized in Week 4 §14).
+- Motion blur is a convolution with a box along the motion direction (Week 4 §1.5, §19).
+- Denoising/smoothing filters such as the Gaussian (Week 3 §11) are convolutions; the median and bilateral filters are *not* (they are non-linear).
+- Demosaicking's interpolation and unsharp masking (Week 3 §10.1, §11.8) are convolutions.
+- Hybrid images (§13) are a convolution (blur) and its complement.
+
+### 12.4.4b Deconvolution, a first look (the reverse problem)
+
+**Forward vs. inverse.** *Forward problem:* given a sharp signal and a kernel, compute the blurred result (convolution, above). *Inverse problem:* given the blurred result (and, usually, the kernel), recover the sharp signal. **Deconvolution** is that inverse problem. This is only a primer so the word is never undefined; the real treatment (the exact formulas, the Wiener filter) is **Week 5**, and priors that tame the hard cases are **Week 6**.
+
+**Analogy.** Convolution is stirring a drop of dye into a glass of water; deconvolution is un-stirring it. If you know exactly how the water was stirred, and measured exactly, the motion can in principle be reversed. If your measurement is slightly off, or some detail was mixed beyond recovery, the "un-stirred" result will be garbage. Both halves of that sentence are the whole subject.
+
+**How it works in the simplest case: divide in the Fourier domain.** The theorem (Part 7) says blurring multiplies each frequency by `DFT{h}`. To undo it, divide each frequency of the blurred spectrum by `DFT{h}` and inverse-transform. This is the **inverse filter**. Linear-algebra view: it is applying `H⁻¹`, and in the Fourier basis `H⁻¹` is a diagonal matrix of `1/DFT{h}`.
+
+**Why it is hard (an ill-posed problem).** A problem is **ill-posed** if it has no solution, many solutions, or a solution that changes wildly when the data change slightly. Deconvolution suffers from the last two:
+- *Exact zeros (information destroyed).* Where `DFT{h} = 0`, the blurred spectrum is 0 whatever the original was, so many different originals give the *same* blurred image (the null space, Week 4 §14.2). Division by 0 is undefined. (A box kernel, such as ordinary motion blur or a plain circular aperture, has such zeros, which is why Week 4 §15 and §19 engineer kernels without them.)
+- *Near-zeros (noise amplification).* Where `DFT{h}` is small but not zero, dividing by it multiplies any noise present at that frequency by `1/DFT{h}`, a large number. Real measurements always contain noise (Week 2 §15, Week 4 §1.9), so the "recovered" image can be dominated by amplified noise.
+- *Regularization* is the family of remedies: add a preference (a prior) for plausible answers (for instance, "do not trust frequencies where the blur has nearly removed the signal," or "natural images are mostly smooth"), trading a little sharpness for stability. The **Wiener filter** (Week 5) is the first, noise-aware version: instead of `1/H` it uses a damped factor that falls toward 0 where `H` is small. Week 6's ADMM-based methods use richer priors.
+- *Non-blind vs. blind.* **Non-blind** deconvolution means the kernel is known (measured or calibrated). **Blind** deconvolution means the kernel is unknown too and must be estimated along with the sharp image, a much harder problem (which is why Week 4 §20's motion-invariant camera tries to make the unknown blur known in advance).
+
+**Small numeric illustration with a LiDAR flavor (a pulse-shape blur).** A pulsed LiDAR fires a short laser pulse and records, with a detector sampled at fixed time ticks, when reflections come back (Week 4 §1.8). The recorded waveform is *not* the scene's reflections themselves: every reflection arrives smeared by the pulse's own shape and the detector's response (together, the **system impulse response**), so the measured signal is `measured = (true returns) * (impulse response)` plus noise. A convolution again, here along *time* instead of space (the "frequency" in this example is the temporal frequency of the return waveform, not image frequency or light's wavelength).
+
+Numbers (chosen small by hand; `c` is the speed of light):
+- Sample the waveform every 1 ns. Each tick of round-trip time is `c·Δt/2 ≈ 3×10⁸ × 1×10⁻⁹ / 2 = 0.15 m` of range (the round-trip rule `d = c·τ/2` of Week 4 §1.8).
+- True scene: two surfaces, e.g. a branch and a wall behind it, 2 ticks apart (0.30 m): strength 1.0 at tick 3, strength 0.5 at tick 5. As a list over 8 ticks: `[0, 0, 0, 1, 0, 0.5, 0, 0]`.
+- Impulse response (pulse + detector blur), a 3-tap kernel centered on each return: `[0.2, 0.6, 0.2]`.
+- Measured (circular convolution; the returns sit away from the ends so wrap-around is harmless): `[0, 0, 0.2, 0.6, 0.3, 0.3, 0.1, 0]`. One fat peak at tick 3 with a flat shoulder: a peak finder would see one surface, and the second one is almost hidden.
+- Kernel spectrum `DFT{h}` over the 8 frequencies, `0.6 + 0.4·cos(2πk/8)`: `[1, 0.883, 0.6, 0.317, 0.2, 0.317, 0.6, 0.883]`. No exact zeros (smallest, 0.2, at the fastest-alternating frequency).
+- Dividing the measured spectrum by this and transforming back gives `[0, 0, 0, 1, 0, 0.5, 0, 0]`: both returns, at the right ticks and strengths. Two peaks 0.30 m apart that the raw waveform could not separate are now resolved.
+- Noise sensitivity: add a faint ±0.02 alternating wiggle (the fastest frequency, where the kernel passes only 0.2 of the signal) to the measurement. Dividing by 0.2 multiplies that wiggle by 5, so the recovered waveform becomes `[0.1, −0.1, 0.1, 0.9, 0.1, 0.4, 0.1, −0.1]`: spurious ±0.1 bumps, 20% as strong as the weaker real return. Real systems add a regularizer for exactly this reason.
+
+**Related operation: matched filtering (cross-correlation).** To *detect* a known pulse shape buried in noise, a LiDAR receiver slides a copy of the expected pulse over the waveform and records how well it matches at each offset: a cross-correlation. This is the best linear detector for a known pulse in white noise, but it does not sharpen: for the numbers above, correlating with `[0.2, 0.6, 0.2]` convolves the returns with the pulse's autocorrelation `[0.04, 0.24, 0.44, 0.24, 0.04]`, which is *wider* than the pulse. Matched filtering answers "is there a return, and about when?"; deconvolution tries to answer "what are the separate returns, finely resolved?". Continuous-wave ToF sensors correlate the received light with the sent modulation for the same reason (Week 4 §1.8; the dedicated ToF lecture later).
+
+**Why deconvolution matters for this course (map).**
+- *Defocus and motion blur* (Week 2 §5, §9; Week 4 §1.5): the blur is a known-ish kernel, and sharpening the photo is deconvolution.
+- *Coded aperture, extended depth of field, flutter shutter, parabolic sweep* (Week 4 §15 to §20): these all choose the blur kernel on purpose so its spectrum has no exact zeros (is **broadband**) and a later deconvolution can recover the scene. The camera hardware and the deconvolution software are designed together.
+- *LiDAR / time-of-flight:* resolving closely spaced returns, sharpening range peaks beyond the pulse width, and handling multipath (several surfaces in one pixel) are deconvolution problems along the time axis.
+- *Everywhere noise matters:* the better the kernel's spectrum behaves, the less noise is amplified.
+
 ### 12.4.5 Filtering in the frequency domain, and the convolution theorem
+
+**What problem this solves.** You want to keep only the coarse part of an image (or only the fine part) with precise control over where the split happens. A frequency-domain mask does this. Input: a shifted spectrum plus a 0/1 mask the same shape. Output: a filtered spectrum, which `ifftshift` and `ifft2` turn back into an image. Analogy: an audio equalizer that mutes the bass or the treble sliders, here with stripe patterns instead of pitches.
 
 Once a spectrum is fftshift-ed (DC centered), building a filter becomes a simple masking operation: to keep only low image frequencies, zero out everything except a disc around the center — a **low-pass filter**. To keep only high image frequencies, do the opposite — zero out that disc and keep everything outside it — a **high-pass filter**, the complement of the low-pass mask.
 
-Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshift`, then `ifft2`) to the spatial domain, produces a filtered image — and this turns out to be the *exact same operation* as §13.1's spatial-domain description (blurring by averaging neighboring pixels; edge-extraction by subtracting a blur from the original). This equivalence has a name: the **convolution theorem** — multiplying two spectra together in the frequency domain is mathematically identical to *convolving* (a generalized "sliding weighted average," the formal name for the neighbor-averaging operation §13.1 already describes informally) the two corresponding signals in the spatial domain. The frequency-domain route (mask + `fft2`/`ifft2`) and the spatial-domain route (blur/subtract) are two views of *one* operation, not two different techniques — the frequency-domain view is usually easier to control precisely (e.g., choosing an exact cutoff frequency as a mask radius), and it's the route HW1's own code path actually uses.
+Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshift`, then `ifft2`) to the spatial domain, produces a filtered image — and this turns out to be the *exact same operation* as §13.1's spatial-domain description (blurring by averaging neighboring pixels; edge-extraction by subtracting a blur from the original). This equivalence has a name: the **convolution theorem** (motivated and checked on numbers in §12.4.4a above) — multiplying two spectra together in the frequency domain is mathematically identical to *convolving* (the sliding weighted sum of §12.4.4a, the formal name for the neighbor-averaging operation §13.1 describes informally) the two corresponding signals in the spatial domain. The frequency-domain route (mask + `fft2`/`ifft2`) and the spatial-domain route (blur/subtract) are two views of *one* operation, not two different techniques — the frequency-domain view is usually easier to control precisely (e.g., choosing an exact cutoff frequency as a mask radius), and it's the route HW1's own code path actually uses.
 
 **Linear-algebra view (a mask is a projection):** in the Fourier basis, multiplying by a 0/1 mask is a **diagonal matrix** with 1s for the kept frequencies and 0s for the rest. Seen in pixel space, that operation is a **projection onto the subspace** spanned by the kept sinusoids. Applying it twice changes nothing more (P² = P). The high-pass mask is the complementary projection I − P onto the remaining sinusoids. Because the basis is orthogonal, the two pieces are orthogonal to each other and add back up to the original exactly.
 
@@ -431,7 +660,7 @@ Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshif
   Each of the four basis vectors from §12.4.1 is an eigenvector of it, with eigenvalues [1, 0.5, 0, 0.5]. That list is also `np.fft.fft` of the kernel. So this blur keeps the average (1), halves the slow cycle (0.5), and wipes out the fastest flip (0): a low-pass filter.
 - *Two routes, one answer.* The matrix times **x** gives [2, 1, 0, 1]. The frequency route gives the same result: [4, 4, 0, 4] × [1, 0.5, 0, 0.5] = [4, 2, 0, 2], and inverse-transforming that gives [2, 1, 0, 1].
 
-**Forward pointer:** this same convolution theorem is the mechanism behind the point spread function (PSF) and Wiener filtering (Week 5), and prior-based deconvolution (Week 6) — in both cases, a blur is described as convolution in the spatial domain and as multiplication in the frequency domain, and "undoing" a blur means dividing out its frequency-domain multiplier. §12.4.5 is that same idea, seen here for the first time.
+**Forward pointer:** this same convolution theorem is the mechanism behind the point spread function (PSF) and Wiener filtering (Week 5), and prior-based deconvolution (Week 6) — in both cases, a blur is described as convolution in the spatial domain and as multiplication in the frequency domain, and "undoing" a blur means dividing out its frequency-domain multiplier. §12.4.4a defines convolution and the theorem; §12.4.4b gives the first look at undoing a blur; this subsection is where the theorem is first put to work.
 
 ---
 
@@ -464,7 +693,7 @@ In code, this isn't done by blurring and subtracting pixels directly — it's do
 
 4. Undo the shift (`ifftshift`) and inverse-transform (`ifft2`) back to the spatial domain to recover the hybrid image's actual pixel values.
 
-By the convolution theorem (§12.4.5), this frequency-domain construction is mathematically equivalent to §13.1's blur-and-subtract description — the two are the same operation, viewed in two different domains; the frequency-domain route is just the one that gives precise control over the cutoff.
+By the convolution theorem (built in §12.4.4a, applied in §12.4.5), this frequency-domain construction is mathematically equivalent to §13.1's blur-and-subtract description — the two are the same operation, viewed in two different domains; the frequency-domain route is just the one that gives precise control over the cutoff.
 
 **Linear-algebra view (a hybrid image is a sum of two projections):** writing each image channel as a vector (§12.4.3's aside), the whole recipe is **hybrid** = P_high **a** + P_low **b**. Here P_low is the low-pass projection onto the span of the low-frequency gratings, and P_high = I − P_low projects onto the rest (§12.4.5's aside). If the two masks are exact complements, as in §12.4.5, the two pieces live in **orthogonal subspaces**, so the sum mixes them without either overwriting the other. Your CSF at a given viewing distance acts like a third, perceptual filter that mostly lets through one of the two subspaces. Because `fft2`/`ifft2` are linear, adding in the frequency domain (step 3) gives the same result as adding the two filtered images pixel by pixel. That is another reason the frequency-domain and blur-and-subtract descriptions agree.
 

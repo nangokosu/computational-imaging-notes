@@ -130,6 +130,46 @@ u = k_u / W      v = k_v / H
 
 ---
 
+### Discrete 1D convolution (§12.4.4a)
+
+```
+(x * h)[n] = sum over m of  h[m] · x[n − m]
+```
+
+**Computes:** The filtered or blurred signal obtained by stamping a copy of the kernel h, scaled by each input value, at every input position and adding the stamps (equivalently, a weighted neighborhood sum with the kernel reversed); the operation behind blur, PSFs, Gaussian smoothing, and LiDAR pulse smearing.
+
+| Term | Meaning |
+|---|---|
+| x[j] | input signal value at position j (e.g. a pixel's brightness); fixed by the scene |
+| h[m] | kernel weight at offset m (unitless); you design it, or the optics impose it (normalized so the weights sum to 1 to conserve brightness) |
+| n | output position being computed; the index you loop over |
+| m | offset into the kernel; summation variable |
+| (x*h)[n] | output at position n, in the signal's own units; computed |
+| * | convolution operator (the kernel is reversed relative to the signal; cross-correlation is the same without the reversal) |
+
+Worked check (§12.4.4a): x = [1, 3, 2, 5, 4], h = [¼, ½, ¼] gives the full output [0.25, 1.25, 2.25, 3.00, 4.00, 3.25, 1.00] (length N + K − 1 = 7).
+
+---
+
+### Convolution theorem (§12.4.4a)
+
+```
+DFT{ x * h } = DFT{ x } · DFT{ h }      (entry-by-entry product, one frequency at a time)
+```
+
+**Computes:** The spectrum of a convolved (blurred or filtered) signal as the input's spectrum scaled, frequency by frequency, by the kernel's own spectrum (its frequency response); exact for circular convolution, and for ordinary convolution after zero-padding both to at least N + K − 1 samples.
+
+| Term | Meaning |
+|---|---|
+| DFT{x} | spectrum of the input: how much of each wave is present; fixed by the scene |
+| DFT{h} | kernel's spectrum (frequency response): unitless scale factor per frequency, 1 = passes unchanged, 0 = erased; set by the kernel you choose or the optics (it is the eigenvalue of the convolution matrix at that frequency) |
+| DFT{x*h} | spectrum of the output; computed |
+| · | ordinary multiplication at each frequency (not a convolution) |
+
+Worked check: x = [3, 1, −1, 1] with kernel [½, ¼, 0, ¼]: [4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2], whose inverse DFT is the circular convolution [2, 1, 0, 1]. Dividing the output spectrum by DFT{h} undoes the blur (the inverse filter of Week 1 §12.4.4b), which fails where DFT{h} is zero and amplifies noise where it is small.
+
+---
+
 ### Hybrid-image frequency-domain combination (§12.4.5)
 
 ```
@@ -161,6 +201,22 @@ hybrid = P_high a + P_low b
 | b | Image B, as a pixel-value vector; input |
 | P_high | high-pass projection matrix, keeps high-frequency sinusoid components; equals I − P_low |
 | P_low | low-pass projection matrix, keeps low-frequency sinusoid components |
+
+### Stops and light ratio (§10.1)
+
+```
+stops = log₂(ratio)          ratio = 2^stops
+```
+
+**Computes:** Converts between a brightness or light ratio (e.g. 16×) and the photographer's count of doublings ("4 stops"), including the signed "+2 / −4" exposure-compensation notation (+2 = 4× the light, −4 = 1/16).
+
+| Term | Meaning |
+|---|---|
+| ratio | how many times more (or, below 1, fewer) light, or brighter/darker, one quantity is than another; dimensionless; set by scene or settings |
+| stops | the same comparison counted as doublings (positive) or halvings (negative); also the unit of exposure compensation, written EV; chosen by you on the camera dial |
+| 2 | the base, because one stop is by definition a factor of 2; fixed by definition |
+
+---
 
 ---
 
@@ -304,6 +360,23 @@ N = f / D
 
 ---
 
+### Stops between two f-numbers (§8)
+
+```
+stops = 2 · log₂(N₂ / N₁)          N_k = N₀ · 2^(k/2)
+```
+
+**Computes:** The number of stops of light lost (positive) or gained (negative) in going from f-number *N*₁ to *N*₂, and the f-number reached *k* stops from a starting *N*₀.
+
+| Term | Meaning |
+|---|---|
+| N₁, N₂ | starting and new f-numbers; dimensionless; set by you via the aperture ring |
+| N₀ | starting f-number for the stepping formula; set by you |
+| k | number of stops stepped (negative = wider aperture); a third-stop click is k = ±1/3 |
+| 2 in front | because light ∝ aperture area ∝ 1/N², so squaring *N* doubles the log |
+
+---
+
 ### Circle of confusion (§9.2)
 
 ```
@@ -400,6 +473,24 @@ H = f² / (N·c)
 
 ---
 
+### Approximate bokeh disc diameter (§9.5)
+
+```
+c ≈ (f² / N) · | 1/S − 1/O |
+```
+
+**Computes:** How wide the out-of-focus disc (bokeh ball) of a point at distance *O* is, on the sensor, when the lens is focused at *S*, valid when *S* is much larger than *f*; derived from the exact circle-of-confusion formula.
+
+| Term | Meaning |
+|---|---|
+| c | blur-disc diameter on the sensor (length); computed |
+| f | lens focal length (length); fixed by the lens |
+| N | f-number, so aperture diameter D = f/N; chosen by you |
+| S | distance the lens is focused at (length); chosen by you |
+| O | actual distance of the blurred point (length); fixed by the scene |
+
+---
+
 ### Diffraction limit (Abbe's formula) (§10)
 
 ```
@@ -435,6 +526,40 @@ f(k; λ) = λᵏe⁻λ/k!
 | λ | average event rate (mean photon count) |
 | σ | standard deviation of the photon count (shot noise) |
 | N | mean number of photons collected |
+
+---
+
+### Quantization noise variance (§15.2)
+
+```
+Var(u) = (1/Δ) · ∫ u² du  (u from −Δ/2 to +Δ/2)  =  Δ²/12
+```
+
+**Computes:** The noise variance added when an ADC rounds a continuous value to the nearest integer level, assuming the rounding error is uniform within one step.
+
+| Term | Meaning |
+|---|---|
+| u | rounding error, in DN; uniform on [−Δ/2, +Δ/2] with mean 0 |
+| Δ | quantization step in DN (1 DN for an integer ADC) — fixed by the ADC and gain |
+| 1/Δ | probability density of the uniform error |
+
+---
+
+### Noise-source variances in electrons (§15.2)
+
+```
+Var_shot = N        Var_dark = D·t        Var_read = Nr²        σ_DN = g · σ_electrons
+```
+
+**Computes:** The random variance each independent noise source contributes to one pixel, in electrons², and how a standard deviation converts from electrons to digital numbers.
+
+| Term | Meaning |
+|---|---|
+| N | mean number of photo-electrons collected (P·Qe·t) — set by scene, sensor, exposure |
+| D | dark-current rate (e⁻/pixel/s) — fixed by sensor and temperature |
+| t | exposure time — you control this |
+| Nr | RMS read noise (electrons), paid once per readout — fixed by the sensor |
+| g | conversion gain (DN per electron) — set by ISO |
 
 ---
 
@@ -1061,6 +1186,8 @@ y = B x
 ```
 Var(X₁ + X₂) = σ₁² + σ₂²        Var(c·X) = c²·σ²        Var(mean of K) = σ²/K
 Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂)
+
+Var(X₁ + … + X_K) = K·σ²        Var(mean) = (1/K)² · K·σ² = σ²/K        σ_mean = σ/√K
 ```
 
 **Computes:** The noise variance left after adding, rescaling, or averaging independent noisy measurements, which is the bookkeeping behind any burst-denoising or SNR comparison.
@@ -1070,7 +1197,9 @@ Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂)
 | X₁, X₂ | Independent random pixel values (independent noise draws), e.g. two frames |
 | σ², σ₁², σ₂² | Variances of those values, in squared pixel-value (or squared photon) units; fixed by the noise model |
 | c | A constant multiplier, e.g. 1/K when averaging; chosen by you |
-| K | Number of independent frames averaged; chosen by you |
+| K | Number of independent frames averaged; chosen by you. Appears once as the count of terms in the summed variance (K·σ²) |
+| (1/K)² = 1/K² | The squared 1/K averaging weight (rule Var(cX) = c²Var(X) with c = 1/K); one K cancels, leaving σ²/K |
+| σ_mean | Standard deviation of the average, σ/√K; assumes independent, equal-variance, aligned frames (fixed-pattern noise does not average down) |
 | Pois(λ) | Poisson distribution with mean = variance = λ photons; fixed by scene brightness |
 
 ---
@@ -1138,7 +1267,7 @@ I_nonlinear(x, y)  = f[ I_linear(x, y) ]
 I_est(x, y)        = f⁻¹[ I_nonlinear(x, y) ]
 ```
 
-**Computes:** Models how a camera's internal tone-reproduction curve nonlinearly distorts the linear sensor signal before it's written out, and gives the inversion needed to recover an estimate of the true linear signal (radiometric calibration) before HDR merging.
+**Computes:** Models how a camera's internal tone-reproduction curve nonlinearly distorts the linear sensor signal before it's written out, and gives the inversion needed to recover an estimate of the true linear signal (radiometric calibration: comparing the camera's readings against calibration targets of known light amount to learn *f*, then inverting it) before HDR merging.
 
 | Term | Meaning |
 |---|---|
@@ -1175,7 +1304,7 @@ C_lin = ((C + 0.055) / 1.055)^2.4    otherwise
 I_display = I_HDR / (1 + I_HDR)
 ```
 
-**Computes:** Maps an unbounded, linear HDR intensity value down into a display's finite [0,1) range non-linearly, leaving dark regions essentially untouched (slope 1 near 0) while asymptoting to 1 for arbitrarily bright input — the simplified tonemapping curve.
+**Computes:** Maps an unbounded, linear HDR intensity value down into a display's finite [0,1) range non-linearly, leaving dark regions essentially untouched (slope 1 near 0) while asymptoting to 1 for arbitrarily bright input — the simplified tonemapping curve (a tone curve in the sense of Week 4 §8.1: input brightness to output brightness).
 
 | Term | Meaning |
 |---|---|
@@ -1214,7 +1343,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 | I_ideal(x,y) | Hypothetical perfectly sharp image an ideal pinhole would produce (Week 2 §1) |
 | PSF(x,y) | System's blur kernel, normalized to sum/integrate to 1 (redistributes light, adds/removes none) — fixed by the optics |
 | I_blurred(x,y) | Image actually captured — computed output |
-| * | Convolution (sliding weighted sum, Week 1 §12.4.5) |
+| * | Convolution (sliding weighted sum, Week 1 §12.4.4a) |
 
 ---
 

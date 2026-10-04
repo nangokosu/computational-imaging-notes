@@ -77,6 +77,10 @@ The second equation says where *E* comes from. A scene patch of fixed brightness
 
 Exposure time is spaced in the same **stops** as aperture (Week 2 §8): one stop = a factor of 2 in light. The standard sequence 1/1000, 1/500, 1/250, 1/125, 1/60, 1/30, 1/15, 1/8, 1/4, 1/2, 1 s doubles at every step. Unlike the aperture sequence, there is no √2: exposure time enters *H* directly, not squared.
 
+**Stops notation recap for all three controls** (full primer: Week 1 §10.1; aperture: Week 2 §8). In stops, comparing a new exposure time *t*₂ with an old one *t*₁ is `stops = log₂(t₂ / t₁)`: positive means *more* light. Shutter-speed dials print rounded values (1/60 for 1/64 s, 1/125 for 1/128 s). Third-stop steps multiply the time by 2^(1/3) ≈ 1.26 (e.g. 1/125 → 1/100 → 1/80 → 1/60). ISO moves the same way, doubling per stop (100 → 200 → 400), with third-stop ladder 100, 125, 160, 200, 250, 320, 400 (each ≈ 1.26× the previous). An exposure-compensation setting of "+2" asks for 2 stops (4×) more brightness, "−1" for half; the camera delivers it with whichever of the three it is allowed to change.
+
+> **Worked example (generic, not HW3).** Start at f/4, 1/60 s, ISO 100. Go to ISO 400 (+2 stops of gain) and keep brightness: the other settings must give 2 stops *less* light, e.g. shutter 1/60 → 1/250 (≈ −2 stops). Net change in brightness: +2 − 2 = 0 stops. The photo is identical in brightness but its motion blur dropped (shorter shutter) and its noise rose (§1.6).
+
 The lecture's "Depth of Field & Motion Blur" slide prints exactly such a ladder of equivalent exposures. Plugging each pair into *t*/*N*² (relative to the first pair), and into the **exposure value** EV = log₂(*N*²/*t*) (a single number that labels a whole family of equivalent exposures; one EV step = one stop), gives:
 
 | Aperture | Exposure time | *t*/*N*² relative to f/16, 1/8 s | EV |
@@ -155,7 +159,7 @@ Illustrative numbers: a subject that crosses a 4000-pixel-wide frame in 2 s move
 
 The streak grows *linearly* with exposure time. This is why "freezing motion" is purely a matter of making *t* small enough that the streak is shorter than about one pixel.
 
-**Linear-algebra view (motion blur is a linear filter).** Each recorded pixel is the *time average* of all the scene points that slid past it during the exposure. For uniform motion along one direction, that is the same weighted-sum operation as Week 1's filters: a **convolution** of the sharp image with a **box kernel** (a flat line segment) whose length is the streak length. Stack the image into a vector **x** and blur is one matrix–vector product **y** = **B x**. Here **B** is a banded (Toeplitz) matrix with the box kernel repeated along its diagonals.
+**Linear-algebra view (motion blur is a linear filter).** Each recorded pixel is the *time average* of all the scene points that slid past it during the exposure. For uniform motion along one direction, that is the same weighted-sum operation as Week 1's filters: a **convolution** (Week 1 §12.4.4a) of the sharp image with a **box kernel** (a flat line segment) whose length is the streak length. Stack the image into a vector **x** and blur is one matrix–vector product **y** = **B x**. Here **B** is a banded (Toeplitz) matrix with the box kernel repeated along its diagonals.
 
 Undoing the blur means inverting **B**. That is badly conditioned: a box kernel's Fourier transform (a sinc shape) passes through *exact zeros* at certain image frequencies. Detail at those frequencies is multiplied by zero, lands in **B**'s null space, and is lost. (This is exact for a periodic, wrap-around image. For a finite image with truncated edges, **B** has tiny but not necessarily exactly zero singular values at those frequencies, which is just as bad in practice.) This is precisely the problem **coded exposure** ("flutter shutter," Week 4) attacks: flicking the shutter open and closed in a pseudo-random pattern *during* one exposure turns the box into a code whose Fourier transform has no zeros, so the blur becomes invertible. Deblurring by inverting **B** is the deconvolution topic of Week 5.
 
@@ -171,11 +175,13 @@ Diminishing returns, but steady: to halve the relative noise you need 4× the li
 
 | Capture | Signal | Noise variance | SNR |
 |---|---|---|---|
-| One short frame | 25 | 25 + 3² | **4.29** |
-| One long exposure (16× the time) | 400 | 400 + 3² | **19.78** |
-| 16 short frames, summed | 400 | 400 + 16·3² | **17.15** |
+| One short frame | 25 | 25 (shot) + 3² (read) = 34 | √34 = 5.83, so 25/5.83 = **4.29** |
+| One long exposure (16× the time) | 400 | 400 (shot) + 3² (read) = 409 | √409 = 20.22, so 400/20.22 = **19.78** |
+| 16 short frames, summed | 400 | 16·25 (shot) + 16·3² (read) = 400 + 144 = 544 | √544 = 23.32, so 400/23.32 = **17.15** |
 
-Same total light, but the burst pays read noise 16 times (once per readout) instead of once. Because the variances add (the orthogonality argument of Week 2 §15.3), its SNR comes out lower. For bright scenes, where shot noise dominates, the difference nearly vanishes. That is why phones can afford to replace one long, blur-prone exposure with a burst of short, well-aligned ones.
+(Noise types and "variance" are defined from scratch in Week 2 §15.2; the sum rule used in the last row is derived in §1.9. The table's noise-variance column is in electrons².)
+
+Same total light, but the burst pays read noise 16 times (once per readout) instead of once: the 16 frames' read-noise variances *add*, giving 16·3² = 144 instead of 9. Its shot-noise variance is the same 400 either way, since 16 frames of 25 photons are statistically one count of 400 (the Poisson sum rule, §1.9). Because the variances add (the orthogonality argument of Week 2 §15.3), the burst's SNR comes out lower. For bright scenes, where shot noise dominates, the difference nearly vanishes. That is why phones can afford to replace one long, blur-prone exposure with a burst of short, well-aligned ones.
 
 ### 1.6 ISO: brightness from gain, not from light
 
@@ -243,20 +249,42 @@ The same √*t* rule of worked example 3 applies: 4× as many pulses halves the 
 
 *(Beyond the lecture's slides: the probability rules behind §1.5's worked example 4, stated in general form so they can be applied to any combination of noise sources. Applying them to HW3's specific noise models is left to the assignment.)*
 
-**Vocabulary, from scratch.** A pixel's recorded value is a **random variable**: re-photograph the same scene and you get a slightly different number each time. Its **mean** μ is the average over many repeats (the "true signal"); its **variance** σ² is the average squared deviation from that mean, and its **standard deviation** σ = √variance is the typical size of the wobble, in the same units as the pixel value. **SNR** = μ/σ (Week 2 §15.3). Two noise models matter here (Week 2 §15.2):
+**Vocabulary, restated (full from-scratch definitions with a numeric example are in Week 2 §15.2).** A pixel's recorded value is a **random variable**: re-photograph the same scene and you get a slightly different number each time. Its **mean** μ is the average over many repeats (the "true signal"); its **variance** σ² is the average squared deviation from that mean, and its **standard deviation** σ = √variance is the typical size of the wobble, in the same units as the pixel value. **SNR** = μ/σ (Week 2 §15.3). Two noise models matter here (Week 2 §15.2):
 
 - **Gaussian (normal) noise**, written 𝒩(μ, σ²): a bell curve with mean μ and variance σ². Read noise is modeled this way; σ does not depend on the signal.
 - **Poisson noise**, written Pois(λ): counts of randomly timed events (photon arrivals) with average rate λ. Its mean and its variance are **both** λ, so its standard deviation is √λ.
 
-**Three rules.** For *independent* random variables (one noise draw does not influence another):
+**Two basic rules, for *independent* random variables** (one noise draw does not influence another; Week 2 §15.2):
 
-1. **Sums.** Means add and variances add: the sum has mean μ₁ + μ₂ and variance σ₁² + σ₂². Standard deviations do **not** add; they combine like the sides of a right triangle (Week 2 §15.3's orthogonality picture). Two special cases keep their family: 𝒩(μ₁, σ₁²) + 𝒩(μ₂, σ₂²) = 𝒩(μ₁ + μ₂, σ₁² + σ₂²), and Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂). The Poisson rule says that splitting a photon count across several frames and adding the frames back up is statistically the same as counting once.
-2. **Scaling.** Multiplying by a constant *c* multiplies the mean by *c* but the variance by *c*²: *c*·𝒩(μ, σ²) = 𝒩(*c*μ, *c*²σ²). (Why squared: variance is a *squared* deviation, so a factor-*c* stretch of the deviations is a factor *c*² on the variance.) A scaled Poisson variable is **no longer** Poisson, since its variance (*c*²λ) no longer equals its mean (*c*λ); to average Poisson counts, apply rule 1 first and then rule 2, rather than treating the average as Poisson.
-3. **A pixel with several noise sources** (shot, dark current, read) has total variance equal to the sum of the individual variances, exactly the denominator of Week 2 §15.3's SNR formula.
+1. **Variances of a sum add.** If *X*₁, ..., *X*_K are independent, then Var(*X*₁ + ... + *X*_K) = Var(*X*₁) + ... + Var(*X*_K). *Why:* the deviations of independent variables are as likely to cancel as to reinforce, so their cross terms average to zero, and only the squared deviations of each variable survive (Week 2 §15.3's "orthogonal vectors" picture). **Standard deviations do not add**: for two equal terms, σ_total = √(σ² + σ²) = σ√2, not 2σ. Two special cases keep their family: 𝒩(μ₁, σ₁²) + 𝒩(μ₂, σ₂²) = 𝒩(μ₁ + μ₂, σ₁² + σ₂²), and Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂), meaning that splitting a photon count across several frames and adding the frames back up is statistically the same as counting once.
+2. **Scaling squares.** Var(*c*·*X*) = *c*²·Var(*X*) for any constant *c*. *Why:* variance is an average *squared* deviation. Multiplying *X* by *c* stretches every deviation from the mean by *c*, and squaring a stretched deviation gives *c*² times the original square. (The standard deviation, being the square root, scales by plain |*c*|.) A scaled Poisson variable is **no longer** Poisson, since its variance *c*²λ no longer equals its mean *c*λ; to average Poisson counts, apply rule 1 first and then rule 2.
 
-**Averaging *K* aligned frames, derived.** Let each of *K* independent frames have mean μ and variance σ² (σ² may itself be a sum, by rule 3). The *sum* has mean *K*μ and variance *K*σ² (rule 1). The *average* divides the sum by *K* (rule 2 with *c* = 1/*K*): mean *K*μ/*K* = μ unchanged, variance *K*σ²/*K*² = **σ²/*K***. So averaging leaves the signal alone and shrinks the noise variance by the number of frames; the standard deviation shrinks by √*K*. How SNR then scales with *K* depends on what σ² is made of, which is the exercise HW3 Task 2 poses for its two noise models. (Rule 2 scales the mean and the standard deviation by the same factor *c*, so a constant rescale never changes a signal-to-noise *ratio*: the sum and the average of the same frames have the same SNR, even though their pixel values and noise sizes differ by the factor *K*. Keep the two distinct when reporting the *mean* or *σ* themselves.)
+A pixel with several noise sources (shot, dark current, read; Week 2 §15.2) is also covered by rule 1: its total variance is the sum of the individual variances, exactly the denominator of Week 2 §15.3's SNR formula.
 
-**Linear-algebra view.** Averaging *K* frames is a dot product with the weight vector **a** = (1/*K*, ..., 1/*K*). If the *K* noise values are independent with equal variance σ², their covariance matrix is σ²**I** (diagonal, by independence), and the output variance of any linear combination **a**ᵀ**n** is **a**ᵀ(σ²**I**)**a** = σ²‖**a**‖². Here ‖**a**‖² = *K*·(1/*K*)² = 1/*K*, reproducing σ²/*K*. This is the same "uncorrelated noise behaves like orthogonal vectors" fact as Week 2 §15.3: the squared length of the output is the sum of the squared lengths of its parts.
+**Averaging *K* aligned frames, derived step by step.** Let each of the *K* frames give an independent measurement *X*_k of the same pixel, with mean μ and variance σ² (σ² may itself be a sum of shot, dark and read variances, by the paragraph above). The two quantities involved are the **sum** *S* = *X*₁ + ... + *X*_K and the **average** *M* = *S*/*K*.
+
+1. **Sum, mean:** *K* terms each with mean μ, so the mean of *S* is *K*μ.
+2. **Sum, variance (rule 1):** there are *K* terms, each contributing σ², so Var(*S*) = σ² + σ² + ... + σ² = ***K*·σ²**. This is where the factor *K* comes from: it is simply the *count of terms in the sum*. The standard deviation of the sum is σ√*K*, which grows with *K* but more slowly than the signal *K*μ. So the sum's SNR is *K*μ/(σ√*K*) = √*K*·μ/σ.
+3. **Divide by *K* (rule 2 with *c* = 1/*K*):** *M* = (1/*K*)·*S*, so its mean is (1/*K*)·*K*μ = μ (the signal is unchanged) and its variance is (1/*K*)²·Var(*S*) = (1/*K*²)·*K*σ² = **σ²/*K***. This is where *K*² comes from: the 1/*K* in front of the sum is pulled out of the *variance* as (1/*K*)² = 1/*K*², because of rule 2. One of the *K*'s in the numerator cancels one of the two in the denominator, leaving a single *K* in the denominator.
+4. **Standard deviation of the average:** σ_M = √(σ²/*K*) = **σ/√*K***.
+
+So averaging keeps the signal and shrinks the noise *variance* by *K* (the noise *standard deviation* by √*K*). The sum and the average have the same SNR, √*K*·μ/σ: rule 2 multiplies the mean and the standard deviation by the same factor, so a constant rescale never changes a ratio. Keep them distinct only when reporting the mean or σ themselves, which differ by the factor *K*.
+
+> **Worked example (pure rules, *K* = 4, by hand).** Each frame reads a pixel whose true signal is μ = 10 with σ = 2 (variance 4).
+> - Sum of 4 frames: mean 4 × 10 = 40; variance 4 + 4 + 4 + 4 = 16 (the factor *K* = 4 is the count of terms); σ_sum = √16 = 4. Note it is **not** 4 × 2 = 8: standard deviations do not add.
+> - Divide by 4: mean 40/4 = 10; variance (1/4)² × 16 = 16/16 = **1** (here *K*² = 16 is the square of the divisor 4, which cancels the 16 from the sum); σ_avg = √1 = 1.
+> - Check against the shortcut: σ²/*K* = 4/4 = 1 and σ/√*K* = 2/2 = 1. ✓
+> - SNR: one frame 10/2 = 5; averaged 10/1 = 10, i.e. √4 = 2 times better. Doubling the SNR cost 4 frames: the same diminishing returns as Week 4 §1.5's worked example 3.
+
+**When does this work, and when not?** Everything above assumed the *K* noise draws are **independent** and have the **same variance**, and that the frames are **aligned** (the same scene point lands on the same pixel; otherwise you average different scene content, not repeated measurements of one value).
+
+- **Averages down as 1/*K* in variance:** every *fresh random draw per frame*: photon shot noise, dark-current noise, read noise, quantization noise (Week 2 §15.2).
+- **Does NOT average down:** **fixed-pattern noise**, because it is the same in every frame (the draws are perfectly *correlated*, not independent: the covariance terms rule 1 dropped are now as large as the variances). Averaging 100 frames leaves it untouched. Other correlated errors (a slowly drifting light level, a shared reference-voltage wobble, a moving subject that was not aligned) behave the same way.
+- **Read noise is paid per readout:** *K* frames contain *K* independent read-noise draws, so the sum's read variance is *K*·*Nr*², whereas one *K*-times-longer exposure pays *Nr*² once. Averaging therefore does not make a burst as clean as a single long exposure of the same total light; that is the burst-versus-long-exposure trade-off of §1.5's worked example 4.
+
+How the averaged SNR then scales with *K* depends on what σ² is made of, which is the exercise HW3 Task 2 poses for its two noise models and is left to the assignment.
+
+**Linear-algebra view.** Averaging *K* frames is a dot product with the weight vector **a** = (1/*K*, ..., 1/*K*). If the *K* noise values are independent with equal variance σ², their covariance matrix is σ²**I** (diagonal, by independence), and the output variance of any linear combination **a**ᵀ**n** is **a**ᵀ(σ²**I**)**a** = σ²‖**a**‖². Here ‖**a**‖² = *K*·(1/*K*)² = 1/*K*, reproducing σ²/*K*: the *K* in that product is again the number of entries, and the (1/*K*)² is the squared weight, the same K and K² as in the step-by-step derivation. This is the same "uncorrelated noise behaves like orthogonal vectors" fact as Week 2 §15.3: the squared length of the output is the sum of the squared lengths of its parts. (If the noises were *correlated*, the covariance matrix would have non-zero off-diagonal entries and the answer would be larger than σ²/*K*; fixed-pattern noise is the extreme case where every entry is 1 and nothing is gained.)
 
 > **Worked example (a mixed-noise case, deliberately not either of HW3's cases).** Per frame: mean 20 photons, Poisson shot noise (variance 20) plus Gaussian read noise of σ = 4 (variance 16), and *K* = 4 frames.
 > - One frame: variance 20 + 16 = 36, σ_total = 6, SNR = 20/6 ≈ **3.33**.
@@ -354,6 +382,8 @@ Given the bracketed stack from §4, the naive idea — just average every frame'
 
 ### 5.2 The confidence weight function
 
+**What problem this function solves.** Each exposure in the bracket is a noisy, possibly clipped opinion about the same scene point, and the merge needs a number saying how much to believe each opinion. A weight function supplies that number. **In:** one pixel's value from one exposure (a number in [0, 1]). **Out:** a confidence weight in (0, 1], where 1 means "trust fully" and values near 0 mean "nearly ignore." **Analogy:** a panel of witnesses to the same event. A witness who squinted into the sun (saturated) or stood in the dark (near the noise floor) gets little credit; one who saw it in good light gets full credit, and the verdict is the credit-weighted average of the testimonies. The shape below is simply the formal version of that credit rule.
+
 **Intuition.** A pixel value sitting at the middle of a frame's recordable range (neither near-black nor near-clipped) is the most trustworthy kind of measurement — nowhere near the noise floor, nowhere near saturation. A pixel value near either extreme is the least trustworthy. So the weight should be a function that peaks at the mid-range value and falls off toward both ends — the lecture's choice is a **Gaussian bump centered at mid-gray**:
 
 ```
@@ -367,6 +397,8 @@ w(I) = exp( −4·(I − 0.5)² / 0.5² )
 The weight is computed **per color channel, per pixel, per exposure** — every one of the *N* bracketed frames contributes its own independent weight at every pixel, in every channel, from its own recorded value there.
 
 ### 5.3 The log-domain weighted least-squares objective
+
+**What problem this objective solves.** After bracketing, a single scene point has *N* different recorded values (one per exposure time), and they disagree because of noise, clipping, and different exposure times. The merge must collapse them into one best estimate of the scene's true brightness at that point. The objective below defines "best" as the value that disagrees least with all *N* measurements, giving the more trustworthy ones more say. **In:** the *N* linearized pixel values, the *N* exposure times, and the *N* weights from §5.2. **Out:** one HDR value *X̂* for that pixel. **Analogy:** *N* people each measure the same table with rulers marked in different units; you first convert each reading to common units (dividing out the exposure time, which is what taking logs and subtracting log *t_i* does), then average the results, listening more to the people with better rulers. The math below does exactly that.
 
 **Setup, for one fixed pixel location.** Let *i* = 1, ..., *N* index the *N* bracketed exposures (the same physical scene point, photographed *N* times at different exposure times). For that one pixel: *I_lin,i* is the (linearized, §6) recorded value in exposure *i*; *t_i* is exposure *i*'s known exposure time; *w_i* = *w*(*I_lin,i*) is that exposure's confidence weight from §5.2. *X* is the single unknown quantity being solved for — the scene's true underlying exposure/radiance value at that pixel, the *same* for every exposure *i* since it's a property of the scene, not of any one frame.
 
@@ -395,7 +427,7 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 ### 5.4 Debevec's triangle weight, and displaying the weights (supports HW3 Task 1.1)
 
-*(Beyond the lecture's slides, which print §5.2's Gaussian bump.)* The weight in the original Debevec–Malik HDR method is a **triangle (hat) function** of the pixel value *z* ∈ [0, 1]:
+*(Beyond the lecture's slides, which print §5.2's Gaussian bump.)* **What problem it solves:** the same one as §5.2 (how much to trust one pixel value from one exposure), with a cheaper shape. **In:** a pixel value *z* in [0, 1]; **out:** a weight in [0, 0.5]. **Analogy:** a tent whose peak is mid-gray and whose edges touch the ground at pure black and pure white, so the credit for a measurement is its height on the tent. The weight in the original Debevec–Malik HDR method is a **triangle (hat) function** of the pixel value *z* ∈ [0, 1]:
 
 ```
 w(z) = z        if z ≤ 0.5
@@ -419,9 +451,44 @@ w(z) = 1 − z    if z > 0.5        (equivalently  w(z) = min(z, 1 − z))
 
 ## 6. Radiometric Calibration
 
-### 6.1 What's being measured, and why it's needed
+### 6.1 What "calibration" means, what is being calibrated, and why
 
-Everything in §5 assumed the recorded pixel values *I_lin,i* were already **linear** in the true scene radiance — i.e., that doubling the light doubles the recorded number. Most cameras don't hand you that directly: a camera's finished (e.g. JPEG) output has usually already been passed through some nonlinear **tone reproduction curve** before you ever see it. **Radiometric calibration** (of a camera's response, as used for HDR; not the satellite or ionizing-radiation sense of the term) is the process of measuring — and then undoing — that curve, so the log-domain merge of §5 is operating on genuinely linear values.
+**Calibration in general.** A **measuring instrument** (a device whose job is to report a number about the world) is only trustworthy if you know how its reported number relates to the true quantity. **Calibration** is the process of measuring things whose true values you already know, recording what the instrument reports for each, and thereby learning the mapping *reading → truth*. Two everyday cases:
+
+- **Kitchen scale.** Place a 100 g, 200 g and 500 g reference weight on it and note what it displays. If it shows 104, 208 and 520, you have learned that it reads 4% high everywhere; from then on you divide its display by 1.04 to get the true mass of anything.
+- **Thermometer in ice water.** Ice water is known to sit at 0 °C. If the thermometer says 2 °C there, you have learned its offset and can subtract it from later readings.
+
+**Calibration target.** The "thing whose true values are known" is called a **calibration target** (or reference): any object, scene or setup whose true physical value is fixed and known in advance, so the instrument's reading of it can be compared against the truth. The reference weights and the ice-water bath above are calibration targets. Without a target there is nothing to compare the reading against, so there is nothing to calibrate.
+
+**What is being calibrated here.** A camera is a *light-measuring instrument*: for each pixel it reports one number (the **pixel value**, e.g. 0 to 255 in an 8-bit file), and the true quantity it is trying to report is how much light reached that pixel, which is scene flux times exposure time (§6.2's *t_i*·Φ; §1.2's exposure *H*). **Radiometric** simply means "to do with measured light power" (radiometry is the science of measuring light energy). So **radiometric calibration** is: find the mapping between true light amount and recorded pixel value. That mapping is the **response curve** *f* of §6.2 (also called the camera response function, §6.6): plot true light amount on the horizontal axis and the pixel value on the vertical axis, and *f* is the curve you get.
+
+*(This is the camera-response sense of the term, not the satellite-sensor or ionizing-radiation sense.)*
+
+**Why the curve is not a straight line.** If pixel value were proportional to light, the plot would be a straight line through the origin and there would be nothing to calibrate. Three things bend it:
+
+- **Saturation (clipping) at the top.** Each pixel can hold only so much collected charge (its **full-well capacity**; §1.4). Past that, extra light reads as the same maximum value, so the curve goes flat.
+- **The noise floor at the bottom.** Very dim light is swamped by random sensor noise (§1.9), so the lowest values carry little reliable information about the true light.
+- **The in-camera tone curve in between.** To turn the sensor's linear numbers into a JPEG that looks right on a screen and spends its 8 bits efficiently, the camera deliberately applies a non-linear curve, usually gamma-like (Week 3 §12) and sometimes S-shaped with extra contrast. This is the main bend, and *f* of §6.2 is essentially this curve plus the clipping. Disambiguation: this in-camera **tone curve** is a different thing from HDR **tonemapping** (§8); §8.1 spells out the difference.
+
+**Why we calibrate: linearizing.** Once *f* is known, its inverse *f*⁻¹ turns recorded pixel values back into numbers proportional to light ("**linearizing**" them). Everything downstream that assumes "doubling the light doubles the number" needs this:
+
+- **HDR merging (§5)** divides each pixel by its exposure time and averages; that only gives the right answer if pixel value ∝ *E*·*t*.
+- **Noise and SNR reasoning (§1.5, §1.9)** treats pixel values as counts of collected light.
+- **Physically meaningful measurements**: brightness ratios between two scene points, estimating a light's strength, light probes (§7.4).
+- **LiDAR and other active sensors** have the same issue: a returned-intensity reading only tracks surface reflectivity once it has been calibrated against known-reflectance reference panels (a gray target of known reflectivity placed at known range), which is the same idea with a different instrument.
+
+**Worked numeric illustration (invented numbers, not from any assignment).** Suppose a camera secretly applies *f*(*x*) = 255·*x*^(1/2.2) to the linear value *x* in [0, 1] (the γ ≈ 1/2.2 model of §6.4), and we do not know that. We photograph a printed **grayscale step chart** (a strip of gray patches whose reflectance, the fraction of incident light each patch bounces back, is known) under one uniform light. Illustrative patches have reflectance 100%, 50%, 25% and 12.5%, so the true linear signals are in the ratio 1 : 0.5 : 0.25 : 0.125. Say the brightest patch gives linear value 0.8:
+
+| Patch reflectance | True linear value *x* (known from chart) | Recorded pixel value (measured) | Pixel value if camera were linear (255·*x*) |
+|---|---|---|---|
+| 100% | 0.8 | 230 | 204 |
+| 50% | 0.4 | 168 | 102 |
+| 25% | 0.2 | 123 | 51 |
+| 12.5% | 0.1 | 90 | 26 |
+
+Reading the table: each time the true light halves, the pixel value drops by only about a quarter (230 → 168 → 123 → 90), not by half. That mismatch **is** the calibration finding: the table of (pixel value, true value) pairs is a sampled picture of *f*. To linearize a new pixel, look up (and interpolate between) the table: a pixel of 123 means linear value 0.2. A pixel of 150, which is not on the chart, falls between 123 (0.2) and 168 (0.4), so linear interpolation gives 0.2 + (150 − 123)/(168 − 123) × 0.2 = 0.32. With only four chart points that is already close to the exact value (≈ 0.31 for this made-up *f*); more patches shrink the error. The artifact plots this curve, the ideal straight line it replaces, and the lookup direction. Which numbers *your* HW3 images produce is for the assignment to determine; the point here is the procedure.
+
+*Linear-algebra note.* This is **not** a matrix operation: *f* acts on each pixel value on its own (a point-wise non-linearity, §6.5), so no change of basis is involved.
 
 ### 6.2 The non-linear image formation model
 
@@ -442,11 +509,23 @@ I_est(x, y) = f⁻¹[ I_nonlinear(x, y) ]
 
 ### 6.3 Three ways to calibrate the response curve
 
-| Method | What's varied | What's held fixed | A good target |
-|---|---|---|---|
-| **Vary flux only** | Scene brightness (photograph patches of different, known reflectance) | Camera exposure setting | A **[ColorChecker](https://en.wikipedia.org/wiki/ColorChecker)** chart — its bottom row is six neutral gray patches whose known reflectances fall from about 90% to about 3% (optical density 0.05 to 1.50, in steps that grow from about 0.18 to about 0.45, so log-reflectance is monotonic but not evenly spaced), giving a controlled ladder of known relative flux values at one fixed exposure |
-| **Vary exposure only** | Camera exposure setting (known exposure times) | Scene brightness (photograph one uniformly-reflective target) | A **white-balance card** — every point on its white area has the same reflectance, so varying only the exposure time isolates exactly how the camera's response curve depends on *t* |
-| **Vary both** | Scene flux *and* exposure, simultaneously | — | The bracketed LDR exposure stack itself (§4) — no separate calibration target needed; the stack's own internal consistency (same scene, different *t*) is enough to solve for *f* |
+Every calibration needs "known truth" to compare the reading against (§6.1). The three methods differ only in **where the known truth comes from**. In all three, only *relative* brightness needs to be known (a patch is exactly half as bright as another), not absolute physical units; absolute scale is a separate issue (§7.1).
+
+| Method | Where the known truth comes from | What's varied | What's held fixed | A good target |
+|---|---|---|---|---|
+| **Vary flux only** | The target's printed reflectances: under uniform light, light returned by a patch is proportional to its reflectance | Scene brightness (patches of different, known reflectance) | Camera exposure setting | A **[ColorChecker](https://en.wikipedia.org/wiki/ColorChecker)** chart — its bottom row is six neutral gray patches whose known reflectances fall from about 90% to about 3% (optical density 0.05 to 1.50, in steps that grow from about 0.18 to about 0.45, so log-reflectance is monotonic but not evenly spaced), giving a controlled ladder of known relative flux values at one fixed exposure |
+| **Vary exposure only** | The shutter: collected light is proportional to exposure time, so doubling *t* doubles the true light by construction | Camera exposure setting (known exposure times) | Scene brightness (one uniformly-reflective target) | A **white-balance card** — every point on its white area has the same reflectance, so varying only the exposure time isolates exactly how the camera's response curve depends on *t* |
+| **Vary both** | The *consistency* of the stack: the same scene point is photographed at several known exposure times, so its true light is unknown but is the *same* quantity in every frame | Scene flux *and* exposure, simultaneously | — | The bracketed LDR exposure stack itself (§4) — no separate calibration target needed; the stack's own internal consistency (same scene, different *t*) is enough to solve for *f* |
+
+**Method 1 in the numbers of §6.1.** The step chart's known ratios 1 : 0.5 : 0.25 : 0.125 are the truth; the four recorded values 230, 168, 123, 90 are the readings; the table of pairs is the curve.
+
+**Method 2 in the numbers of §6.1.** Photograph one white card whose linear signal at exposure time *t* = 1/100 s is 0.1. Then *t* = 1/100, 1/50, 1/25, 1/12.5 s collect 0.1, 0.2, 0.4, 0.8 by construction, and the same readings 90, 123, 168, 230 appear. The truth here is a ratio of exposure times that the camera's clock guarantees, so no printed chart is needed. (Keep exposures short enough that the brightest does not saturate; a clipped reading is not on the curve.)
+
+**Method 3 in the numbers of §6.1.** A single scene point records 90, 123 and 168 at *t*, 2*t* and 4*t*. Its true light is unknown, but we know that frame 2 received exactly twice as much as frame 1 and frame 3 twice frame 2. So the pixel-value pairs (90 → 123) and (123 → 168) both mean "light doubled". Collecting many such pairs from many pixels pins down *f* up to one overall scale factor (the same global ambiguity as §7.1). §6.6 turns exactly this idea into a least-squares solve.
+
+**Which to pick.** Methods 1 and 2 give the most direct, easiest-to-trust curve but need a target and controlled shooting. Method 3 needs nothing extra but gives the curve only up to scale and relies on a static scene and camera (§7.2). The assignment's PNGs have a known curve (§6.5), so the main HW3 task needs none of the three; the bonus (§6.6) is where method 3 appears.
+
+*(Artifact figure: the response curve, with the dashed ideal-linear line, the saturation plateau, the noise floor, and the inversion of a measured pixel value back to light amount.)*
 
 ### 6.4 When you can't calibrate: EXIF and the γ ≈ 1/2.2 default
 
@@ -470,6 +549,8 @@ Nothing here is a linear-algebra operation: the curve acts independently on each
 ### 6.6 Estimating the response curve algorithmically: the "CRF" (supports the HW3 bonus)
 
 *(Beyond the lecture's slides, which only list the calibration setups of §6.3.)* The **camera response function (CRF)** is the name usually given to the curve *f* of §6.2 (or its inverse, depending on the author's convention); this is what OpenCV's calibrate functions estimate.
+
+**What problem the OpenCV calibrate object solves (conceptual).** You have a stack of photographs of one static scene, the exposure time of each, and no calibration target; you want the response curve *f*. **Input:** the list of images plus the list of exposure times. **Output:** the curve, as a 256-entry table (one entry per 8-bit pixel value) saying how much light each pixel value stands for. Analogy: you weigh the same unknown objects with a scale that you can load with 1, 2 or 4 identical extra weights; since you know how much weight you added each time, the readings reveal how the scale's dial behaves, even though you never knew the objects' masses. The merge object then takes the stack, the exposure times and that curve, and outputs the HDR image. The two objects are two stages of §6.2's recipe: calibrate *f*, then linearize and merge (§5).
 
 **Idea.** For one pixel location *j* with true flux *E_j* photographed with known exposure time *t_i*, the model says *f*⁻¹(recorded value *Z_ij*) = *E_j* · *t_i*. Taking logs, *g*(*Z_ij*) = ln *E_j* + ln *t_i*, where *g* = ln *f*⁻¹ is an *unknown function on the 256 possible 8-bit values*. Unknowns: the 256 values of *g* plus one ln *E_j* per sampled pixel. Equations: one per (pixel, exposure) pair.
 
@@ -507,18 +588,54 @@ A **light probe** is built by placing a mirrored chrome sphere in a scene and ph
 
 ## 8. Tonemapping: Why Linear Scaling Fails
 
-Once an HDR image *I_HDR* exists (§§4–7), it still has to be shown on a display whose own dynamic range is far smaller (§3). The naive approach — **linear scaling** — picks one reference value in the HDR image and maps it to the display's maximum (1.0), scaling everything else proportionally. Two obvious choices, both broken in complementary ways:
+### 8.1 What "tone" and "tone mapping" mean
 
-- **Scale so the maximum value maps to 1.** The result looks *underexposed*, even though — measured against the true scene — it isn't: almost the entire image's brightness range gets compressed into the low end of the display's range, since only the single brightest pixel earns the full "1.0."
-- **Scale so, say, the 10th-percentile-brightest value maps to 1.** The result looks *saturated* (blown out), even though it isn't: everything above that chosen reference value clips to flat white.
+**Tone.** The **tone** of a pixel or region is just its brightness level on the scale from dark to light (for a color image, usually its luminance, the brightness part of color, Week 3). The **tonal range** of an image is the span of tones present, from its darkest region to its brightest. Analogy: in music, a *tone* is a position on a low-to-high pitch scale; in an image, a tone is a position on a dark-to-light scale. (Disambiguation: photographers also say "warm tone" or "cool tone" for a color cast; in this file "tone" means brightness only.)
 
-Neither failure is a defect in the HDR data itself — the HDR image genuinely does contain all the necessary brightness information. The failure is purely in how that information gets *linearly* squeezed into the display's much smaller range. Something *non-linear* is needed.
+**Tone curve.** A **tone curve** is a function that takes an input tone and returns an output tone: input brightness on the horizontal axis, output brightness on the vertical axis. A straight diagonal leaves every tone unchanged; a curve that bows upward brightens the dark tones more than the bright ones. It is the image equivalent of an audio equalizer re-shaping loudness levels, applied to brightness.
+
+**Tone mapping.** **Tone mapping** (this lecture's "tonemapping") is applying a tone curve (or something more elaborate, §10) to an HDR image so that its enormous tonal range fits the small tonal range a display can show, while keeping the *look* of contrast and detail. Analogy: fitting a long scroll onto a postcard (shrink it uniformly and the writing becomes unreadable; you must decide what to squeeze most), or squeezing an orchestra's loud and quiet passages into the narrow dynamic range of a phone speaker (compress the loud parts, keep the quiet details audible).
+
+**Two different "tone curves" in this file, kept apart:**
+
+| | In-camera tone curve (§6) | HDR tonemapping (§8–§10) |
+|---|---|---|
+| Where it happens | Inside the camera, when it writes the JPEG | On your computer, after merging an HDR image |
+| Input | Sensor's linear values (limited range) | Linear HDR values (huge, unbounded range) |
+| Goal | Make the image look right on a screen; spend 8 bits efficiently | Compress the huge range into the display's small range |
+| Who chooses it | The camera maker (fixed, usually unknown) | You (the algorithm and its settings) |
+| What we do with it | **Undo it** (calibration, then *f*⁻¹) | **Apply it** (the last step before display) |
+
+The mathematical shape can look alike (a gamma-type curve appears in both), which is exactly why the two are easy to confuse; the difference is purpose and direction.
+
+### 8.2 Why linear scaling fails, with numbers
+
+Once an HDR image *I_HDR* exists (§§4–7), it still has to be shown on a display whose own dynamic range is far smaller (§3). Illustrative HDR pixel values for a room with a window (units chosen so a sheet of white paper in the room reads 1; invented, not from any assignment):
+
+| Region | *I_HDR* (linear) |
+|---|---|
+| Deep shadow | 0.002 |
+| Dim corner | 0.02 |
+| Face | 0.2 |
+| Sunlit wall | 2 |
+| Sky through window | 20 |
+
+The ratio brightest : darkest is 20 / 0.002 = 10,000 : 1 (about 13.3 stops, since log2(10,000) ≈ 13.3), while an 8-bit display value has only 256 levels, from 0 to 255. Treat the output as the fraction of the display's maximum light and multiply by 255 for the 8-bit code.
+
+The naive approach, **linear scaling**, picks one reference value in the HDR image and maps it to the display's maximum (1.0), scaling everything else proportionally. Two obvious choices, both broken in complementary ways:
+
+- **Scale so the maximum value maps to 1** (divide by 20). The five regions become 0.0001, 0.001, 0.01, 0.1, 1, i.e. 8-bit codes 0, 0, 3, 26, 255. The shadow and the dim corner are both pure black and the face is a very dark 26. The result looks *underexposed*, even though — measured against the true scene — it isn't: almost the entire image's brightness range gets compressed into the low end of the display's range, since only the single brightest pixel earns the full "1.0."
+- **Scale so, say, the 10th-percentile-brightest value maps to 1.** Here the sunlit wall (2) plays that role, so divide by 2: 0.001, 0.01, 0.1, 1, 10, with the last clipped to 1, giving codes 0, 3, 26, 255, 255. The wall and the sky are both flat white, so the window's detail is gone. The result looks *saturated* (blown out), even though it isn't: everything above that chosen reference value clips to flat white.
+
+Neither failure is a defect in the HDR data itself — the HDR image genuinely does contain all the necessary brightness information. The failure is purely in how that information gets *linearly* squeezed into the display's much smaller range. Something *non-linear* is needed, i.e. a tone curve that is steep for dark tones (to spread them apart) and flat for bright tones (to pack them together). §9 gives one; applied to the same five values it yields five distinct, usable codes (1, 5, 43, 170, 243).
+
+*(Global vs. local: a tone curve that looks only at each pixel's own value is a **global** operator; one that also looks at neighbors is **local**; §9.2 and §10.)*
 
 ---
 
 ## 9. Photographic Tonemapping
 
-**Intuition.** A good tonemapping curve needs two properties simultaneously: **(1)** bring every HDR value, however large, into the display's finite range — the curve must *asymptote* to 1 rather than ever reaching or exceeding it; and **(2)** leave genuinely dark regions alone, so a curve with **slope 1 near 0** doesn't waste contrast compressing the shadows that were already fine. A function shaped like a hyperbola does exactly both:
+**Intuition.** *(Tone-curve recap, §8.1: a function from input tone to output tone; this section's curve is one.)* A good tonemapping curve needs two properties simultaneously: **(1)** bring every HDR value, however large, into the display's finite range — the curve must *asymptote* to 1 rather than ever reaching or exceeding it; and **(2)** leave genuinely dark regions alone, so a curve with **slope 1 near 0** doesn't waste contrast compressing the shadows that were already fine. A function shaped like a hyperbola does exactly both:
 
 ```
 I_display = I_HDR / (1 + I_HDR)
@@ -557,6 +674,8 @@ I_display = clip( (s · I_HDR)^γ , 0, 1 )
 
 - A **global** tonemapping operator applies one fixed curve to every pixel: the output depends only on that pixel's own value. §8's linear scaling, §9's I/(1+I), and §9.1's (*s*·*I*)^γ are all global.
 - A **local** tonemapping operator lets the output depend on a pixel's neighbors too, which lets it compress large-scale brightness differences while keeping local contrast. §10's base/detail split, bilateral filtering, and gradient-domain methods are the lecture's local examples.
+
+**What a tonemapper object does (conceptual).** **Input:** a floating-point HDR image (linear values, unbounded above). **Output:** an image whose values lie in [0, 1], ready to scale to 8 bits for display. Analogy: a photo-lab technician who must print a high-contrast negative onto paper with limited contrast, choosing how to compress the highlights and shadows; each OpenCV class is a different technician with a different recipe, and its constructor arguments are that technician's adjustable settings (typically a gamma-like exponent and, for the more elaborate ones, how strongly to compress contrast). All of them are tone curves in the sense of §8.1, either global (§9) or local (§10).
 
 HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-vision library) built-in tonemappers. OpenCV ships several, created through `cv2.createTonemap` (a simple gamma operator), `cv2.createTonemapDrago` (an adaptive-logarithmic operator), `cv2.createTonemapReinhard`, and `cv2.createTonemapMantiuk` (a gradient-domain operator, the family of §10 step 5). You do not need to implement any of them for HW3: the assignment only asks you to run the one in the starter code and compare its output with your own two-knob result from §9.1. PS3's slides name Drago (`cv2.createTonemapDrago`) as the one to try.
 
@@ -620,19 +739,19 @@ Both are "coding the aperture" in the broad sense this lecture uses, and both wo
 
 ## 14. Point Spread Function and Optical Transfer Function, from Scratch
 
-Week 1 §12.4.5 already forward-pointed to this exact pair of terms ("the point spread function (PSF) and Wiener filtering (Week 5)"), and Week 2 §2, §5, §9 already worked with the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without ever giving it this name. This section (using PS4 Task 1's own material) gives the idea its formal name and its frequency-domain partner.
+This section leans on **convolution** (a kernel slid across a signal as a weighted sum), which Week 1 §12.4.4a builds from scratch with worked numbers; if its terms (kernel, impulse response, shift-invariant, convolution theorem) are unfamiliar, read that first. Week 1 §12.4.1 to §12.4.5 forward-pointed to this exact pair of terms (the PSF and Wiener filtering, Week 5), and Week 2 §2, §5, §9 already worked with the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without ever giving it this name. This section (using PS4 Task 1's own material) gives the idea its formal name and its frequency-domain partner.
 
 ### 14.1 The point spread function (PSF)
 
 **Analogy and definition.** Photograph a single, isolated point of light — a distant star, or a pinhole backlit by a lamp — through some optical system (a lens, an aperture, the whole imaging chain). Whatever blob of light actually lands on the sensor, however large or oddly shaped, **is** that system's **[point spread function (PSF)](https://en.wikipedia.org/wiki/Point_spread_function)**: literally, the picture of a single point, "spread" by the optics. A perfect pinhole (Week 2 §1) has a PSF that is (ideally) a single point; every real optical system's PSF is some larger, blurrier shape — a disc for a finite pinhole (Week 2 §2), a circle of confusion for a defocused lens (Week 2 §5, §9), an Airy pattern for a diffraction-limited circular aperture.
 
-**Why this matters for a whole image, not just one point.** For a system whose blurring behaves the same way at every location (**shift-invariant**), every scene point gets smeared by that exact same PSF shape, just centered wherever that point's own sharp image would have landed. The whole blurred image is therefore the sum, over every scene point, of a copy of the PSF scaled by that point's brightness and centered at that point's location — precisely the **convolution** operation Week 1 §12.4.5 already built:
+**Why this matters for a whole image, not just one point.** For a system whose blurring behaves the same way at every location (**shift-invariant**), every scene point gets smeared by that exact same PSF shape, just centered wherever that point's own sharp image would have landed. The whole blurred image is therefore the sum, over every scene point, of a copy of the PSF scaled by that point's brightness and centered at that point's location — precisely the **convolution** operation of Week 1 §12.4.4a (its "stamp a scaled copy of the kernel at every point and add" picture, with the PSF as the stamp):
 
 ```
 I_blurred(x, y) = (I_ideal * PSF)(x, y)
 ```
 
-**Term-by-term.** *I_ideal*(*x*,*y*) is the hypothetical perfectly sharp image an ideal pinhole (Week 2 §1) would have produced; PSF(*x*,*y*) is the system's blur kernel — normalized so it sums (or integrates) to 1, exactly as PS4 instructs ("normalize the filter so it sums to 1"), which guarantees the blur redistributes light rather than adding or removing any; *I_blurred* is the image actually captured. The `*` is convolution, the same sliding-weighted-sum operation from Week 1 §12.4.5/§13.1.
+**Term-by-term.** *I_ideal*(*x*,*y*) is the hypothetical perfectly sharp image an ideal pinhole (Week 2 §1) would have produced; PSF(*x*,*y*) is the system's blur kernel — normalized so it sums (or integrates) to 1, exactly as PS4 instructs ("normalize the filter so it sums to 1"), which guarantees the blur redistributes light rather than adding or removing any; *I_blurred* is the image actually captured. The `*` is convolution, the same sliding-weighted-sum operation from Week 1 §12.4.4a (the PSF is that section's kernel, or "impulse response").
 
 **Diagram.** (See Fig. — companion diagram: a single bright point imaged through an ideal pinhole, landing as a single sharp dot, contrasted with the same point imaged through a real lens, landing as a blurred disc — that disc *is* the PSF.)
 
@@ -646,13 +765,13 @@ OTF(u, v) = FT{ PSF }(u, v)
 
 where *u*, *v* are image frequencies exactly as built in Week 1 §12.4.2 (cycles per pixel).
 
-**Intuition, via the convolution theorem.** Week 1 §12.4.5 already proved the key fact needed here: convolving in the spatial domain is identical to multiplying in the frequency domain. Applied to the PSF specifically: convolving an image with the PSF (spatial domain) is exactly the same operation as multiplying the image's own spectrum by the OTF (frequency domain). The OTF therefore reports, frequency by frequency, exactly how much of each spatial-frequency component of the true scene *survives* the imaging system: where |OTF(*u*,*v*)| is near 1, that frequency passes through essentially untouched; where it's near 0, that frequency has been (nearly) destroyed by the optics, and no amount of after-the-fact processing can recover information that was never recorded in the first place.
+**Intuition, via the convolution theorem.** Week 1 §12.4.4a (Part 7) motivated and checked on a small numeric example the key fact needed here: convolving in the spatial domain is identical to multiplying spectra in the frequency domain, because each pure wave passes through a shift-invariant blur as the same wave, only scaled (and shifted in phase), so the blur acts on each frequency independently. Recap in this section's own terms: if *I* is the sharp image with spectrum *Ĩ*, then the blurred image has spectrum *Ĩ* × OTF, entry by entry. Applied to the PSF specifically: convolving an image with the PSF (spatial domain) is exactly the same operation as multiplying the image's own spectrum by the OTF (frequency domain). The OTF therefore reports, frequency by frequency, exactly how much of each spatial-frequency component of the true scene *survives* the imaging system: where |OTF(*u*,*v*)| is near 1, that frequency passes through essentially untouched; where it's near 0, that frequency has been (nearly) destroyed by the optics, and no amount of after-the-fact processing can recover information that was never recorded in the first place.
 
-**Linear-algebra view (recapping and extending Week 1 §12.4.5 and Week 2 §2).** Convolution by a fixed kernel is a **linear, shift-invariant operator** — a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 1 §12.4.5; Week 2 §2 already applied this to a finite pinhole's own blur disc). Every sinusoid is an eigenvector of that matrix, with eigenvalue equal to the kernel's own Fourier transform — so the OTF is *exactly* the convolution matrix's eigenvalues, one per spatial frequency. A frequency where the OTF is exactly zero is a frequency where that eigenvalue is zero, meaning the corresponding Fourier basis vector lies in the matrix's **null space**: a direction in "scene space" that this particular optical system provably cannot see, no matter what. Calling an OTF **broadband** (§15) means precisely that this null space is trivial — no spatial frequency gets multiplied by exactly zero — so the convolution matrix is, at least in principle, invertible.
+**Linear-algebra view (recapping and extending Week 1 §12.4.4a, §12.4.5 and Week 2 §2).** Convolution by a fixed kernel is a **linear, shift-invariant operator** — a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 1 §12.4.4a, §12.4.5; Week 2 §2 already applied this to a finite pinhole's own blur disc). Every sinusoid is an eigenvector of that matrix, with eigenvalue equal to the kernel's own Fourier transform — so the OTF is *exactly* the convolution matrix's eigenvalues, one per spatial frequency. A frequency where the OTF is exactly zero is a frequency where that eigenvalue is zero, meaning the corresponding Fourier basis vector lies in the matrix's **null space**: a direction in "scene space" that this particular optical system provably cannot see, no matter what. Calling an OTF **broadband** (§15) means precisely that this null space is trivial — no spatial frequency gets multiplied by exactly zero — so the convolution matrix is, at least in principle, invertible.
 
 ### 14.3 Filtering in the primal domain vs. the Fourier domain (PS4 Task 1)
 
-PS4 Task 1 has you implement the *same* filtering operation two ways, to see the OTF's practical payoff directly. A **low-pass filter** (Week 1 §13.1) can be applied either by convolving with a low-pass PSF in the spatial ("primal") domain, or by multiplying by the corresponding low-pass OTF in the Fourier domain. A **high-pass filter** — recovering fine detail — follows immediately as the complement of the low-pass version, exactly matching Week 1 §12.4.5's "high-pass mask is the complementary projection" idea, now written with this week's PSF/OTF vocabulary:
+PS4 Task 1 has you implement the *same* filtering operation two ways, to see the OTF's practical payoff directly. A **low-pass filter** (Week 1 §13.1) can be applied either by convolving with a low-pass PSF in the spatial ("primal") domain, or by multiplying by the corresponding low-pass OTF in the Fourier domain. A **high-pass filter** — recovering fine detail — follows immediately as the complement of the low-pass version, exactly matching Week 1 §12.4.5's "high-pass mask is the complementary projection" idea and §12.4.4a Part 6's note that blur-then-subtract is itself a convolution, now written with this week's PSF/OTF vocabulary:
 
 ```
 I − I * PSF_LP              (primal domain: subtract a low-pass-blurred copy)
@@ -660,6 +779,8 @@ I − I * PSF_LP              (primal domain: subtract a low-pass-blurred copy)
 ```
 
 where PSF_LP is a low-pass blur kernel (e.g. a Gaussian), OTF_LP is its Fourier transform, *I* is the spatial-domain image, and *Ĩ* is its spectrum. This is the identical high-pass-as-complement-of-low-pass idea from Week 1 §12.4.5 — the one difference is that here, the "mask" isn't an arbitrary hand-drawn disc; it's the OTF of a real, physically meaningful blur kernel (and, starting in §15, a kernel that's physically produced by an actual lens/aperture rather than chosen by hand).
+
+**Deconvolution, the reason this section exists (orientation).** Everything above is the *forward* direction: sharp scene, then PSF, then blurry photo. **Deconvolution** is the reverse: recover the sharp scene from the blurry photo, using the OTF as the "divide by this at each frequency" recipe. It is **non-blind** when the PSF is known (as it is for a coded aperture you designed) and **blind** when it must be estimated. It is **ill-posed** because |OTF| near zero makes the division amplify noise (and an exact zero loses that frequency outright), which is why §15, §16 and §19 design PSFs with no zeros, and why Week 5 (Wiener filter) and Week 6 (priors, regularization) exist. A numeric first look, including a LiDAR pulse-blur example, is in Week 1 §12.4.4b.
 
 **Why Fourier-domain filtering cost is independent of kernel size.** Direct spatial-domain convolution of an *N*-pixel image with a *K*×*K* kernel costs, per output pixel, a weighted sum over all *K*² kernel taps — so total cost scales as *O*(*N*·*K*²): a bigger blur kernel means strictly more work. Fourier-domain filtering instead costs one FFT of the image (*O*(*N* log *N*), independent of the kernel), one pointwise multiplication against the OTF (*O*(*N*), one multiply per pixel, again independent of kernel size — the OTF array, once the kernel is zero-padded to the image's own size, is exactly as large as the image no matter how "wide" the original spatial kernel was), and one inverse FFT. **The kernel's size never enters the Fourier-domain cost at all** — only the image's own size does.
 
@@ -671,7 +792,7 @@ where PSF_LP is a low-pass blur kernel (e.g. a Gaussian), OTF_LP is its Fourier 
 
 ### 15.1 An out-of-focus point's blur shape is (a scaled copy of) the aperture's own shape
 
-Recall Week 2 §2's finite-pinhole argument: a pinhole of nonzero diameter passes not one ray per scene point but an entire small cone of rays spanning the whole opening, so each point projects to a blurred disc **the same shape as the opening itself**. Exactly the same geometric fact holds for a defocused lens (Week 2 §5, §9): an out-of-focus point sends a full cone of rays through the *entire* aperture, and that cone's cross-section at the sensor — the resulting blur, i.e. the PSF — is a scaled copy of the aperture's own opening shape. A plain circular aperture stop therefore produces a plain circular (or, at the diffraction limit, Airy-ring) defocus PSF. **Coding the aperture stop's shape directly and predictably reshapes the resulting PSF into that same coded pattern.**
+Recall Week 2 §2's finite-pinhole argument: a pinhole of nonzero diameter passes not one ray per scene point but an entire small cone of rays spanning the whole opening, so each point projects to a blurred disc **the same shape as the opening itself**. Exactly the same geometric fact holds for a defocused lens (Week 2 §5, §9): an out-of-focus point sends a full cone of rays through the *entire* aperture, and that cone's cross-section at the sensor — the resulting blur, i.e. the PSF — is a scaled copy of the aperture's own opening shape. A plain circular aperture stop therefore produces a plain circular (or, at the diffraction limit, Airy-ring) defocus PSF. **Coding the aperture stop's shape directly and predictably reshapes the resulting PSF into that same coded pattern.** Photographers already see this effect, un-coded, as **bokeh** (the look of out-of-focus highlights: hexagons from a polygonal diaphragm, donuts from mirror lenses; Week 2 §9.5). A coded aperture is, in effect, a deliberately designed bokeh shape.
 
 ### 15.2 Why the circular PSF is a problem, and what "broadband" fixes
 
@@ -759,6 +880,8 @@ Two brief forward pointers to where coded apertures show up outside ordinary cam
 §1.5 already built the core mechanism: an object moving during the exposure smears across the sensor, and — for uniform motion along one direction — that smear is a **convolution** of the sharp image with a **box kernel** (a flat line segment as long as the motion streak), giving a **banded Toeplitz matrix B** (§1.5's own linear-algebra view). This lecture restates the difficulty in exactly two parts: **(1)** the motion PSF may be unknown, and different for every differently-moving object in the same frame, and **(2)** the motion PSF is difficult to invert — the specific problem worked out precisely below.
 
 ### 19.2 The box shutter's sinc zeros vs. the coded shutter's broadband spectrum
+
+**What problem these two kernels address.** A moving object smears across the sensor, and we want to undo the smear afterwards. How well that is possible depends entirely on the *blur kernel*, the pattern describing how each point's light is spread along the motion direction, and the shutter's open/closed schedule is what determines it. **In:** the shutter schedule over the exposure (open = 1, closed = 0). **Out:** the blur kernel (that schedule, laid along the streak) and its Fourier magnitude (the OTF, §14.2), which shows which spatial frequencies survive. **Analogy:** recording a speaker with a microphone that is either always on (a smooth muffle that completely cancels certain pitches) or switched on and off in a clever pattern (every pitch leaks through a little, so a later clean-up can reconstruct all of them). The next two paragraphs give the math for each schedule.
 
 **The traditional camera: a box filter.** An ordinary shutter is open continuously for the whole exposure time, so the blur kernel is a flat **box function** of width *W* (the motion-blur streak length in pixels, exactly §1.5's own "blur length = image-plane speed × exposure time" worked formula). The Fourier transform of a box function is a **sinc function** — and a sinc has **exact zeros**, at regularly spaced spatial frequencies *f* = *n*/*W* for every nonzero integer *n*. At each of those exact-zero frequencies, the box kernel's OTF (§14.2) is exactly 0: whatever detail existed in the true scene at that spatial frequency is completely destroyed by the blur, with no way for any deconvolution algorithm to recover it — precisely §1.5's "detail at those frequencies... lands in **B**'s null space, and is lost."
 

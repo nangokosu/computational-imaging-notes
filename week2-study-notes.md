@@ -46,7 +46,7 @@ An *ideal* pinhole is infinitesimally small (a true single point), but that's ph
 
 **Direction 1 — geometric blur (ray optics still applies).** A pinhole with nonzero diameter doesn't pass just *one* ray per scene point — it passes a small *cone* of rays (every ray from that point that happens to hit somewhere within the finite opening). Each of these rays lands at a slightly different spot on the sensor, so a single scene point no longer projects to a single sensor point — it projects to a small blurred disc the same size as the pinhole opening. **The larger the pinhole, the blurrier the image.** This predicts that shrinking the pinhole should sharpen the image indefinitely — but it doesn't.
 
-**Linear-algebra view (pinhole blur as a convolution matrix):** in §0's **y** = **A x** picture, a finite pinhole replaces the ideal permutation matrix with a matrix where each column (one scene point) is a small disc of nonzero weights instead of a single 1. Since the same disc appears at every position, each row is the previous row shifted by one: a **Toeplitz** (constant-along-diagonals) **convolution matrix**, restated from Week 1 §12.4.5. The Fourier basis **diagonalizes** such a matrix, with the disc's own Fourier transform as the eigenvalues. A bigger disc makes more of those eigenvalues close to zero, so more fine detail is effectively lost. Undoing this matrix is **deconvolution**, the subject of Weeks 5–6.
+**Linear-algebra view (pinhole blur as a convolution matrix):** in §0's **y** = **A x** picture, a finite pinhole replaces the ideal permutation matrix with a matrix where each column (one scene point) is a small disc of nonzero weights instead of a single 1. Since the same disc appears at every position, each row is the previous row shifted by one: a **Toeplitz** (constant-along-diagonals) **convolution matrix**. (**Convolution** is the "stamp a copy of the blur shape at every scene point and add them up" operation, with the blur shape called the **kernel** or, for optics, the **point spread function**. Week 1 §12.4.4a builds it from scratch with worked numbers, and Week 4 §14 names this exact kernel the PSF.) The Fourier basis **diagonalizes** such a matrix, with the disc's own Fourier transform as the eigenvalues. A bigger disc makes more of those eigenvalues close to zero, so more fine detail is effectively lost. Undoing this matrix is **deconvolution** (recovering the sharp image from the blurred one; Week 1 §12.4.4b gives a first look at why that is hard, and Weeks 5–6 treat it fully).
 
 **Direction 2 — diffraction (a genuinely new, wave-optics effect).** Once the pinhole is only a few multiples of the wavelength of light wide, **[diffraction](https://en.wikipedia.org/wiki/Diffraction)** — the tendency of a wave to spread out after passing through a narrow opening — takes over, and ray optics (which assumes light *doesn't* spread like this) stops being an adequate model. Diffraction is a direct consequence of the wave nature of light: squeezing a wave through a small enough gap causes it to fan out on the other side, and the *smaller* the gap, the *more* it fans out.
 
@@ -55,6 +55,8 @@ An *ideal* pinhole is infinitesimally small (a true single point), but that's ph
 **Putting the two directions together:** shrinking the pinhole reduces geometric blur (good) right up until diffraction effects take over and start *increasing* blur again (bad) — so there is a genuine sweet-spot pinhole diameter that minimizes total blur, not "smaller is always sharper."
 
 ### 2.1 The Exact Trade-off: Optimal Pinhole Diameter
+
+**What problem this solves.** You have to pick a real pinhole diameter, and §2 showed both too-big and too-small holes blur the image. This section turns that into a number. Input: the pinhole-to-sensor distance *f* and the light's wavelength λ. Output: the diameter *d* that gives the least total blur. Analogy: a tug-of-war between two opposing penalties, like picking the speed that balances arriving late against paying for fuel; the best choice is where neither side wins.
 
 **Writing both blur contributions as one quantity to minimize.** Direction 1 says a pinhole of diameter *d* smears each scene point into a blurred disc roughly *d* wide — geometric blur ≈ *d*. Direction 2 says diffraction fans light out by an angle of roughly λ/*d* radians after it squeezes through an opening of width *d* (a standard result: the narrower the gap relative to the wavelength, the wider the fan-out); over the distance *f* from pinhole to image plane, that angular spread becomes a linear spread on the sensor of about *f*·λ/*d* (small-angle approximation: linear spread ≈ angle × distance). Adding the two independent contributions gives one blur-size function of the pinhole diameter:
 
@@ -102,6 +104,8 @@ These two assumptions are enough to trace an image by hand using three character
 All three rays from the same object point reconverge at the same image point — which is both the geometric justification for the thin lens model and the standard hand-tracing technique for predicting where an image will form. §4.1 turns exactly two of these three rays into algebra.
 
 ### 4.1 Scene-space vs. image-space: deriving the Gaussian lens formula
+
+**What problem this solves.** To focus a lens you need to know where, behind it, the sharp image forms. The thin lens equation answers that. Input: the object's distance *S* and the lens's focal length *f*. Output: the sensor distance *S′* at which that object is sharp. Analogy: a funnel with one fixed sweet spot; each object distance maps to exactly one lens-to-sensor distance where all its rays meet.
 
 The hand-tracing picture above is qualitative — it tells you *that* the three rays meet, but not *where*, in numbers. To get a formula, put actual measurements on the picture:
 
@@ -215,6 +219,8 @@ A famous real-world example: the Hubble Space Telescope's primary mirror origina
 
 **[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** is the angular extent of the scene a lens/sensor combination captures — the same angular-extent idea introduced for the human eye in Week 1 §7 (monocular ~190°, binocular ~120°), now applied to a camera. It depends on both the lens's focal length *f* (intrinsic, §4.2) and the physical size of the sensor capturing the image (a property of the camera body, not the lens): a longer focal length concentrates the same sensor size onto a narrower angular slice of the scene (a "telephoto" or "zoom" effect), while a shorter focal length spreads a wider angular slice onto that same sensor size (a "wide-angle" effect).
 
+**What problem this solves.** Before buying a lens or sensor you want to know how much of the scene will fit in the frame. Input: sensor width (or height) *d* and focal length *f*. Output: the viewing angle, FOV, in degrees. Analogy: looking through a window from different distances; standing close shows a wide slice of the outdoors, standing back shows a narrow one, and the focal length is how far back the sensor sits from the "window."
+
 This is exactly the same right-triangle relationship as Week 1 §9's screen-pixel formula, just run in the opposite direction: there, a fixed angle and a known distance gave a physical size; here, a fixed physical size (the sensor) and a known distance (the focal length) give an angle. For a sensor dimension *d* and focal length *f*:
 
 ```
@@ -247,6 +253,34 @@ N = f / D
 
 By §3's area-scales-as-diameter-squared logic, halving the f-number (doubling the aperture diameter *D* at fixed *f*) quadruples the light reaching the sensor — the exact same 2× diameter → 4× light relationship already derived for pinholes, now expressed through *N* instead of *D* directly.
 
+**Reading "f/2.8" on a lens or camera (the notation).** The slash is a division sign. "f/2.8" literally means *D* = *f*/2.8: the aperture diameter is the focal length divided by 2.8. On a 50 mm lens, f/2.8 is a 50/2.8 ≈ 17.9 mm opening, while f/5.6 is 50/5.6 ≈ 8.9 mm. A lens labelled "50 mm f/1.8" is a 50 mm lens whose *widest* opening is f/1.8; the label quotes its *smallest* *N* (see §8's intrinsic-vs-setup note). Because the opening is always a fixed fraction of the focal length, the same f-number gives the same *brightness* on any lens, which is why photographers can swap lenses and keep "f/4".
+
+**Stops as a count of steps (building on Week 1 §10.1's `stops = log₂(ratio)`).** Light through the aperture goes as *D*² ∝ 1/*N*², so the light ratio between two f-numbers *N*₁ and *N*₂ is (*N*₂/*N*₁)², and the number of stops between them is
+
+```
+stops = log₂( (N₂ / N₁)² ) = 2 · log₂( N₂ / N₁ )
+```
+
+*Intuition:* the square comes from area; taking log₂ turns "how many doublings of light" into a plain count; the 2 in front is why one stop in *N* is only a factor of 2^(1/2) = √2. *Terms:* *N*₁ the starting f-number, *N*₂ the new one (both set by you, dimensionless); a positive result means *N*₂ lets in *less* light (the stops are "closed down"), so open-vs-closed signs are easy to flip: **bigger f-number = fewer stops of light**. Equivalently, each stop multiplies *N* by √2, so the *k*-th stop from a starting *N*₀ is *N*₀ · 2^(*k*/2).
+
+| Stops from f/2.8 | Exact N = 2.8 · 2^(k/2) | Marked on the lens |
+|---|---|---|
+| −2 | 1.40 | f/1.4 |
+| −1 | 1.98 | f/2 |
+| 0 | 2.80 | f/2.8 |
+| +1 | 3.96 | f/4 |
+| +2 | 5.60 | f/5.6 |
+| +3 | 7.92 | f/8 |
+| +4 | 11.2 | f/11 |
+
+The marked numbers are rounded versions of the exact values, which is why the printed sequence looks slightly irregular.
+
+**Third-stop f-numbers.** A third of a stop multiplies *N* by 2^(1/6) ≈ 1.12. From f/2.8 the three one-third steps are ≈ 3.14 → 3.52 → 3.95, marked f/3.2, f/3.5, f/4. Counting a dial's third-stop clicks is therefore just counting *k* in 2^(*k*/6).
+
+**Exposure compensation on an aperture-priority camera.** In aperture-priority mode you fix *N* and the camera chooses the shutter time. A "+2" exposure-compensation setting (Week 1 §10.1) asks for 2 stops, 4×, more light than the meter's pick; with *N* fixed, the camera must lengthen the shutter time by 4× (e.g. 1/250 s → 1/60 s, give or take rounding). In shutter-priority mode the same "+2" is instead delivered by opening the aperture by 2 stops (e.g. f/5.6 → f/2.8). Same dial, different knob moved; the result is the same brightness either way (reciprocity, Week 4 §1.2).
+
+> **Worked example (generic, not homework).** Going from f/8 to f/2.8 is *N*₂/*N*₁ = 2.8/8 = 0.35, so stops = 2·log₂(0.35) ≈ −3.03, i.e. about 3 stops *more* light (the sign is negative because *N* got smaller); in multiplier terms (8/2.8)² ≈ 8.2×, matching 2³ = 8 up to the rounding of the marked numbers. If the correct exposure at f/8 was 1/60 s, the same brightness at f/2.8 needs about 3 stops less time: 1/60 → 1/125 → 1/250 → 1/500 s.
+
 Widening the aperture doesn't only affect brightness — it also affects how much of the scene appears sharply focused at once, which is exactly the subject of §9.
 
 ---
@@ -262,6 +296,8 @@ This is the most important technical concept of Week 2 — the direct basis for 
 Recap from §5: for a lens with a fixed sensor distance *S′*, the thin lens equation (§4.1) names exactly one object distance *S* whose rays converge perfectly at the sensor plane. A real scene point sitting at its own actual distance *O* is perfectly sharp only when *O = S*; at any other *O*, its rays converge either before or after the sensor plane and have re-diverged into a small blurred disc — the **circle of confusion** — by the time they reach the sensor.
 
 ### 9.2 The circle-of-confusion formula, derived
+
+**What problem this solves.** A lens focuses sharply at only one distance, so an object at any other distance is smeared into a disc. The circle-of-confusion formula tells you how big that disc is, so you can judge how blurry the object will look. Input: aperture diameter *D*, focused distance *S*, and the object's actual distance *O*. Output: the blur-disc diameter *c* on the sensor. Analogy: a flashlight beam aimed at a wall; the beam is a tight spot at one distance and a widening circle if you move the wall nearer or farther.
 
 Two similar-triangle relations, exactly parallel in spirit to §4.1's derivation of the thin lens equation, but now tracking a point that is *not* at the focused distance:
 
@@ -299,6 +335,8 @@ For the actual object at *O*, its own rays converge to a genuine focus point at 
 **Diagram.** See the artifact (Fig. 38) for the full drawn version: a single lens-and-sensor system with three ray sets overlaid — the in-focus case (converging exactly onto the sensor, zero blur), a near object's still-converging cone (crossing beyond the sensor), and a far object's already-diverged cone (having crossed before the sensor) — with the near and far cones' sensor-plane cross-sections drawn at matching diameters to make the size-equality visible directly.
 
 ### 9.3 Depth of field: the formula and where it comes from
+
+**What problem this solves.** Only one distance is perfectly sharp, but in practice a zone around it looks sharp enough. Depth of field puts a size on that zone. Input: blur tolerance *ε*, magnification *m*, aperture *D*, focused distance *S*. Output: the width of the acceptably sharp range. Analogy: a spotlight on a stage; the brightest point is one spot, but everyone standing in the lit circle around it is "in the light."
 
 A real sensor's own pixel grid already has finite resolution (Week 1 §12.2.1's "image frequency" ruler is fixed by pixel pitch), so a blur disc smaller than some small threshold — call it *ε* pixels — is simply invisible; it can't be told apart from a perfectly sharp point at that resolution. **[Depth of field (DoF)](https://en.wikipedia.org/wiki/Depth_of_field)** is the range of actual object distances *O* for which *c* stays below that threshold.
 
@@ -407,6 +445,8 @@ To *first order* in *δ* — i.e., for deviations small enough that §9.3's smal
 
 ### 9.4 Hyperfocal distance
 
+**What problem this solves.** A landscape photographer wants as much of the scene sharp as possible with a single focus setting. The hyperfocal distance says where to focus. Input: focal length *f*, f-number *N*, and the blur tolerance *c*. Output: one focus distance *H*. Analogy: standing at the one spot in a room from which the far wall and everything down to halfway toward you are all visible at once.
+
 The **hyperfocal distance**, *H*, is the specific focus distance *S* that pushes the *far* edge of the depth-of-field range (§9.3) all the way out to infinity. Deriving it directly from §9.2's circle-of-confusion formula: as the actual object distance *O* → ∞, the ratio |*O* − *S*|/*O* → 1 (the finite *S* becomes negligible next to an infinite *O*), so the circle of confusion an object at infinity would show, if focused at *S* = *H*, is simply *c*<sub>∞</sub> = *m·D* (using the magnification evaluated at that focus distance). Setting this equal to the fixed acceptable threshold and solving for *S* = *H* (using *D* = *f*/*N* from §8, and dropping *f* itself as negligible next to the much larger *H*) gives:
 
 ```
@@ -427,9 +467,68 @@ This is where the familiar "focus at the hyperfocal distance and everything from
 
 Focusing at the hyperfocal distance means everything from exactly *H*/2, as just derived, out to infinity satisfies the depth-of-field threshold simultaneously — a classic landscape-photography technique for maximizing usable in-focus range without stopping the aperture down so far that diffraction (§2, §10) starts to matter.
 
+### 9.5 Bokeh: the *look* of the circle of confusion
+
+**What this section adds.** §9.2–9.4 treated the blur disc as a *number* (its diameter *c*) to be kept below a threshold. Photographers also care about what the blur *looks like*, because in a portrait or a night street scene the out-of-focus region is a large part of the picture. The aesthetic quality of that out-of-focus blur is called **bokeh**.
+
+**Analogy first.** Photograph a string of fairy lights from across a room with the lights deliberately out of focus. Each tiny bulb does not become a soft smudge; it becomes a clearly shaped bright disc, a "bokeh ball". The picture is a scatter of overlapping discs, one per light. Each disc is the same circle of confusion from §9.2, simply visible because the source is a bright, tiny point.
+
+**Why a defocused point becomes a copy of the aperture.** (Same argument as Week 2 §2's finite pinhole.) A point sends a cone of rays through *every* part of the open aperture, and the sensor slices that cone (§9.2.1). Each ray lands at the position set by *which part of the aperture it passed through*, so the slice is a scaled copy of the aperture's own outline. Consequences:
+
+| Aperture outline | Defocused-point shape | Where you see it |
+|---|---|---|
+| Circle (lens wide open, or a lens with many rounded blades) | round disc | portrait lenses at wide aperture |
+| *n*-sided polygon (the diaphragm blades of §8 form a polygon when partly closed; 5 to 9 sides are common) | an *n*-gon, e.g. a hexagon | stopped-down lenses: each blade edge becomes a straight edge of the disc |
+| Circle partly clipped by the lens barrel for off-axis points (**mechanical vignetting**: the barrel's front and rear rims each block part of an oblique cone) | "cat's-eye" or lemon-shaped discs toward the image corners | wide-open lenses, image edges |
+| Circle with a central blocker (mirror or **catadioptric** lenses, which fold the light path using mirrors, as in Hubble's telescope, §7: the small secondary mirror sits in the middle of the opening) | ring or "donut" | long mirror telephoto lenses |
+| Circle with ripples from lens-surface machining (a rough or *aspheric*, non-spherical, element, §6) | concentric "onion rings" inside the disc | some lenses with moulded aspheric elements |
+| A deliberately cut-out shape (heart, star) held in front of the lens | that shape | creative photography; Week 4 §15 does the same on purpose to reshape the PSF |
+
+The general statement is Week 4's: the blur of a point is the **point spread function (PSF)**, the image the system makes of a single point (defined in Week 4 §14.1). **Bokeh is the defocus PSF.** A full photograph's blurred region is every point's PSF added together, which is a **convolution** of the sharp scene with the PSF (primer: Week 1 §12.4.5). For this to be a *single* convolution, every blurred point needs the same disc size; with real depth variation the disc size changes with distance, as §5 noted.
+
+**Linear-algebra view.** Defocus blur is a linear map: write the sharp image as a vector **x** (one entry per pixel) and the blurred image as **y**; then **y** = **B x**. Each *column* of **B** holds the disc that one scene pixel spreads into: its nonzero entries form a small blob shaped like the aperture (a circle, polygon, ring) with entries summing to 1. If all depths are equal, every column is the same blob shifted, so **B** is a (Toeplitz or circulant, Week 1 §12.4.5) convolution matrix. If depths differ, each column carries a *different-sized* blob, so **B** is no longer shift-invariant. This is the matrix-form of "bokeh size depends on distance".
+
+**How big is the bokeh disc? Tying to §9.2.** Start from the exact formula *c* = *m*·*D*·|*O* − *S*|/*O*. When the focus distance *S* is much larger than the focal length *f* (true for most photographs), the magnification is *m* = *S′*/*S* ≈ *f*/*S* (from the thin lens equation, §4.1, since *S′* ≈ *f*), and *D* = *f*/*N* (§8). Substituting, and using |*O* − *S*|/(*S*·*O*) = |1/*S* − 1/*O*|:
+
+```
+c ≈ (f² / N) · | 1/S − 1/O |
+```
+
+*Intuition:* the first factor, *f*²/*N*, is the lens-and-aperture "bokeh strength"; the second factor measures how far in *inverse distance* the object is from the focus plane. *Terms:* *f* focal length (fixed by the lens), *N* f-number (you choose), *S* focus distance (you choose), *O* actual distance of the blurred point (set by the scene); all lengths in the same unit, so *c* comes out in that unit (on the sensor). Reading it off:
+
+- **Aperture:** *c* ∝ 1/*N*, so f/1.8 gives a disc 8/1.8 ≈ 4.4× wider than f/8 for the same scene (wider aperture, bigger bokeh).
+- **Focal length:** *c* ∝ *f*², so doubling *f* at the same *N* and *S* gives a disc about 4× wider (this is why telephoto portraits have creamy backgrounds).
+- **Distance:** *c* grows as the background gets farther behind the subject, but saturates: as *O* → ∞ the 1/*O* term vanishes and *c* → *f*²/(*N*·*S*). A *foreground* point (*O* < *S*) has no such ceiling, since 1/*O* keeps growing as the point nears the lens.
+- **Focusing closer** (smaller *S*) enlarges the background discs.
+
+> **Worked example (generic).** A 50 mm lens at f/1.8 focused on a subject at *S* = 2 m, with a bright light at *O* = 10 m. Opening: *D* = 50/1.8 ≈ 27.8 mm. Using the approximate formula: *c* ≈ (50²/1.8) · (1/2000 − 1/10000) = 1389 · 0.0004 ≈ 0.56 mm on the sensor, which is about 1.5% of a 36 mm-wide full-frame sensor. The exact formula (with *S′* = *fS*/(*S* − *f*) ≈ 51.3 mm, *m* ≈ 0.0256) gives ≈ 0.57 mm, so the approximation is within a few percent. Stopping down to f/8 with everything else fixed shrinks the disc to ≈ 0.13 mm.
+> *A phone for contrast* (illustrative numbers): a lens with *f* = 6 mm at f/1.8 and the same *S*, *O*: *c* ≈ (36/1.8)·0.0004 ≈ 0.008 mm. The sensor is only about 6.7 mm wide, so this is ~0.12% of the sensor width versus 1.5% above, roughly 12× smaller in relative terms. Small sensors with short focal lengths simply cannot produce strong optical bokeh. That is the reason for the next paragraph.
+
+**Smooth vs. busy bokeh.** The disc has an *intensity profile*, not only an outline. Two common shapes:
+
+- **Flat-top disc with a bright rim** (energy piled at the edge, often from uncorrected spherical aberration, §6): each ball has a hard outline, so overlapping balls look busy and "nervous".
+- **Soft, Gaussian-like falloff** (bright at the centre, fading smoothly to the edge): overlapping discs blend into a creamy wash. Some lenses add an **apodization** filter, a transparent disc whose *transmission fades toward the rim* (like a vignette placed inside the aperture, "apodize" = remove the hard edge), to force this profile. The cost is lost light.
+
+Why the profile matters: a convolution sums neighbouring points with weights given by the PSF, so a hard-edged PSF turns every sharp-edged bright object behind the subject into a hard-edged copy, while a soft PSF smears it. Frequency view (Week 4 §14.2): a soft-edged disc has far weaker ringing in its **optical transfer function**, the PSF's Fourier transform, than a hard one. The OTF of a hard disc has visible zero-crossings; Week 4 §15.2 uses exactly those zeros as the reason a circular aperture is a poor choice for deblurring.
+
+**Highlights look special because of clipping.** A real bright light may be thousands of times brighter than its surroundings. After being blurred to a disc its brightness is spread thin but is often still above the sensor's saturation level (Week 4 §1.4), so the disc is recorded as a crisp, uniformly bright ball; a dim object would just fade. This is why bokeh *balls* come from lights, not from, say, a grey wall.
+
+**Computational bokeh: why phones fake it.** Given the numbers above, a phone's optics cannot blur backgrounds. **Portrait mode** instead computes the blur after capture:
+
+1. **Estimate a depth map**: a distance *O* for each pixel. Sources include two lenses (stereo, Week 1 §14), the phase differences between the two halves of each pixel (*dual-pixel* sensors, which see the scene from two slightly different aperture positions), a trained neural network guessing depth from one image, and a depth sensor (below). Week 4 §17 covers the optical route, depth from the *shape of the defocus PSF* of a coded aperture.
+2. **Pick the focus plane** *S* (usually the detected face), and compute for every pixel its blur size with the same relation as the formula above, *c* ∝ |1/*S* − 1/*O*|, scaled to the artistic strength the maker wants.
+3. **Blur each pixel with a disc (or polygon) kernel of that size**: a depth-varying convolution, i.e. exactly the non-shift-invariant **B** above. A good implementation protects the subject's edge (hair!) using a segmentation mask, and brightens saturated highlights before blurring so that bokeh balls appear.
+
+**Depth sensors: LiDAR and time of flight (ToF).** Many phones add a sensor that measures depth *directly* with light instead of guessing it from the image. **Time of flight** works by emitting a short light pulse, waiting for the reflection, and converting the delay into distance. Because light travels at *c*_light ≈ 3×10⁸ m/s and the pulse travels there *and back*, distance = *c*_light · Δ*t* / 2. *Check by example:* a subject at 3 m gives Δ*t* = 2 · 3 / (3×10⁸) = 20 ns. To resolve 1 cm in depth the sensor must time the pulse to 2 · 0.01 / (3×10⁸) ≈ 67 picoseconds, which is why these sensors need very fast detectors. **LiDAR** ("light detection and ranging") is this same measurement, usually with a scanning or multi-point laser pattern, producing a **point cloud** (a set of 3D points, one range per aimed direction). A phone's version is typically *sparse* and low-resolution compared with the colour image and limited to a few metres of range, so the phone *fuses* it: it upsamples the sparse depths guided by the colour image's edges, then feeds the result to step 2 above. Compared with the passive route of Week 4 §17.3 (depth inferred from blur or disparity, failing in textureless or dark scenes), the active route works in the dark and on blank walls, but depends on the object returning enough of the emitted light. Elaboration on ToF exposure and range is in Week 4 §1.8; on active vs. passive depth in Week 4 §17.3.
+
+**Limits of computational bokeh.** Computational bokeh imitates a *depth-dependent disc convolution*, so it can only be as good as the depth map: errors show up as halos around hair and glasses, or as blur applied to the wrong object.
+
+
 ---
 
 ## 10. The Diffraction Limit, Formalized
+
+**What problem this solves.** Even a perfect, aberration-free lens cannot focus light to a true point, because light is a wave. This formula gives the smallest spot size a lens can achieve, a floor on sharpness. Input: wavelength λ and the lens's numerical aperture (or f-number). Output: the minimum resolvable spot size *d*. Analogy: ripples spreading through a harbor gap; no matter how carefully you aim, a wave squeezed through an opening cannot stay narrower than a certain width.
 
 §2 introduced diffraction qualitatively: shrinking an opening spreads its Fourier-transform-shaped diffraction pattern wider. Ernst Abbe (1873) made this precise for a lens system, giving the smallest resolvable spot radius *d* an optical system can produce, purely as a consequence of diffraction (i.e., the best possible result even with zero aberrations, §6):
 
@@ -479,7 +578,7 @@ Both approaches ultimately deliver a per-pixel voltage proportional to accumulat
 
 ## 13. Dynamic Range and Bit Depth
 
-**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §10 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a digital sensor, the same *ratio-between-brightest-and-darkest-representable-signal* definition applies, but a sensor adds a second, purely digital constraint on top of the physical one: **bit depth** — how many discrete numeric levels the ADC can output. A typical camera's unprocessed **RAW** format uses 12–14 bits per pixel (4,096–16,384 distinct levels), while a processed, display-ready **JPEG** typically compresses this down to 8 bits per channel (256 levels) after the tone-mapping and gamma-correction steps previewed in §16 — so a sensor's *achievable* dynamic range is capped by whichever is smaller: the physical noise floor (§15) or the digital quantization step size set by bit depth.
+**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §10 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a digital sensor, the same *ratio-between-brightest-and-darkest-representable-signal* definition applies, but a sensor adds a second, purely digital constraint on top of the physical one: **bit depth** — how many discrete numeric levels the ADC can output. A typical camera's unprocessed **RAW** format uses 12–14 bits per pixel (4,096–16,384 distinct levels), while a processed, display-ready **JPEG** typically compresses this down to 8 bits per channel (256 levels) after the tone-mapping and gamma-correction steps previewed in §16 (a **tone** is a pixel's brightness level from dark to light; a **tone curve** is a function remapping input brightness to output brightness, developed in Week 4 §8.1) — so a sensor's *achievable* dynamic range is capped by whichever is smaller: the physical noise floor (§15) or the digital quantization step size set by bit depth.
 
 ---
 
@@ -500,17 +599,46 @@ Rather than treating this purely as a nuisance, Sheinin et al. (2017) demonstrat
 
 ### 15.1 From photons to a RAW image
 
-The full chain from incoming light to a stored RAW image: **photons** arrive at the sensor → the **photodiode** (§11) converts them to electrons, with photon-counting randomness (**shot noise**, below) already baked in at this step → an **amplifier** applies ISO gain (Week 4 §1.6), adding further noise → an **ADC** quantizes the amplified analog voltage into discrete digital levels (§13), adding **quantization noise** (the unavoidable rounding error from representing a continuous voltage with a finite number of discrete levels) → the result is the **RAW image**, which also carries **fixed pattern noise** — per-pixel manufacturing-defect variation that is consistent from shot to shot (unlike the random noise sources above), caused by slight fabrication differences between individual pixels.
+The full chain from incoming light to a stored RAW image (each noise type named here is defined from scratch in §15.2, immediately after this): **photons** arrive at the sensor → the **photodiode** (§11) converts them to electrons, with photon-counting randomness (**shot noise**, below) already baked in at this step → an **amplifier** applies ISO gain (Week 4 §1.6), adding further noise → an **ADC** quantizes the amplified analog voltage into discrete digital levels (§13), adding **quantization noise** (the unavoidable rounding error from representing a continuous voltage with a finite number of discrete levels) → the result is the **RAW image**, which also carries **fixed pattern noise** — per-pixel manufacturing-defect variation that is consistent from shot to shot (unlike the random noise sources above), caused by slight fabrication differences between individual pixels.
 
-### 15.2 The two dominant noise distributions
+### 15.2 Noise from scratch: what it is, and the five sources
 
-Sensor noise comes from many physical sources (heat, electronics, amplifier gain, the photon-to-electron conversion itself, individual pixel defects, read-out electronics), but two statistical distributions dominate:
+**What noise is.** Photograph the same unchanging scene twice with the same settings and a given pixel will not record exactly the same number both times. **Noise** is that random deviation of a measured pixel value from the value you would "ideally" get (the **expected value**, or **mean**: the average you would get if you repeated the measurement a very large number of times). *Analogy:* weigh the same apple on a kitchen scale ten times and the readings jitter slightly around some central value. The central value is the signal; the jitter is the noise. A single reading is the signal plus one random draw of jitter.
 
-**[Gaussian noise](https://en.wikipedia.org/wiki/Gaussian_noise)** — from thermal effects, read-out electronics, and amplifier gain. It is **additive** and **signal-independent**: it adds a random value from the same bell-curve distribution to every pixel, regardless of how bright that pixel's true signal is. A dark pixel and a bright pixel get equally-sized random perturbations on average.
+**Four vocabulary words, used throughout the rest of the notes:**
+
+- **Variance (σ²)**: the average of the *squared* deviation from the mean. *Example:* three readings of 9, 10, 11 have mean 10, deviations −1, 0, +1, squared 1, 0, 1, so variance = (1 + 0 + 1)/3 ≈ 0.67. Squaring makes every deviation count positively and punishes big deviations more.
+- **Standard deviation (σ)**: √variance, the "typical size of the wobble," in the *same units as the pixel value* (the variance is in squared units). In the example, σ ≈ 0.82.
+- **Independent / uncorrelated**: one pixel's (or one frame's) random jitter tells you nothing about another's. Noise from separate photon arrivals, or from separate readouts, is independent. This matters because *variances of independent noise sources add* (Week 4 §1.9 derives this and uses it).
+- **SNR (signal-to-noise ratio)**: mean divided by standard deviation (§15.3). *Example:* a mean of 100 with σ = 10 has SNR = 10; the noise is 10% of the signal.
+
+**Units: electrons versus digital numbers (DN).** Physically, a pixel collects *photo-electrons* (one photon, if absorbed, frees at most one electron, §11). Noise is easiest to reason about in **electrons (e⁻)**. The ADC (§13) then converts the electron count to an integer **digital number (DN)**, the value actually stored in the RAW file, using a **conversion gain** *g* (DN per electron, set by the ISO gain of Week 4 §1.6): DN = *g* × electrons. Standard deviations convert the same way (σ in DN = *g* × σ in e⁻), so variances convert with *g*². Unless stated, the formulas below are in electrons.
+
+**The five noise sources, in the order the signal meets them (§15.1):**
+
+| Source | Physical cause | Variance (electrons²) | Depends on |
+|---|---|---|---|
+| **Photon shot noise** | Photons arrive at random moments, so the count in a fixed window varies | *N* = the mean number of collected photo-electrons (*P·Qe·t*, §15.3) | Signal level and exposure time. Brighter or longer means *more* absolute noise but *less* relative noise |
+| **Dark current noise** | Heat randomly frees electrons in the photodiode even with no light; they are indistinguishable from photo-electrons. The *count* is again random | *D·t*, where *D* is the mean dark-current rate (e⁻/pixel/s) | Exposure time and sensor temperature (hotter means larger *D*); not on light |
+| **Read noise** | Random voltage fluctuations in the readout electronics when the pixel's charge is measured | *Nr*² (*Nr* is its RMS in electrons), **a fixed amount per readout** | Neither signal nor exposure time. Paid once *per read*, so *k* frames pay it *k* times |
+| **Quantization noise** | The ADC rounds a continuous voltage to the nearest integer DN; the rounding error is random-looking, uniform in ±½ step | Δ²/12 in DN² for a step of Δ DN (derivation below) | ADC bit depth and gain; not on light |
+| **Fixed-pattern noise** | Pixel-to-pixel manufacturing differences (gain, offset) | Not a random jitter at all; a *fixed* per-pixel offset or gain error | The sensor itself; **identical from shot to shot** |
+
+**Why shot noise has variance = mean (the Poisson distribution).** *Analogy:* rain falling on a bucket. The average rate is steady, but how many drops land in exactly one second varies from second to second. Photons behave the same way. Counts of randomly-timed, independent events at a steady average rate follow the **Poisson distribution** (formula given under "Two statistical families" just below; its key property is that variance equals mean). Equivalent statement: with mean *N* photons the standard deviation is √*N*. *Example:* a pixel that averages 100 photo-electrons has σ = 10 (SNR = 10); one that averages 10,000 has σ = 100 (SNR = 100). Hundred times the light, only ten times the noise, so SNR grows like √signal. Shot noise is a property of *light itself*, so no sensor design can remove it.
+
+**Why quantization noise has variance Δ²/12.** Suppose the true value falls uniformly anywhere within one rounding step of width Δ, so the rounding error *u* is uniform on [−Δ/2, +Δ/2], with probability density 1/Δ. Its mean is 0, so its variance is the average of *u*²: (1/Δ)∫ *u*² d*u* from −Δ/2 to +Δ/2 = (1/Δ)·(2·(Δ/2)³/3) = Δ²/12. *Example:* with Δ = 1 DN, σ = √(1/12) ≈ 0.29 DN, which is why quantization is rarely the limit unless the signal is only a few DN.
+
+**Which of these can be reduced?** Dark current's *average* can be measured with the lens capped and subtracted (a **dark frame**), but its randomness (√(*D·t*)) cannot. Fixed-pattern noise can be measured and divided out, because it repeats. Read, shot, dark-current and quantization noise are all fresh random draws every capture, so they are the ones that **average down** when several frames are combined (Week 4 §1.9). Fixed-pattern noise does **not** average down, since it is the same in every frame.
+
+**Two statistical families.** Sensor noise comes from many physical sources (heat, electronics, amplifier gain, the photon-to-electron conversion itself, individual pixel defects, read-out electronics), but two statistical distributions dominate:
+
+**[Gaussian noise](https://en.wikipedia.org/wiki/Gaussian_noise)** — from read-out electronics, amplifier gain, and other electronic jitter (the *read noise* of the table above; quantization noise is also usually modeled this way). It is **additive** and **signal-independent**: it adds a random value from the same bell-curve distribution to every pixel, regardless of how bright that pixel's true signal is. A dark pixel and a bright pixel get equally-sized random perturbations on average.
 
 **[Photon (shot) noise](https://en.wikipedia.org/wiki/Shot_noise)** — from the fundamentally random arrival timing of individual photons. Photon arrivals follow a **[Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution)**, `f(k; λ) = λᵏe⁻λ/k!`, which describes the probability of observing exactly *k* discrete, randomly-timed events (here, photon arrivals) given an average rate λ. A defining property of the Poisson distribution is that its **standard deviation equals the square root of its mean**: for an average of *N* photons collected, the standard deviation of the actual count is `√N`. Shot noise is therefore **signal-dependent** — a brighter pixel (larger *N*) has *more* absolute noise (`√N` grows with *N*), but proportionally *less* relative noise, since the ratio `√N / N = 1/√N` shrinks as *N* grows. This is why doubling the light collected (*N* → 2*N*) doesn't double the noise — it only multiplies it by `√2`, meaningfully improving the *ratio* of signal to noise even though both the signal and its absolute noise both increased.
 
 ### 15.3 Signal-to-noise ratio (SNR)
+
+**What problem this solves.** "Noisy" is vague; SNR gives a single number for how trustworthy a pixel's reading is. Input: light level, exposure time, and the sensor's noise parameters. Output: one unitless ratio, larger meaning cleaner. Analogy: how clearly you can hear a conversation over background chatter, speech loudness divided by chatter loudness.
 
 **[Signal-to-noise ratio](https://en.wikipedia.org/wiki/Signal-to-noise_ratio)**, SNR, is the mean pixel value divided by the standard deviation of that pixel value (a general statistics definition, here applied to sensor measurements):
 
@@ -518,7 +646,7 @@ Sensor noise comes from many physical sources (heat, electronics, amplifier gain
 SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 ```
 
-where *P* is the incident photon flux (photons per pixel per second), *Qe* is quantum efficiency (§11), *t* is exposure time (Week 4 §1), *D* is dark current (unwanted electrons generated per pixel per second even with no incident light — one source of §15.2's Gaussian noise family), and *Nr* is read noise (root-mean-square electrons of noise added purely by the sensor's own readout electronics, including fixed pattern noise). The numerator, *P·Qe·t*, is exactly the mean number of photo-generated electrons collected — the *signal* — while inside the square root, that same term reappears as the *shot-noise variance* (§15.2's `√N` fact, squared back into a variance) alongside the two Gaussian-family noise-variance terms *D·t* and *Nr²*.
+where *P* is the incident photon flux (photons per pixel per second), *Qe* is quantum efficiency (§11), *t* is exposure time (Week 4 §1), *D* is dark current (unwanted electrons generated per pixel per second even with no incident light; its electron count is randomly timed like photon arrivals, so its variance equals its mean *D·t*, as in §15.2's table), and *Nr* is read noise (root-mean-square electrons of noise added by the sensor's own readout electronics, once per readout). The formula covers only the random sources; quantization noise (negligible when the signal spans many DN) and fixed-pattern noise (not random) are left out. The numerator, *P·Qe·t*, is exactly the mean number of photo-generated electrons collected — the *signal* — while inside the square root, that same term reappears as the *shot-noise variance* (§15.2's `√N` fact, squared back into a variance) alongside the two other noise-variance terms *D·t* and *Nr²*.
 
 **Linear-algebra view (noise as an additive vector, and why variances add):** the full measurement model is **y** = **A x** + **n**: the ideal linear measurement (§12) plus a noise vector **n** with one random entry per pixel. Independent noise sources are **uncorrelated**, and uncorrelated random variables behave like **orthogonal** vectors: the cross terms in Var(n₁ + n₂) vanish, so variances add the way squared lengths add in Pythagoras's theorem. That is exactly why the SNR denominator is the square root of a *sum* of variances (shot + dark + read), not a sum of standard deviations. Because each pixel's noise is independent of its neighbors', the noise **covariance matrix** is **diagonal**; for shot noise the diagonal entries equal the mean signal itself (Poisson), which is what "signal-dependent" means in matrix terms. Denoising (Week 3) and inverting **y** = **A x** + **n** (Weeks 5–6) both start from this model.
 
