@@ -45,7 +45,7 @@ Exposure time is the one camera setting that trades *time* for *light*, and time
 
 ### 2.1 What "exposure" means: three uses of one word
 
-**Analogy.** A bucket left out in the rain. What ends up in it depends on how hard it rains (the *rate*) and how long you leave it out (the *time*). A sensor pixel is the bucket, photons are the raindrops, and the photo-generated electrons of Week 2 §11 are the water.
+**Analogy.** A bucket left out in the rain. What ends up in it depends on how hard it rains (the *rate*) and how long you leave it out (the *time*). A sensor pixel is the bucket, photons are the raindrops, and the photo-generated electrons of Week 2 §14 are the water.
 
 **The shutter.** A **[shutter](https://en.wikipedia.org/wiki/Shutter_(photography))** decides *when* collection starts and stops. It is either a physical curtain that uncovers the sensor, or an **electronic shutter** that clears each pixel's charge at the start and reads it out at the end. The bucket model is the same either way: charge = rate × open time.
 
@@ -61,7 +61,7 @@ In this file, "exposure" alone means the strict *H*; the duration is always "exp
 
 The lecture also uses a looser, plain-language sense: **how bright the photo looks = Gain × Flux × Time**, where *gain* is ISO (§2.5), *flux* is the light let in (set by the aperture) and *time* is exposure time. This loose product folds ISO in, so it is *not* the strict *H* below.
 
-**"Bulb" mode** is an exposure time with no preset value: the shutter stays open while the button is held. HW1's pinhole-box photos (15–60 s) are long exposures of this kind, needed because a pinhole (Week 2 §3) passes very little light per second.
+**"Bulb" mode** is an exposure time with no preset value: the shutter stays open while the button is held. HW1's pinhole-box photos (15–60 s) are long exposures of this kind, needed because a pinhole (Week 2 §4) passes very little light per second.
 
 ### 2.2 The exposure formula
 
@@ -74,7 +74,7 @@ so:                H ∝ L · t / N²
 
 1. The first equation is the bucket: total = rate × time. The rate of light per unit sensor area is the **[irradiance](https://en.wikipedia.org/wiki/Irradiance)** *E* (photometric name: **illuminance**).
 2. If *E* is steady while the shutter is open, *H* = *E*·*t*. If *E* changes (a flickering lamp), *H* is the **area under the E-versus-time curve**; "rate × time" is the flat special case.
-3. The second equation says where *E* comes from. A scene patch of fixed brightness *L* sends light toward the lens. The light collected grows with the aperture's *area* ∝ *D*² (Week 2 §3, §8). The patch's image is spread over an area that grows with *f*², by the same inverse-square logic as Week 2 §3. The ratio is *D*²/*f*² = 1/*N*².
+3. The second equation says where *E* comes from. A scene patch of fixed brightness *L* sends light toward the lens. The light collected grows with the aperture's *area* ∝ *D*² (Week 2 §4, §8). The patch's image is spread over an area that grows with *f*², by the same inverse-square logic as Week 2 §4. The ratio is *D*²/*f*² = 1/*N*².
 4. So the f-number *N* alone captures everything the lens contributes, which is why photographers use it instead of *D* or *f* separately.
 
 **Term by term:**
@@ -86,7 +86,7 @@ so:                H ∝ L · t / N²
 - ***N*** — the **f-number** of Week 2 §8 (dimensionless). **You control this.** It is squared because light gathered scales with aperture *area*.
 - ***π/4*** — geometric constant from integrating over a circular aperture. It never changes, which is why the proportional form (∝) is all a photographer needs. The ≈ hides small real-lens losses: glass transmission below 100%, and dimming toward the image corners (**vignetting**).
 
-**Link to noise.** In Week 2 §15.3's SNR formula, *P* (photons per pixel per second) is just *E* counted in photons and multiplied by one pixel's area. The mean signal *P·Qe·t* is "exposure in photons × quantum efficiency": the same *E·t*, counted in electrons.
+**Link to noise.** In Week 2 §19's SNR formula, *P* (photons per pixel per second) is just *E* counted in photons and multiplied by one pixel's area. The mean signal *P·Qe·t* is "exposure in photons × quantum efficiency": the same *E·t*, counted in electrons.
 
 **Reciprocity.** *H* depends only on *t*/*N*². Halving *t* while opening the aperture one stop leaves *H* unchanged. Different (*t*, *N*) pairs with the same *H* are **equivalent exposures**, and this interchangeability is the **reciprocity law**. For a digital sensor it holds essentially exactly (electrons accumulate linearly) until the pixel fills up (§2.4).
 
@@ -118,7 +118,7 @@ The lecture's "Depth of Field & Motion Blur" slide prints a ladder of equivalent
 
 Every row delivers (within ~13%, under 0.2 stop) the *same* exposure. The wobble comes only from rounded marked numbers: "f/11" is really 16/√2 ≈ 11.3, and "1/15" is really 1/16. Yet the three photos on that slide look completely different:
 
-- **f/16, 1/8 s:** small aperture (deep **depth of field**, Week 2 §9), long exposure time. The flying pigeons smear into ghostly streaks: **motion blur** (the streaking of anything that moves during the exposure).
+- **f/16, 1/8 s:** small aperture (deep **depth of field**, Week 2 §10), long exposure time. The flying pigeons smear into ghostly streaks: **motion blur** (the streaking of anything that moves during the exposure).
 - **f/2, 1/500 s:** wide aperture (shallow depth of field), exposure time 62.5× shorter. The pigeons are frozen mid-wingbeat.
 
 Exposure fixes only the *brightness*. The *path* along the ladder decides what kind of image you get.
@@ -135,27 +135,27 @@ Exposure fixes only the *brightness*. The *path* along the ladder decides what k
 Each pixel's bucket has a finite size: the **full-well capacity**, the maximum number of electrons a photodiode can hold.
 
 - **Overexposure.** Too much *H*: bright regions overflow and every pixel there reads the same maximum. This is **saturation**, or **[clipping](https://en.wikipedia.org/wiki/Clipping_(photography))**. A white shirt and the sun behind it both become flat "max white," and no processing can recover the difference, since the sensor never recorded it.
-- **Underexposure.** Too little *H*: dark regions collect only a handful of electrons, so the noise floor of Week 2 §15 (read noise *Nr*, dark current *D·t*) is comparable to the signal. The detail is there but buried. Brightening afterwards (digitally or via ISO, §2.5) amplifies the noise too.
-- **"Correct" exposure** places the scene's important brightness range between those two failures. That window is the sensor's **dynamic range** (Week 2 §13). When the scene's range is wider (a sunlit window inside a dark room), *no* single exposure works: one clips the window, the other buries the room in noise. That is the motivation for HDR imaging, later in this file.
+- **Underexposure.** Too little *H*: dark regions collect only a handful of electrons, so the noise floor of Week 2 §18 (read noise *Nr*, dark current *D·t*) is comparable to the signal. The detail is there but buried. Brightening afterwards (digitally or via ISO, §2.5) amplifies the noise too.
+- **"Correct" exposure** places the scene's important brightness range between those two failures. That window is the sensor's **dynamic range** (Week 2 §20). When the scene's range is wider (a sunlit window inside a dark room), *no* single exposure works: one clips the window, the other buries the room in noise. That is the motivation for HDR imaging, later in this file.
 
 ### 2.5 ISO: brightness from gain, not from light
 
-**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is, in the usual camera design, an **analog gain** applied to the sensor's signal *before* the analog-to-digital converter (ADC, Week 2 §13).
+**[ISO](https://en.wikipedia.org/wiki/Film_speed)** ("film speed," a name carried over from chemical film) is, in the usual camera design, an **analog gain** applied to the sensor's signal *before* the analog-to-digital converter (ADC, Week 2 §17).
 
 - Raising ISO does not collect more photons. It electrically amplifies whatever charge was collected, lifting a dim signal into a usable digital range.
-- It amplifies the noise already present (shot noise, and read noise added before the amplifier) along with the signal, so it cannot raise the SNR set by the photons collected (Week 2 §15).
+- It amplifies the noise already present (shot noise, and read noise added before the amplifier) along with the signal, so it cannot raise the SNR set by the photons collected (Week 2 §19).
 - At most, amplifying before the ADC makes the noise added *after* the amplifier matter less. ISO trades *cleanliness* for *brightness* on a fixed amount of light.
 
 So ISO does **not** change the exposure *H*; it changes how bright the *recorded image* is for a given *H*. Photographers speak of an "**exposure triangle**"; the table says what each corner does:
 
 | Knob | Changes the light collected (*H*)? | Side effect you pay |
 |---|---|---|
-| Aperture (f-number, Week 2 §8) | Yes, ∝ 1/*N*² | Depth of field (Week 2 §9); diffraction at small apertures (Week 2 §10) |
+| Aperture (f-number, Week 2 §8) | Yes, ∝ 1/*N*² | Depth of field (Week 2 §10); diffraction at small apertures (Week 2 §12) |
 | Exposure time | Yes, ∝ *t* | Motion blur, camera shake, saturation risk |
 | ISO (gain) | **No**; scales the output only | Amplified noise; highlights clip sooner at high gain |
 
 > **Optional: where exposure resurfaces (old pointers kept short).**
-> - *Rolling shutter* (Week 2 §14): each sensor row gets its own exposure window, offset from its neighbors'.
+> - *Rolling shutter* (Week 2 §16): each sensor row gets its own exposure window, offset from its neighbors'.
 > - *Dark-frame subtraction* (Week 3's ISP pipeline): a dark frame is an exposure with the shutter closed at the same *t*, capturing the dark-current *D·t* signal (plus fixed offset) so it can be subtracted. *Autoexposure* is the camera picking *t*, *N* and ISO from a brightness measurement (**metering**, §6).
 > - Later in this file: HDR bracketing (§8) merges exposures of different *t*; coded exposure (§23) reshapes the timing of one exposure; deconvolution (Week 5) inverts the resulting blur.
 
@@ -173,13 +173,13 @@ So ISO does **not** change the exposure *H*; it changes how bright the *recorded
 
 **Why now.** Exposure time buys light; a second way to buy light is to take *K* frames and combine them. Whether that is as good as one long exposure depends on how noise adds up, so we need the rules first.
 
-**Vocabulary, restated** (full from-scratch version with a numeric example: Week 2 §15.2).
+**Vocabulary, restated** (full from-scratch version with a numeric example: Week 2 §18).
 
 - A pixel's recorded value is a **random variable**: re-photograph the scene and the number changes slightly.
 - Its **mean** μ is the average over many repeats (the "true signal"). Its **variance** σ² is the average squared deviation from the mean. Its **standard deviation** σ = √variance is the typical wobble, in pixel-value units.
-- **SNR** = μ/σ (Week 2 §15.3).
+- **SNR** = μ/σ (Week 2 §19).
 
-Two noise models matter (Week 2 §15.2):
+Two noise models matter (Week 2 §18):
 
 - **Gaussian (normal) noise**, 𝒩(μ, σ²): a bell curve. Read noise is modeled this way; σ does not depend on the signal.
 - **Poisson noise**, Pois(λ): counts of randomly timed events (photon arrivals) with average λ. Mean and variance are **both** λ, so the standard deviation is √λ.
@@ -187,14 +187,14 @@ Two noise models matter (Week 2 §15.2):
 **Two basic rules, for *independent* random variables** (one draw does not influence another):
 
 1. **Variances of a sum add.** Var(*X*₁ + ... + *X*_K) = Var(*X*₁) + ... + Var(*X*_K).
-   - *Why:* independent deviations are as likely to cancel as to reinforce, so cross terms average to zero and only each variable's squared deviation survives (Week 2 §15.3's "orthogonal vectors" picture).
+   - *Why:* independent deviations are as likely to cancel as to reinforce, so cross terms average to zero and only each variable's squared deviation survives (Week 2 §19's "orthogonal vectors" picture).
    - **Standard deviations do not add**: for two equal terms, σ_total = √(σ² + σ²) = σ√2, not 2σ.
    - Two families are closed under addition: 𝒩(μ₁, σ₁²) + 𝒩(μ₂, σ₂²) = 𝒩(μ₁ + μ₂, σ₁² + σ₂²), and Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂). So splitting a photon count across frames and adding the frames back is statistically the same as counting once.
 2. **Scaling squares.** Var(*c*·*X*) = *c*²·Var(*X*).
    - *Why:* multiplying *X* by *c* stretches every deviation by *c*, and squaring a stretched deviation gives *c*² times the original square. The standard deviation scales by plain |*c*|.
    - A scaled Poisson variable is **no longer** Poisson (its variance *c*²λ no longer equals its mean *c*λ). To average Poisson counts, apply rule 1 first, then rule 2.
 
-A pixel with several noise sources (shot, dark current, read) is also covered by rule 1: the total variance is the sum of the individual variances, the denominator of Week 2 §15.3's SNR formula.
+A pixel with several noise sources (shot, dark current, read) is also covered by rule 1: the total variance is the sum of the individual variances, the denominator of Week 2 §19's SNR formula.
 
 **Averaging *K* aligned frames, step by step.** Each of *K* frames gives an independent measurement *X*_k of the same pixel, with mean μ and variance σ² (itself possibly a sum of shot, dark and read variances). Let the **sum** be *S* = *X*₁ + ... + *X*_K and the **average** *M* = *S*/*K*.
 
@@ -213,7 +213,7 @@ Averaging keeps the signal and shrinks the noise *variance* by *K* (the standard
 
 **When does this work?** The derivation assumed the *K* noise draws are **independent** with the **same variance**, and that the frames are **aligned** (the same scene point lands on the same pixel; otherwise you average different scene content).
 
-- **Averages down (variance ∝ 1/*K*):** every *fresh random draw per frame*: shot noise, dark-current noise, read noise, quantization noise (Week 2 §15.2).
+- **Averages down (variance ∝ 1/*K*):** every *fresh random draw per frame*: shot noise, dark-current noise, read noise, quantization noise (Week 2 §18).
 - **Does NOT average down:** **fixed-pattern noise**, since it is identical in every frame (perfectly *correlated*; the cross terms rule 1 dropped are as large as the variances). Averaging 100 frames leaves it untouched. A drifting light level, a shared reference-voltage wobble or an unaligned moving subject behave the same way.
 - **Read noise is paid per readout:** *K* frames contain *K* read-noise draws, so the sum's read variance is *K*·*Nr*², whereas one *K*-times-longer exposure pays *Nr*² once. A burst is therefore not quite as clean as one long exposure of the same total light.
 
@@ -224,7 +224,7 @@ How the averaged SNR scales with *K* depends on what σ² is made of; that is th
 - Averaging *K* frames is a dot product with the weight vector **a** = (1/*K*, ..., 1/*K*).
 - If the *K* noise values are independent with equal variance σ², their covariance matrix is σ²**I** (diagonal, by independence). The output variance of any linear combination **a**ᵀ**n** is **a**ᵀ(σ²**I**)**a** = σ²‖**a**‖².
 - Here ‖**a**‖² = *K*·(1/*K*)² = 1/*K*, reproducing σ²/*K*. The *K* is the number of entries; the (1/*K*)² is the squared weight.
-- This is the "uncorrelated noise behaves like orthogonal vectors" fact of Week 2 §15.3: squared length of the output = sum of squared lengths of its parts.
+- This is the "uncorrelated noise behaves like orthogonal vectors" fact of Week 2 §19: squared length of the output = sum of squared lengths of its parts.
 - If the noises were *correlated*, the covariance matrix would have non-zero off-diagonal entries and the answer would exceed σ²/*K*. Fixed-pattern noise is the extreme case, every entry 1, where nothing is gained.
 
 > **Worked example (a mixed-noise case, deliberately not either of HW3's cases).** Per frame: mean 20 photons, Poisson shot noise (variance 20) plus Gaussian read noise σ = 4 (variance 16), *K* = 4 frames.
@@ -250,12 +250,12 @@ Holding everything else fixed, lengthening exposure time collects more light. Th
 | | Short exposure (e.g. 1/500 s) | Long exposure (e.g. 1/8 s, 2 s, bulb) |
 |---|---|---|
 | Light collected | Less | More (∝ *t*) |
-| Noise (Week 2 §15) | Worse SNR; shot-noise-limited SNR ∝ √*t* | Better SNR |
+| Noise (Week 2 §18) | Worse SNR; shot-noise-limited SNR ∝ √*t* | Better SNR |
 | Moving subjects | Frozen | Smeared into streaks / trails (**motion blur**) |
 | Camera shake (hand-held) | Negligible | Whole frame blurs unless on a tripod |
 | Bright regions | Less risk of clipping | More risk of saturation |
-| Dark current *D·t* (Week 2 §15.3) | Negligible | Grows with *t* (matters for very long exposures) |
-| Price elsewhere to keep the same brightness | Wider aperture (shallower depth of field, Week 2 §9) or higher ISO (amplified noise, §2.5) | Smaller aperture possible (deeper depth of field) |
+| Dark current *D·t* (Week 2 §19) | Negligible | Grows with *t* (matters for very long exposures) |
+| Price elsewhere to keep the same brightness | Wider aperture (shallower depth of field, Week 2 §10) or higher ISO (amplified noise, §2.5) | Smaller aperture possible (deeper depth of field) |
 | Typical uses | Sports, wildlife, anything fast; bright daylight | Night scenes, astronomy, light trails, "silky" water, HW1's pinhole box |
 
 ### 4.2 Worked example: the lecture's night-highway photos
@@ -300,7 +300,7 @@ The streak grows *linearly* with exposure time. "Freezing motion" just means mak
 
 ### 4.4 Worked example: why long exposures are cleaner
 
-In the shot-noise-limited case (bright enough that *Nr* and *D* are negligible), SNR = √(*P·Qe·t*) ∝ √*t* (Week 2 §15.3):
+In the shot-noise-limited case (bright enough that *Nr* and *D* are negligible), SNR = √(*P·Qe·t*) ∝ √*t* (Week 2 §19):
 
 - doubling the exposure time improves SNR by √2 ≈ 1.41×
 - 4× the time gives 2×
@@ -312,7 +312,7 @@ Diminishing returns, but steady: to halve the relative noise you need 4× the li
 
 Instead of one long exposure, take *k* short ones and add them afterwards. Each frame is short enough to avoid blur, and you can re-align frames before summing. Is it as clean?
 
-Illustrative very dim scene (using Week 2 §15.3's formula and §3's sum rules): 25 electrons per pixel per short frame, read noise *Nr* = 3 electrons, *k* = 16 frames. Noise variance is in electrons².
+Illustrative very dim scene (using Week 2 §19's formula and §3's sum rules): 25 electrons per pixel per short frame, read noise *Nr* = 3 electrons, *k* = 16 frames. Noise variance is in electrons².
 
 | Capture | Signal | Noise variance | SNR |
 |---|---|---|---|
@@ -339,7 +339,7 @@ Illustrative very dim scene (using Week 2 §15.3's formula and §3's sum rules):
 
 **Passive vs. active sensing.** An ordinary camera is **passive**: it only collects light already in the scene. A LiDAR is **active**: it supplies its own **active illumination**. The photons it wants are its own laser's echo; every other photon is unwanted background.
 
-**Analogy.** A passive camera is the rain bucket of §2.1. A LiDAR is trying to catch one specific squirt from its own garden hose *while it is also raining*. Every extra moment the bucket stays open adds rain (ambient light) without adding any more squirt. The rain's randomness (shot noise, Week 2 §15.2, ∝ √(ambient photons)) buries the squirt.
+**Analogy.** A passive camera is the rain bucket of §2.1. A LiDAR is trying to catch one specific squirt from its own garden hose *while it is also raining*. Every extra moment the bucket stays open adds rain (ambient light) without adding any more squirt. The rain's randomness (shot noise, Week 2 §18, ∝ √(ambient photons)) buries the squirt.
 
 ### 5.1 The time–distance link
 
@@ -432,7 +432,7 @@ Week 1 §10 introduced **[dynamic range](https://en.wikipedia.org/wiki/Dynamic_r
 
 **Worked example: one real HDR photograph's measured range.** The lecture shows a bracketed sequence of a room with a window, with each frame's measured relative brightness printed beneath: **1** (a dim interior patch) → **1,500** → **25,000** → **400,000** → **2,000,000,000** (a bright light source seen through the window). That is roughly **9–10 orders of magnitude inside one ordinary scene**, nearly as much as the eye's whole adaptation window.
 
-**Sensor: narrower still.** A sensor's achievable range occupies about the same band as common real-world scenes, not the eye's full range. It is capped by the smaller of its noise floor (Week 2 §15) and its bit-depth quantization step (Week 2 §13).
+**Sensor: narrower still.** A sensor's achievable range occupies about the same band as common real-world scenes, not the eye's full range. It is capped by the smaller of its noise floor (Week 2 §18) and its bit-depth quantization step (Week 2 §20).
 
 **Image: narrower again, and it slides.** Commit to *one* exposure setting (§2) and the image keeps only the slice of the sensor's range that setting lands on:
 
@@ -440,7 +440,7 @@ Week 1 §10 introduced **[dynamic range](https://en.wikipedia.org/wiki/Dynamic_r
 - A "low exposure" slides it toward the dark end (crisp highlights, noisy or crushed shadows).
 - Everything outside the slice is clipped to white (§2.4) or buried in noise.
 
-**Display: narrower again, surprisingly so.** On a standard 8-bit-per-channel (0–255) display, displayed pure white is only about **50×** brighter than displayed pure black, not the 256× the bit count suggests. (Independent sources put the typical black-to-white ratio of a *picture* at about 1:20 to 1:50, and 1:500 at most. The 1,000:1 LCD figure in the table below is a panel's rated contrast, not what an ordinary picture on it delivers.) This is Week 2 §13's point made concrete: bit depth (a *digital* count of code values) and achievable dynamic range (a *physical* ratio capped by backlight leakage and ambient reflections) are different things.
+**Display: narrower again, surprisingly so.** On a standard 8-bit-per-channel (0–255) display, displayed pure white is only about **50×** brighter than displayed pure black, not the 256× the bit count suggests. (Independent sources put the typical black-to-white ratio of a *picture* at about 1:20 to 1:50, and 1:500 at most. The 1,000:1 LCD figure in the table below is a panel's rated contrast, not what an ordinary picture on it delivers.) This is Week 2 §20's point made concrete: bit depth (a *digital* count of code values) and achievable dynamic range (a *physical* ratio capped by backlight leakage and ambient reflections) are different things.
 
 **Real device ratios on one scale** (the lecture's comparison; contrast ratio, brightest:darkest):
 
@@ -477,7 +477,7 @@ Each knob was built earlier; the table compares them side by side for *how well 
 | Knob | Range | Pros | Cons |
 |---|---|---|---|
 | **Shutter speed** (§2.1–§2.3) | ~30 s to 1/4000 s (about 5 orders of magnitude: 30 ÷ (1/4000) = 120,000) | Repeatable, linear (§2.2's reciprocity) | Noise and motion blur at long exposure times |
-| **F-stop** (aperture, Week 2 §8) | ~f/0.98 to f/22 (about 3 orders of magnitude of light: (22/0.98)² ≈ 500) | Fully optical, no added electronic noise | Changes depth of field (Week 2 §9) |
+| **F-stop** (aperture, Week 2 §8) | ~f/0.98 to f/22 (about 3 orders of magnitude of light: (22/0.98)² ≈ 500) | Fully optical, no added electronic noise | Changes depth of field (Week 2 §10) |
 | **ISO** (§2.5) | ~100 to 1600 (about 1.2 orders of magnitude: a factor of 16) | Nothing physically changes between shots, so no motion | Adds noise (amplifies what was already collected) |
 | **[Neutral density (ND) filter](https://en.wikipedia.org/wiki/Neutral-density_filter)** | Up to 6 densities (6 orders of magnitude) | Works even with strobe/flash lighting | Not perfectly color-neutral; extra glass adds interreflections/aberrations (Week 2 §6) |
 
@@ -972,7 +972,7 @@ The lecture calls out that **"high-dynamic-range imaging"** gets used to mean ge
 
 **The five loose senses:**
 
-1. Using single RAW images (no bracketing or merging, just capturing at high native bit depth, Week 2 §13).
+1. Using single RAW images (no bracketing or merging, just capturing at high native bit depth, Week 2 §20).
 2. Performing radiometric calibration (§9) alone.
 3. Merging an exposure stack (§10) into one HDR image.
 4. Tonemapping an image: linear or non-linear input, HDR or LDR input (§13–§15).
@@ -1012,14 +1012,14 @@ Part 1 was about *brightness*. Part 2 is about *blur*: how to shape it on purpos
 
 ## 18. Point Spread Function and Optical Transfer Function, from Scratch
 
-This section leans on **convolution** (a kernel slid across a signal as a weighted sum), which Week 1 §12.4.4a builds from scratch with worked numbers. If its terms (kernel, impulse response, shift-invariant, convolution theorem) are unfamiliar, read that first. Week 2 §2, §5 and §9 already used the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without this name; this section (using PS4 Task 1's material) gives it its formal name and its frequency-domain partner.
+This section leans on **convolution** (a kernel slid across a signal as a weighted sum), which Week 1 §12.4.4a builds from scratch with worked numbers. If its terms (kernel, impulse response, shift-invariant, convolution theorem) are unfamiliar, read that first. Week 2 §3, §9 already used the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without this name; this section (using PS4 Task 1's material) gives it its formal name and its frequency-domain partner.
 
 ### 18.1 The point spread function (PSF)
 
 **Analogy and definition.** Photograph one isolated point of light (a distant star, or a backlit pinhole) through some optical system. Whatever blob of light lands on the sensor, however large or oddly shaped, **is** that system's **[point spread function (PSF)](https://en.wikipedia.org/wiki/Point_spread_function)**: the picture of a single point, "spread" by the optics.
 
-- A perfect pinhole (Week 2 §1) has a PSF that is (ideally) a single point.
-- A finite pinhole gives a disc (Week 2 §2); a defocused lens gives a circle of confusion (Week 2 §5, §9); a diffraction-limited circular aperture gives an Airy pattern.
+- A perfect pinhole (Week 2 §2) has a PSF that is (ideally) a single point.
+- A finite pinhole gives a disc (Week 2 §3); a defocused lens gives a circle of confusion (Week 2 §9); a diffraction-limited circular aperture gives an Airy pattern.
 
 **From one point to a whole image.** If the blur behaves the same at every location (**shift-invariant**), every scene point is smeared by that same PSF shape, centered where the point's sharp image would land. The blurred image is the sum, over every scene point, of a copy of the PSF scaled by that point's brightness: the **convolution** of Week 1 §12.4.4a ("stamp a scaled copy of the kernel at every point and add," with the PSF as the stamp):
 
@@ -1054,9 +1054,9 @@ where *u*, *v* are image frequencies as built in Week 1 §12.4.2 (cycles per pix
 
 **A word we will use a lot: broadband.** A PSF or OTF is **broadband** when its OTF has **no exact zeros**: every spatial frequency survives with *some* nonzero strength, even if weakly. Being broadband is what makes a blur, in principle, invertible.
 
-**Linear-algebra view (recapping Week 1 §12.4.4a, §12.4.5 and Week 2 §2).**
+**Linear-algebra view (recapping Week 1 §12.4.4a, §12.4.5 and Week 2 §3).**
 
-- Convolution by a fixed kernel is a **linear, shift-invariant operator**: a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 2 §2 applied this to a finite pinhole's blur disc).
+- Convolution by a fixed kernel is a **linear, shift-invariant operator**: a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 2 §3 applied this to a finite pinhole's blur disc).
 - Every sinusoid is an eigenvector of that matrix, with eigenvalue equal to the kernel's Fourier transform. So the OTF *is* the convolution matrix's eigenvalues, one per spatial frequency.
 - A frequency where the OTF is exactly zero has a zero eigenvalue: the matching Fourier basis vector lies in the matrix's **null space**, a direction in "scene space" this optical system provably cannot see.
 - A **broadband** OTF means a trivial null space, so the convolution matrix is, in principle, invertible.
@@ -1102,18 +1102,18 @@ Here PSF_LP is a low-pass blur kernel (e.g. a Gaussian), OTF_LP its Fourier tran
 Week 2 §8 introduced the aperture as a single number, the f-number *N* = *f*/*D*. A real camera aperture has (at least) **two physically separate parts**, and either can be deliberately **coded**, i.e. replaced by something more elaborate than its default:
 
 1. **The aperture stop itself.** Normally a circular opening of adjustable diameter (Week 2 §8). Coding it means replacing the plain hole with a patterned, **attenuating** mask: a stencil, opaque in some places and transparent (or partly so) in others.
-2. **The refractive elements.** The lens or compound-lens system (Week 2 §4, §6). Coding it means altering the optics' shape or adding a phase-changing element so light does not refract as an ordinary lens would. This is **wavefront coding** (used again in §20).
+2. **The refractive elements.** The lens or compound-lens system (Week 2 §5, §6). Coding it means altering the optics' shape or adding a phase-changing element so light does not refract as an ordinary lens would. This is **wavefront coding** (used again in §20).
 
 Both work by reshaping the camera's PSF (§18).
 
 ### 19.2 An out-of-focus point's blur is (a scaled copy of) the aperture's shape
 
-- Recall Week 2 §2: a pinhole of nonzero diameter passes an entire small cone of rays per scene point, so each point projects to a blurred disc **the same shape as the opening**.
-- The same geometry holds for a defocused lens (Week 2 §5, §9): an out-of-focus point sends a full cone of rays through the *entire* aperture, and that cone's cross-section at the sensor, the PSF, is a scaled copy of the aperture's opening.
+- Recall Week 2 §3: a pinhole of nonzero diameter passes an entire small cone of rays per scene point, so each point projects to a blurred disc **the same shape as the opening**.
+- The same geometry holds for a defocused lens (Week 2 §9): an out-of-focus point sends a full cone of rays through the *entire* aperture, and that cone's cross-section at the sensor, the PSF, is a scaled copy of the aperture's opening.
 - A plain circular stop therefore gives a circular (at the diffraction limit, Airy-ring) defocus PSF.
 - **Coding the stop's shape directly and predictably reshapes the PSF into that pattern.**
 
-Photographers already see this un-coded as **bokeh**, the look of out-of-focus highlights: hexagons from a polygonal diaphragm, donuts from mirror lenses (Week 2 §9.5). A coded aperture is a deliberately designed bokeh shape.
+Photographers already see this un-coded as **bokeh**, the look of out-of-focus highlights: hexagons from a polygonal diaphragm, donuts from mirror lenses (Week 2 §13). A coded aperture is a deliberately designed bokeh shape.
 
 ### 19.3 Why the circular PSF is a problem, and what "broadband" fixes
 
@@ -1156,14 +1156,14 @@ Recall Week 2 §9: an object away from the focused distance *S* produces a circl
 The lecture compares three captures of one scene:
 
 - **(a)** A conventional photo with a *wide* aperture (shallow depth of field): sharp only in a narrow depth slice.
-- **(b)** A conventional photo with a *small* aperture (large physical depth of field, Week 2 §9): sharp almost everywhere but much noisier, since a small aperture collects far less light (Week 2 §3, §8).
+- **(b)** A conventional photo with a *small* aperture (large physical depth of field, Week 2 §10): sharp almost everywhere but much noisier, since a small aperture collects far less light (Week 2 §4, §8).
 - **(c)** A **focal-sweep** capture: deliberately blurry *everywhere* (every depth gets the same time-integrated defocus), then deconvolved with one shared, depth-invariant kernel to give an **EDOF (extended depth of field)** image sharp at every depth at once.
 
 **Why SNR, not just sharpness, is the honest comparison.** (b) and (c) can both *look* sharp everywhere; the real difference is *how much noise* was paid.
 
-- (b) gets depth of field by stopping down, which costs light (Week 2 §3, §8) and so SNR (Week 2 §15.3).
+- (b) gets depth of field by stopping down, which costs light (Week 2 §4, §8) and so SNR (Week 2 §19).
 - (c) can keep the aperture wide open throughout the sweep, collecting far more light, and pays instead in a single known, invertible blur.
-- So SNR reveals whether focal sweep was worth it. The outcome is not universal: it depends on the sensor's noise characteristics (Week 2 §15), so the winner can change with different read noise, dark current or quantum efficiency.
+- So SNR reveals whether focal sweep was worth it. The outcome is not universal: it depends on the sensor's noise characteristics (Week 2 §18), so the winner can change with different read noise, dark current or quantum efficiency.
 
 **Diagram.** (See Fig. — companion diagram extending Week 2 §9.2's circle-of-confusion figure: the same lens/sensor geometry with the sensor sweeping through a range of positions during one exposure, so every depth's rays are captured at a whole range of defocus states.)
 
@@ -1186,13 +1186,13 @@ Dedicated depth cameras (structured light, LiDAR/time-of-flight, §5) are comple
 
 ### 21.2 Why an ordinary circular aperture's blur is an *ambiguous* depth cue
 
-Week 2 §9.2's formula *c* = *m*·*D*·|*O*−*S*|/*O* shows blur size *c* depends on depth *O*, so blur size could in principle give depth. But Week 2 §9.2.1 showed a problem: the formula depends only on |*O*−*S*|, so **a point closer than the focus plane and a point farther than it can give the *exact same* circle-of-confusion size** (the "bicone" argument: the converging near cone and diverging far cone are mirror images at the sensor's cross-section). A circular aperture's PSF is symmetric in exactly the way that makes near-defocus and far-defocus *look identical*.
+Week 2 §9.2's formula *c* = *m*·*D*·|*O*−*S*|/*O* shows blur size *c* depends on depth *O*, so blur size could in principle give depth. But Week 2 §9.3 showed a problem: the formula depends only on |*O*−*S*|, so **a point closer than the focus plane and a point farther than it can give the *exact same* circle-of-confusion size** (the "bicone" argument: the converging near cone and diverging far cone are mirror images at the sensor's cross-section). A circular aperture's PSF is symmetric in exactly the way that makes near-defocus and far-defocus *look identical*.
 
-> **Worked numeric example: the sign ambiguity.** Reuse Week 2 §9.3.1's near/far formulas with the tolerance fraction *k* = ε/(*mD*), and take *k* = 0.2. A point at *O*_near = *S*/(1+*k*) and one at *O*_far = *S*/(1−*k*) both satisfy |*O*−*S*|/*O* = 0.2 exactly, so for the same *D* and *m* they give the **identical** *c*. With *S* = 1000 mm: *O*_near = 1000/1.2 ≈ 833 mm and *O*_far = 1000/0.8 = 1250 mm give the same blur size through an ordinary circular aperture. Blur size alone cannot distinguish "833 mm" from "1250 mm," only that the point is some fixed distance off focus, on one side or the other.
+> **Worked numeric example: the sign ambiguity.** Reuse Week 2 §10.3's near/far formulas with the tolerance fraction *k* = ε/(*mD*), and take *k* = 0.2. A point at *O*_near = *S*/(1+*k*) and one at *O*_far = *S*/(1−*k*) both satisfy |*O*−*S*|/*O* = 0.2 exactly, so for the same *D* and *m* they give the **identical** *c*. With *S* = 1000 mm: *O*_near = 1000/1.2 ≈ 833 mm and *O*_far = 1000/0.8 = 1250 mm give the same blur size through an ordinary circular aperture. Blur size alone cannot distinguish "833 mm" from "1250 mm," only that the point is some fixed distance off focus, on one side or the other.
 
 **How a coded aperture breaks the tie.**
 
-- An *asymmetric* aperture pattern changes the blur's *shape/orientation*, not only its size, differently on the near and far side of focus (e.g. rotated or mirrored). The circular case was symmetric only because of the aperture's own circular symmetry (Week 2 §9.2.1).
+- An *asymmetric* aperture pattern changes the blur's *shape/orientation*, not only its size, differently on the near and far side of focus (e.g. rotated or mirrored). The circular case was symmetric only because of the aperture's own circular symmetry (Week 2 §9.3).
 - Recovering the PSF's *shape* at an image patch therefore resolves the sign ambiguity a circular aperture cannot.
 - This is what the lecture means by "PSF engineering can make depth estimation more robust by encoding low-level depth information in the PSF (rather than just pictorial cues)."
 
@@ -1200,7 +1200,7 @@ Week 2 §9.2's formula *c* = *m*·*D*·|*O*−*S*|/*O* shows blur size *c* depen
 
 This reader's interest is LiDAR, so it is worth being explicit: coded-aperture monocular depth and the LiDAR/ToF sensing of §5 are **not two versions of one idea**. They are different sensing families.
 
-| | Passive PSF-encoded monocular depth (this section) | Active time-of-flight / LiDAR (§5; Week 2 §13.8) |
+| | Passive PSF-encoded monocular depth (this section) | Active time-of-flight / LiDAR (§5; Week 2 §13.4) |
 |---|---|---|
 | **Illumination** | **Passive**: uses ambient light; supplies none | **Active**: supplies its own light (infrared laser or modulated wave) and measures its return |
 | **What's physically measured** | A single 2D image's *local blur pattern* (PSF shape/size per patch) | The *round-trip travel time* (or phase shift) of its own emitted light, τ = 2*d*/*c* (§5.1) |

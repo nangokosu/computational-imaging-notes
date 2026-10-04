@@ -479,7 +479,7 @@ Concretely, since rows index *v* and columns index *u*, each of the raw array's 
 
 ### 12.4.4a Convolution from scratch (the operation §12.4.5 and §13 secretly rely on)
 
-§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §2 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §18 (PSF/OTF) and §23 (flutter shutter), and in LiDAR ranging (Part 9 below).
+§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §3 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §18 (PSF/OTF) and §23 (flutter shutter), and in LiDAR ranging (Part 9 below).
 
 **Part 1 — Analogy: a stamp, and a sliding window.**
 - *Stamp view (each point spreads its light).* Imagine a row of light bulbs of different brightness, photographed out of focus. Each bulb does not land on the sensor as one dot; it lands as a small soft blob. The photo is every bulb's blob added together, where a brighter bulb stamps a stronger blob. The blob's shape is the **kernel**. Convolution is "stamp a copy of the kernel at every input sample, scaled by that sample's value, and add all the stamps."
@@ -595,7 +595,7 @@ DFT{ x * h } = DFT{ x } · DFT{ h }        (entry-by-entry multiplication, one f
 Same pattern in every column, shifted down one row each time: constant along diagonals, a **Toeplitz** matrix; with wrap-around edges it becomes the **circulant** matrix of §12.4.5. The Fourier basis vectors (§12.4.1) are its eigenvectors; the eigenvalues are `DFT{h}`; so in the Fourier basis the whole matrix is a diagonal list of scale factors, and applying `H` costs one multiply per frequency. That diagonalization *is* the convolution theorem. Inverting `H` (deconvolution, next subsection) is therefore "divide by each eigenvalue," which fails exactly where an eigenvalue is 0.
 
 **Part 8 — Where this shows up, so you know why it is worth the detour.**
-- Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §2, §5, §9; formalized in Week 4 §18).
+- Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §3, §9; formalized in Week 4 §18).
 - Motion blur is a convolution with a box along the motion direction (Week 4 §4.3, §23).
 - Denoising/smoothing filters such as the Gaussian (Week 3 §11) are convolutions; the median and bilateral filters are *not* (they are non-linear).
 - Demosaicking's interpolation and unsharp masking (Week 3 §10.1, §11.8) are convolutions.
@@ -611,7 +611,7 @@ Same pattern in every column, shifted down one row each time: constant along dia
 
 **Why it is hard (an ill-posed problem).** A problem is **ill-posed** if it has no solution, many solutions, or a solution that changes wildly when the data change slightly. Deconvolution suffers from the last two:
 - *Exact zeros (information destroyed).* Where `DFT{h} = 0`, the blurred spectrum is 0 whatever the original was, so many different originals give the *same* blurred image (the null space, Week 4 §18.2). Division by 0 is undefined. (A box kernel, such as ordinary motion blur or a plain circular aperture, has such zeros, which is why Week 4 §19 and §23 engineer kernels without them.)
-- *Near-zeros (noise amplification).* Where `DFT{h}` is small but not zero, dividing by it multiplies any noise present at that frequency by `1/DFT{h}`, a large number. Real measurements always contain noise (Week 2 §15, Week 4 §3), so the "recovered" image can be dominated by amplified noise.
+- *Near-zeros (noise amplification).* Where `DFT{h}` is small but not zero, dividing by it multiplies any noise present at that frequency by `1/DFT{h}`, a large number. Real measurements always contain noise (Week 2 §18, Week 4 §3), so the "recovered" image can be dominated by amplified noise.
 - *Regularization* is the family of remedies: add a preference (a prior) for plausible answers (for instance, "do not trust frequencies where the blur has nearly removed the signal," or "natural images are mostly smooth"), trading a little sharpness for stability. The **Wiener filter** (Week 5) is the first, noise-aware version: instead of `1/H` it uses a damped factor that falls toward 0 where `H` is small. Week 6's ADMM-based methods use richer priors.
 - *Non-blind vs. blind.* **Non-blind** deconvolution means the kernel is known (measured or calibrated). **Blind** deconvolution means the kernel is unknown too and must be estimated along with the sharp image, a much harder problem (which is why Week 4 §24's motion-invariant camera tries to make the unknown blur known in advance).
 
@@ -629,7 +629,7 @@ Numbers (chosen small by hand; `c` is the speed of light):
 **Related operation: matched filtering (cross-correlation).** To *detect* a known pulse shape buried in noise, a LiDAR receiver slides a copy of the expected pulse over the waveform and records how well it matches at each offset: a cross-correlation. This is the best linear detector for a known pulse in white noise, but it does not sharpen: for the numbers above, correlating with `[0.2, 0.6, 0.2]` convolves the returns with the pulse's autocorrelation `[0.04, 0.24, 0.44, 0.24, 0.04]`, which is *wider* than the pulse. Matched filtering answers "is there a return, and about when?"; deconvolution tries to answer "what are the separate returns, finely resolved?". Continuous-wave ToF sensors correlate the received light with the sent modulation for the same reason (Week 4 §5; the dedicated ToF lecture later).
 
 **Why deconvolution matters for this course (map).**
-- *Defocus and motion blur* (Week 2 §5, §9; Week 4 §4.3): the blur is a known-ish kernel, and sharpening the photo is deconvolution.
+- *Defocus and motion blur* (Week 2 §9; Week 4 §4.3): the blur is a known-ish kernel, and sharpening the photo is deconvolution.
 - *Coded aperture, extended depth of field, flutter shutter, parabolic sweep* (Week 4 §19 to §24): these all choose the blur kernel on purpose so its spectrum has no exact zeros (is **broadband**) and a later deconvolution can recover the scene. The camera hardware and the deconvolution software are designed together.
 - *LiDAR / time-of-flight:* resolving closely spaced returns, sharpening range peaks beyond the pulse width, and handling multipath (several surfaces in one pixel) are deconvolution problems along the time axis.
 - *Everywhere noise matters:* the better the kernel's spectrum behaves, the less noise is amplified.

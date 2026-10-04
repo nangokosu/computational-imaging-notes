@@ -223,7 +223,7 @@ stops = log₂(ratio)          ratio = 2^stops
 ## Week 2 — Digital Photography I (ray optics, aperture, sensor)
 *(full derivations and diagrams in [`week2-study-notes.md`](./week2-study-notes.md); this is the lookup-speed reference)*
 
-### Image formation as a linear map (§0)
+### Image formation as a linear map (§1)
 
 ```
 y = A x
@@ -239,7 +239,7 @@ y = A x
 
 ---
 
-### Perspective projection (pinhole camera matrix) (§1)
+### Perspective projection (pinhole camera matrix) (§2)
 
 ```
 P = [[−f, 0, 0, 0], [0, −f, 0, 0], [0, 0, 1, 0]]
@@ -258,7 +258,7 @@ P = [[−f, 0, 0, 0], [0, −f, 0, 0], [0, 0, 1, 0]]
 
 ---
 
-### Optimal pinhole diameter (§2.1)
+### Optimal pinhole diameter (§3.1)
 
 ```
 blur(d) ≈ d + fλ/d
@@ -276,7 +276,7 @@ d = 2√(fλ)
 
 ---
 
-### Thin lens equation (Gaussian lens formula) (§4.1, §4.3)
+### Thin lens equation (Gaussian lens formula) (§5.1, §5.3)
 
 ```
 1/S + 1/S' = 1/f
@@ -293,7 +293,7 @@ S = 1 / (1/f − 1/S')
 
 ---
 
-### Magnification (§4.1)
+### Magnification (§5.1)
 
 ```
 m = y'/y = (S' − f)/f = S'/S
@@ -310,7 +310,7 @@ m = y'/y = (S' − f)/f = S'/S
 
 ---
 
-### Ray-transfer (ABCD) matrices (§4.1, Linear-algebra view)
+### Ray-transfer (ABCD) matrices (§5.1, Linear-algebra view)
 
 ```
 Translation by distance L:   [[1, L], [0, 1]]
@@ -395,7 +395,25 @@ c = m · D · |O − S| / O
 
 ---
 
-### Converting a pixel blur threshold to a length (§9.3)
+### Depth of field (§10.1)
+
+```
+DOF = 2 · ε · S / (m · D)
+```
+
+**Computes:** Gives the range of actual object distances that stay acceptably sharp (circle of confusion below threshold ε) for a given focus setting.
+
+| Term | Meaning |
+|---|---|
+| DOF | depth-of-field range (a length) |
+| ε | acceptable circle-of-confusion threshold, as a length |
+| S | focused object distance |
+| m | magnification at the focused pair |
+| D | aperture diameter |
+
+---
+
+### Converting a pixel blur threshold to a length (§10.2)
 
 ```
 pixel pitch = sensor width / number of pixels across that width
@@ -414,25 +432,7 @@ pixel pitch = sensor width / number of pixels across that width
 
 ---
 
-### Depth of field (§9.3)
-
-```
-DOF = 2 · ε · S / (m · D)
-```
-
-**Computes:** Gives the range of actual object distances that stay acceptably sharp (circle of confusion below threshold ε) for a given focus setting.
-
-| Term | Meaning |
-|---|---|
-| DOF | depth-of-field range (a length) |
-| ε | acceptable circle-of-confusion threshold, as a length |
-| S | focused object distance |
-| m | magnification at the focused pair |
-| D | aperture diameter |
-
----
-
-### Near and far distance of depth of field (§9.3)
+### Near and far distance of depth of field (§10.3)
 
 ```
 O_near = S / (1 + k)
@@ -449,12 +449,12 @@ k = ε / (m·D)
 | S | focused object distance |
 | k | dimensionless tolerance fraction, ε/(mD) |
 | ε | acceptable circle-of-confusion threshold, as a length |
-| m | magnification at the focused pair (S, S') — see the Magnification (§4.1) entry above for how to compute it |
+| m | magnification at the focused pair (S, S') — see the Magnification (§5.1) entry above for how to compute it |
 | D | aperture diameter |
 
 ---
 
-### Hyperfocal distance (§9.4)
+### Hyperfocal distance (§11)
 
 ```
 H = f² / (N·c)
@@ -469,29 +469,11 @@ H = f² / (N·c)
 | N | f-number — setup-chosen |
 | c | fixed acceptable circle-of-confusion threshold (not the general variable of §9.2) |
 
-**Note:** evaluating §9.3's near-distance formula O_near = S/(1+k) at S = H (where k = 1 by H's own definition) gives O_near(H) = H/2 — the classical "H/2 to infinity" depth-of-field rule.
+**Note:** evaluating §10.3's near-distance formula O_near = S/(1+k) at S = H (where k = 1 by H's own definition) gives O_near(H) = H/2 — the classical "H/2 to infinity" depth-of-field rule.
 
 ---
 
-### Approximate bokeh disc diameter (§9.5)
-
-```
-c ≈ (f² / N) · | 1/S − 1/O |
-```
-
-**Computes:** How wide the out-of-focus disc (bokeh ball) of a point at distance *O* is, on the sensor, when the lens is focused at *S*, valid when *S* is much larger than *f*; derived from the exact circle-of-confusion formula.
-
-| Term | Meaning |
-|---|---|
-| c | blur-disc diameter on the sensor (length); computed |
-| f | lens focal length (length); fixed by the lens |
-| N | f-number, so aperture diameter D = f/N; chosen by you |
-| S | distance the lens is focused at (length); chosen by you |
-| O | actual distance of the blurred point (length); fixed by the scene |
-
----
-
-### Diffraction limit (Abbe's formula) (§10)
+### Diffraction limit (Abbe's formula) (§12)
 
 ```
 d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
@@ -510,7 +492,43 @@ d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 
 ---
 
-### Shot noise (Poisson statistics) (§15.2)
+### Approximate bokeh disc diameter (§13.2)
+
+```
+c ≈ (f² / N) · | 1/S − 1/O |
+```
+
+**Computes:** How wide the out-of-focus disc (bokeh ball) of a point at distance *O* is, on the sensor, when the lens is focused at *S*, valid when *S* is much larger than *f*; derived from the exact circle-of-confusion formula.
+
+| Term | Meaning |
+|---|---|
+| c | blur-disc diameter on the sensor (length); computed |
+| f | lens focal length (length); fixed by the lens |
+| N | f-number, so aperture diameter D = f/N; chosen by you |
+| S | distance the lens is focused at (length); chosen by you |
+| O | actual distance of the blurred point (length); fixed by the scene |
+
+---
+
+### Noise-source variances in electrons (§18.3)
+
+```
+Var_shot = N        Var_dark = D·t        Var_read = Nr²        σ_DN = g · σ_electrons
+```
+
+**Computes:** The random variance each independent noise source contributes to one pixel, in electrons², and how a standard deviation converts from electrons to digital numbers.
+
+| Term | Meaning |
+|---|---|
+| N | mean number of photo-electrons collected (P·Qe·t) — set by scene, sensor, exposure |
+| D | dark-current rate (e⁻/pixel/s) — fixed by sensor and temperature |
+| t | exposure time — you control this |
+| Nr | RMS read noise (electrons), paid once per readout — fixed by the sensor |
+| g | conversion gain (DN per electron) — set by ISO |
+
+---
+
+### Shot noise (Poisson statistics) (§18.4)
 
 ```
 f(k; λ) = λᵏe⁻λ/k!
@@ -529,7 +547,7 @@ f(k; λ) = λᵏe⁻λ/k!
 
 ---
 
-### Quantization noise variance (§15.2)
+### Quantization noise variance (§18.5)
 
 ```
 Var(u) = (1/Δ) · ∫ u² du  (u from −Δ/2 to +Δ/2)  =  Δ²/12
@@ -545,25 +563,7 @@ Var(u) = (1/Δ) · ∫ u² du  (u from −Δ/2 to +Δ/2)  =  Δ²/12
 
 ---
 
-### Noise-source variances in electrons (§15.2)
-
-```
-Var_shot = N        Var_dark = D·t        Var_read = Nr²        σ_DN = g · σ_electrons
-```
-
-**Computes:** The random variance each independent noise source contributes to one pixel, in electrons², and how a standard deviation converts from electrons to digital numbers.
-
-| Term | Meaning |
-|---|---|
-| N | mean number of photo-electrons collected (P·Qe·t) — set by scene, sensor, exposure |
-| D | dark-current rate (e⁻/pixel/s) — fixed by sensor and temperature |
-| t | exposure time — you control this |
-| Nr | RMS read noise (electrons), paid once per readout — fixed by the sensor |
-| g | conversion gain (DN per electron) — set by ISO |
-
----
-
-### Signal-to-noise ratio (§15.3)
+### Signal-to-noise ratio (§19)
 
 ```
 SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
@@ -582,7 +582,7 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 
 ---
 
-### Noise as an additive vector (§15.3, Linear-algebra view)
+### Noise as an additive vector (§19, Linear-algebra view)
 
 ```
 y = A x + n
@@ -1340,7 +1340,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 
 | Term | Meaning |
 |---|---|
-| I_ideal(x,y) | Hypothetical perfectly sharp image an ideal pinhole would produce (Week 2 §1) |
+| I_ideal(x,y) | Hypothetical perfectly sharp image an ideal pinhole would produce (Week 2 §2) |
 | PSF(x,y) | System's blur kernel, normalized to sum/integrate to 1 (redistributes light, adds/removes none) — fixed by the optics |
 | I_blurred(x,y) | Image actually captured — computed output |
 | * | Convolution (sliding weighted sum, Week 1 §12.4.4a) |
