@@ -400,7 +400,7 @@ Before choosing an exposure, a camera has to answer: *how bright is this scene, 
 **The 18% "key" assumption.**
 
 - The metering sensor's readings are averaged to one overall brightness number.
-- The camera *assumes* that number corresponds to **18% reflectance**, the "mid gray" of Week 3 §12's gamma example (a surface reflecting 18% of incident light, linear value 0.18 on [0, 1]).
+- The camera *assumes* that number corresponds to **18% reflectance**, the "mid gray" of Week 3 §10's gamma example (a surface reflecting 18% of incident light, linear value 0.18 on [0, 1]).
 - The 18% figure is the conventional round number. Real meters are calibrated through exposure-equation constants that work out to roughly 12–18% depending on the standard.
 - This assumed average brightness is the **key**.
 - The camera then sets exposure (aperture, shutter, ISO; §2) so the key lands at the **middle** of the sensor's dynamic range, the "correct exposure sits between the two failure modes" logic of §2.4, applied to one summary number.
@@ -523,7 +523,7 @@ Each knob was built earlier; the table compares them side by side for *how well 
 
 - **Saturation (clipping) at the top.** A pixel holds only so much charge (full-well capacity, §2.4); past that, the curve goes flat.
 - **The noise floor at the bottom.** Very dim light is swamped by random noise (§3), so the lowest values say little about the true light.
-- **The in-camera tone curve in between.** A **tone curve** is a function from input brightness to output brightness (a straight diagonal changes nothing; a curve bowing upward brightens dark tones more than bright ones). To make a JPEG that looks right on a screen and spends its 8 bits efficiently, the camera applies a non-linear tone curve, usually gamma-like (Week 3 §12) and sometimes S-shaped. This is the main bend, and *f* is essentially this curve plus the clipping. (It is a different thing from HDR *tonemapping*, applied later by you.)
+- **The in-camera tone curve in between.** A **tone curve** is a function from input brightness to output brightness (a straight diagonal changes nothing; a curve bowing upward brightens dark tones more than bright ones). To make a JPEG that looks right on a screen and spends its 8 bits efficiently, the camera applies a non-linear tone curve, usually gamma-like (Week 3 §10) and sometimes S-shaped. This is the main bend, and *f* is essentially this curve plus the clipping. (It is a different thing from HDR *tonemapping*, applied later by you.)
 
 **Why calibrate: linearizing.** Once *f* is known, its inverse *f*⁻¹ turns pixel values back into numbers proportional to light ("**linearizing**"). Everything that assumes "doubling the light doubles the number" needs this:
 
@@ -598,13 +598,13 @@ Every calibration needs "known truth" (§9.1). The three methods differ only in 
 If no calibration is possible, two fallbacks:
 
 - **EXIF metadata.** An image file typically stores **[Exif](https://en.wikipedia.org/wiki/Exif)** metadata (Week 3 §9), often including the tone curve and color space used, which can be read directly instead of estimated.
-- **The default gamma model.** Otherwise, *f* is well approximated by a power law *f*(*x*) ≈ *x*^γ with **γ = 1/2.2**, the same γ ≈ 2.2 perceptual constant Week 3 §12 built for deliberately *encoding* a linear sensor reading into 8 bits.
-  - The role differs: Week 3 §12 was a chosen encoding step; here *f* is whatever curve the camera silently *already* applied, and γ ≈ 1/2.2 is the best generic guess so it can be undone (raise to ≈ 2.2) before merging.
+- **The default gamma model.** Otherwise, *f* is well approximated by a power law *f*(*x*) ≈ *x*^γ with **γ = 1/2.2**, the same γ ≈ 2.2 perceptual constant Week 3 §10 built for deliberately *encoding* a linear sensor reading into 8 bits.
+  - The role differs: Week 3 §10 was a chosen encoding step; here *f* is whatever curve the camera silently *already* applied, and γ ≈ 1/2.2 is the best generic guess so it can be undone (raise to ≈ 2.2) before merging.
   - The lecture's rule of thumb, "if nothing else, take the square of your image," is this one step cruder: since 1/(1/2.2) = 2.2 ≈ 2, squaring roughly approximates *f*⁻¹ and removes most of the tone curve.
 
 ### 9.5 Linearizing an sRGB image precisely (supports HW3 Task 1)
 
-*(Beyond the lecture's slides: if HW3's PNGs are stored in **sRGB**, the standard display color space whose tone curve Week 3 §12 introduced, an inverse gamma must be applied before merging. PS3's slide says "Linearize the images using gamma of 2.2.")*
+*(Beyond the lecture's slides: if HW3's PNGs are stored in **sRGB**, the standard display color space whose tone curve Week 3 §10 introduced, an inverse gamma must be applied before merging. PS3's slide says "Linearize the images using gamma of 2.2.")*
 
 Here *f*⁻¹ is not unknown: the file format fixes it. For each color channel of each PNG:
 
@@ -881,7 +881,7 @@ I_display = I_HDR / (1 + I_HDR)
 
 - Near *I_HDR* = 0, *I_display* ≈ *I_HDR* (dividing by 1 + a small number barely changes it): slope 1, dark detail untouched.
 - As *I_HDR* → ∞, *I_display* → 1: it asymptotes, so no value, however bright, exceeds the display's range.
-- The lecture notes this shape is **perceptually motivated**, approximating the eye's own response to intensity (Week 1 §10, Week 3 §12: perception is roughly logarithmic/power-law), so a display encoding matched to it looks more natural than a linear compression.
+- The lecture notes this shape is **perceptually motivated**, approximating the eye's own response to intensity (Week 1 §10, Week 3 §10: perception is roughly logarithmic/power-law), so a display encoding matched to it looks more natural than a linear compression.
 
 > **Worked check on §13.2's five room values** (0.002, 0.02, 0.2, 2, 20). The curve gives 0.002, 0.0196, 0.167, 0.667, 0.952, i.e. 8-bit codes **1, 5, 43, 170, 243**: five distinct, usable codes, where linear scaling gave 0, 0, 3, 26, 255 or 0, 3, 26, 255, 255.
 
@@ -903,7 +903,7 @@ I_display = clip( (s · I_HDR)^γ , 0, 1 )
 
 1. *I_HDR* is first normalized to [0, 1] (divide by its maximum), as HW3 specifies.
 2. Multiply by the **scale** *s*: a pure linear exposure change (§13). *s* > 1 pushes more of the image upward; anything above 1 clips in step 4.
-3. Raise to the power **γ**. For 0 < γ < 1 the curve rises steeply near 0 and flattens toward 1, lifting shadows much more than highlights. That is the shape of Week 3 §12's gamma *encoding* (γ ≈ 1/2.2) and, like I/(1+I), gives dark detail more room, but unlike I/(1+I) it does **not** asymptote: values can exceed 1.
+3. Raise to the power **γ**. For 0 < γ < 1 the curve rises steeply near 0 and flattens toward 1, lifting shadows much more than highlights. That is the shape of Week 3 §10's gamma *encoding* (γ ≈ 1/2.2) and, like I/(1+I), gives dark detail more room, but unlike I/(1+I) it does **not** asymptote: values can exceed 1.
 4. **clip** to [0, 1]: anything above is cut to 1 (negatives, if any, to 0). Multiplying by the display's maximum code (255) and rounding gives the 8-bit image.
 
 **Term by term.**
@@ -944,9 +944,9 @@ HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-
 | Step | Approach | Fixes | New problem introduced |
 |---|---|---|---|
 | 1 | **Naive per-channel**: apply §14's curve separately to R, G, B | — | **Colors wash out**: each channel is compressed by a different amount, which distorts the ratios between channels, and those ratios encode hue and saturation |
-| 2 | **Intensity-only, in xyY**: convert to a luminance/chromaticity representation (**[xyY](https://en.wikipedia.org/wiki/CIE_1931_color_space#CIE_xyY_color_space)**, a reparameterization of Week 3 §5's CIE xy chromaticity plus a luminance axis Y), tonemap only Y, leave xy untouched | Colors no longer wash out: hue/saturation are preserved by construction | **Contrast/detail washes out**: one *global* curve still compresses every pixel's fine local contrast the same way |
+| 2 | **Intensity-only, in xyY**: convert to a luminance/chromaticity representation (**[xyY](https://en.wikipedia.org/wiki/CIE_1931_color_space#CIE_xyY_color_space)**, a reparameterization of Week 3 §6's CIE xy chromaticity plus a luminance axis Y), tonemap only Y, leave xy untouched | Colors no longer wash out: hue/saturation are preserved by construction | **Contrast/detail washes out**: one *global* curve still compresses every pixel's fine local contrast the same way |
 | 3 | **Low-frequency intensity-only**: split intensity into a low-spatial-frequency (coarse, blurred) component and a high-spatial-frequency (fine detail) component (the low-pass/high-pass split of Week 1 §12.4.5, §13.1), tonemap only the low-frequency part, leave detail and chromaticity untouched | Nice color *and* nice local contrast | **Halo artifacts**: a naive low-pass filter (e.g. Gaussian) blurs *across* strong edges, mixing very different brightness levels, giving ringing/halos around high-contrast boundaries |
-| 4 | **Edge-aware filtering**: the same base/detail split, but with an edge-preserving filter: the **[bilateral filter](https://en.wikipedia.org/wiki/Bilateral_filter)** of Week 3 §11.4 (averages nearby pixels only when they are *also* similar in intensity, so it never blurs across a strong edge) | Fixes the halos without losing earlier color and contrast gains | (None flagged by the lecture) |
+| 4 | **Edge-aware filtering**: the same base/detail split, but with an edge-preserving filter: the **[bilateral filter](https://en.wikipedia.org/wiki/Bilateral_filter)** of Week 3 §16.2 (averages nearby pixels only when they are *also* similar in intensity, so it never blurs across a strong edge) | Fixes the halos without losing earlier color and contrast gains | (None flagged by the lecture) |
 | 5 | **Gradient-domain processing** and **Local Laplacian Filters** (Paris et al., 2011) | State-of-the-art alternatives | "Too many algorithms to discuss here": the lecture declines to go deeper |
 
 **Step 5, briefly.** Gradient-domain tonemapping computes the image's spatial gradients, attenuates the large gradients (the steep brightness jumps that overflow the display) while leaving small ones alone, then **re-integrates** the modified gradient field into an image by solving a **[Poisson equation](https://en.wikipedia.org/wiki/Poisson%27s_equation)**. It compresses range while preserving fine detail, with no explicit base/detail split.
@@ -1371,8 +1371,8 @@ The lecture's reference list closes Part 2 with the papers cited by name in §19
 
 Two formal topics are built properly starting next week, both previewed informally here and in earlier weeks:
 
-- **Week 5, "Sampling, Linear Systems, Deconvolution."** This is where **PS4's Task 2** (deconvolution and inverse filtering, and **Wiener deconvolution** specifically) belongs: the formal machinery for inverting a known PSF/OTF (§18), including the noise amplification §23.2 flagged for near-zero (rather than exactly-zero) OTF values. Week 5 also formalizes the sampling theorem and aliasing (used informally in Week 2 §10.2) and the exact discrete Fourier transform machinery Week 1 §12.4 built only partially.
-- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §12.4.5 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §10.1; the circular and box-kernel null spaces of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
+- **Week 5, "Sampling, Linear Systems, Deconvolution."** This is where **PS4's Task 2** (deconvolution and inverse filtering, and **Wiener deconvolution** specifically) belongs: the formal machinery for inverting a known PSF/OTF (§18), including the noise amplification §23.2 flagged for near-zero (rather than exactly-zero) OTF values. Week 5 also formalizes the sampling theorem and aliasing (used informally in Week 3 §14.2) and the exact discrete Fourier transform machinery Week 1 §12.4 built only partially.
+- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §12.4.5 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §14.1; the circular and box-kernel null spaces of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
 
 > **Summary**
 > - Week 4 left one question open: how to actually *invert* a known blur (PSF/OTF) in the presence of noise.

@@ -479,7 +479,7 @@ Concretely, since rows index *v* and columns index *u*, each of the raw array's 
 
 ### 12.4.4a Convolution from scratch (the operation §12.4.5 and §13 secretly rely on)
 
-§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §3 (pinhole blur), Week 3 §11 (Gaussian denoising), Week 4 §18 (PSF/OTF) and §23 (flutter shutter), and in LiDAR ranging (Part 9 below).
+§12.4.5 below says "multiplying spectra is the same as convolving signals." That sentence is meaningless until **convolution** itself has been defined, so this subsection builds it from nothing, then motivates *why* the theorem is true (it is explained, and checked on numbers, not just announced). The same idea returns in Week 2 §3 (pinhole blur), Week 3 §12.2 (Gaussian smoothing), Week 4 §18 (PSF/OTF) and §23 (flutter shutter), and in LiDAR ranging (Part 9 below).
 
 **Part 1 — Analogy: a stamp, and a sliding window.**
 - *Stamp view (each point spreads its light).* Imagine a row of light bulbs of different brightness, photographed out of focus. Each bulb does not land on the sensor as one dot; it lands as a small soft blob. The photo is every bulb's blob added together, where a brighter bulb stamps a stronger blob. The blob's shape is the **kernel**. Convolution is "stamp a copy of the kernel at every input sample, scaled by that sample's value, and add all the stamps."
@@ -597,8 +597,8 @@ Same pattern in every column, shifted down one row each time: constant along dia
 **Part 8 — Where this shows up, so you know why it is worth the detour.**
 - Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §3, §9; formalized in Week 4 §18).
 - Motion blur is a convolution with a box along the motion direction (Week 4 §4.3, §23).
-- Denoising/smoothing filters such as the Gaussian (Week 3 §11) are convolutions; the median and bilateral filters are *not* (they are non-linear).
-- Demosaicking's interpolation and unsharp masking (Week 3 §10.1, §11.8) are convolutions.
+- Denoising/smoothing filters such as the Gaussian (Week 3 §12.2) are convolutions; the median and bilateral filters are *not* (they are non-linear).
+- Demosaicking's interpolation and unsharp masking (Week 3 §14.1, §17) are convolutions.
 - Hybrid images (§13) are a convolution (blur) and its complement.
 
 ### 12.4.4b Deconvolution, a first look (the reverse problem)

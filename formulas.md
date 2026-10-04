@@ -602,7 +602,7 @@ y = A x + n
 ## Week 3 — Digital Photography II (color science & the camera processing pipeline)
 *(full derivations and diagrams in [`week3-study-notes.md`](./week3-study-notes.md); this is the lookup-speed reference)*
 
-### Spectral sensitivity function (SSF) integral (§1)
+### Spectral sensitivity function (SSF) integral (§2)
 
 ```
 R = ∫ Φ(λ) · f(λ) dλ
@@ -622,7 +622,7 @@ Discrete / inner-product form: R ≈ Δλ · Σ_k Φ(λ_k)·f(λ_k) = Δλ · (f
 
 ---
 
-### Tristimulus vector and the sensitivity matrix A (§2)
+### Tristimulus vector and the sensitivity matrix A (§3)
 
 ```
 (S, M, L) = Δλ · A φ
@@ -643,7 +643,7 @@ Metamer condition: A(φ₁ − φ₂) = 0
 
 ---
 
-### Color matching as a linear system (§3)
+### Color matching as a linear system (§4)
 
 ```
 c₁p₁ + c₂p₂ + c₃p₃ = t
@@ -662,7 +662,7 @@ c = P⁻¹ t
 
 ---
 
-### CIE RGB → XYZ conversion matrix (§4)
+### CIE RGB → XYZ conversion matrix (§5)
 
 ```
 M_CIERGB→XYZ = (1/0.17697) · [0.49000  0.31000  0.20000]   = [2.7688  1.7517  1.1301]
@@ -683,7 +683,7 @@ v_XYZ = M_CIERGB→XYZ · v_CIERGB
 
 ---
 
-### CIE xy chromaticity projection (§5)
+### CIE xy chromaticity projection (§6)
 
 ```
 x = X / (X + Y + Z)
@@ -700,7 +700,7 @@ y = Y / (X + Y + Z)
 
 ---
 
-### Gamut triangle / barycentric coordinates (§6)
+### Gamut triangle / barycentric coordinates (§7)
 
 ```
 w_R·q_R + w_G·q_G + w_B·q_B = point,   w_R + w_G + w_B = 1,   w_R, w_G, w_B ≥ 0
@@ -716,7 +716,7 @@ w_R·q_R + w_G·q_G + w_B·q_B = point,   w_R + w_G + w_B = 1,   w_R, w_G, w_B �
 
 ---
 
-### Display P3 → sRGB conversion matrix (§7)
+### Display P3 → sRGB conversion matrix (§8)
 
 ```
 M_P3→sRGB = M_XYZ→sRGB · M_P3→XYZ = [ 1.2249  −0.2249   0.0000]
@@ -734,24 +734,145 @@ M_P3→sRGB = M_XYZ→sRGB · M_P3→XYZ = [ 1.2249  −0.2249   0.0000]
 
 ---
 
-### White balance as a diagonal matrix (§9.1)
+### Gamma correction — simple power law (§10)
 
 ```
-v_wb = diag(g_R, g_G, g_B) · v_cam
+I_out = I_in^(1/2.2)
 ```
 
-**Computes:** Rescales each raw color channel independently so a neutral gray scene object reads R=G=B, removing the light source's color cast.
+**Computes:** Encodes a linear [0,1] intensity with a single power-law curve so finite bit-depth code values are spaced to match perceived brightness rather than physical intensity.
 
 | Term | Meaning |
 |---|---|
-| v_cam | Camera's raw (R,G,B) triplet before white balance |
-| g_R, g_G, g_B | Per-channel gain factors, stored as the camera's "as-shot" white balance — set by capture, not by this formula |
-| diag(g_R,g_G,g_B) | Diagonal gain matrix — scales each channel independently, mixes none into another |
-| v_wb | The white-balanced (R,G,B) triplet |
+| I_in | Linear intensity value, scaled to [0,1] |
+| I_out | Gamma-encoded output value |
+| 1/2.2 | Encoding exponent — reciprocal of the human-sensitivity gamma (γ≈2.2) |
 
 ---
 
-### Naive (linear) green-channel demosaicking (§10.1)
+### Gamma correction — exact sRGB piecewise curve (§10)
+
+```
+C_sRGB = 12.92 · C_linear                          if C_linear ≤ 0.0031308
+C_sRGB = (1 + α) · C_linear^(1/2.4) − α            if C_linear > 0.0031308,   α = 0.055
+```
+
+**Computes:** The sRGB standard's exact gamma-encoding curve — a linear segment near black joined to a power-law segment, together closely approximating a γ≈2.2 power law.
+
+| Term | Meaning |
+|---|---|
+| C_linear | Linear-light input value, scaled to [0,1] |
+| C_sRGB | sRGB-encoded output value |
+| 0.0031308 | Fixed crossover threshold between the two segments |
+| 12.92 | Slope of the linear segment near zero |
+| 1/2.4 | Exponent of the power-law segment |
+| α = 0.055 | Constant shaping the power-law segment to meet the linear one smoothly |
+
+---
+
+### General weighted-average denoising framework (§12.1)
+
+```
+i_denoised(x) = (1 / normalizer) · Σ_{x'} w(x, x') · i_noisy(x'),
+normalizer = Σ_{x'} w(x, x')
+```
+
+**Computes:** The umbrella template every denoising method in this week specializes — average pixels believed to share the same true value, since random noise cancels under averaging while true signal doesn't.
+
+| Term | Meaning |
+|---|---|
+| x | The pixel currently being denoised |
+| x' | A candidate pixel, ranging over a neighborhood or search window |
+| w(x,x') | Non-negative weight expressing how much x' should contribute to denoising x — this is what differs between methods |
+| i_noisy, i_denoised | The noisy input and denoised output images |
+| normalizer | Sum of all weights, making the result a true weighted average |
+
+---
+
+### Gaussian filter spatial weight (§12.2)
+
+```
+w(x, x') = exp( −|x − x'|² / (2σ²) )
+```
+
+**Computes:** Weights a neighboring pixel by spatial distance alone — the simplest denoising weight, equivalent to ordinary blurring/low-pass filtering.
+
+| Term | Meaning |
+|---|---|
+| x, x' | Pixel positions |
+| \|x − x'\| | Spatial distance between them, in pixels |
+| σ | Spatial standard deviation, in pixels — the smoothing radius, user-controlled |
+
+---
+
+### Gaussian blur's frequency response (§12.2)
+
+```
+H(f) = exp( −f² / (2σ_f²) ),   σ_f = 1 / (2πσ)
+```
+
+**Computes:** Gives the fraction of each image frequency that survives a Gaussian blur of spatial width σ, explaining why a Gaussian blur is a smooth (no hard cutoff) low-pass filter.
+
+| Term | Meaning |
+|---|---|
+| f | Image frequency, cycles per pixel |
+| H(f) | Fraction of that frequency's amplitude surviving the blur (1 = untouched, 0 = removed) |
+| σ | Blur's spatial width in pixels — chosen/controlled |
+| σ_f | Resulting frequency-domain width, cycles per pixel — fixed once σ is chosen |
+
+---
+
+### Median filter (§12.3)
+
+```
+i_denoised(x) = median( W(i_noisy, x) )
+```
+
+**Computes:** Replaces each pixel with the median of a small surrounding window, removing outlier noise without smearing it into a halo the way an average would.
+
+| Term | Meaning |
+|---|---|
+| x | The pixel being denoised |
+| W(i_noisy, x) | The small window of the noisy image centered at x |
+| median(...) | The window's middle value — a nonlinear operation, not a weighted sum |
+
+---
+
+### Mean squared error (MSE) (§13)
+
+```
+MSE = (1 / (3·m·n)) · Σ_{i=1}^{m} Σ_{j=1}^{n} Σ_{c=1}^{3} [I_estimate(i,j,c) − I_groundtruth(i,j,c)]²
+```
+
+**Computes:** The average squared per-pixel, per-channel error between a reconstructed image and ground truth — a single number summarizing reconstruction quality.
+
+| Term | Meaning |
+|---|---|
+| m, n | Image height and width, in pixels |
+| c | Color channel index (1 to 3) |
+| I_estimate | The reconstructed/estimated image |
+| I_groundtruth | The true reference image |
+| 3·m·n | Total number of pixel-channel values, normalizing the sum into an average |
+
+---
+
+### Peak signal-to-noise ratio (PSNR) (§13)
+
+```
+PSNR = 10 · log₁₀( max(I_groundtruth)² / MSE )
+```
+
+**Computes:** Rescales MSE onto a self-normalizing, logarithmic (decibel) quality scale so reconstruction error is comparable regardless of the image's value range.
+
+| Term | Meaning |
+|---|---|
+| MSE | Mean squared error (previous formula) |
+| max(I_groundtruth) | Largest possible/occurring pixel value in the reference image (e.g. 255 for 8-bit, 1.0 for [0,1]) |
+| 10·log₁₀(...) | Decibel scale — each fixed additive step corresponds to a fixed multiplicative change in the underlying ratio |
+
+---
+
+### Naive (linear) green-channel demosaicking (§14.1)
 
 ```
 ĝ(x,y) = (1/4) · Σ g(x+m, y+n),   (m,n) ∈ {(0,−1), (0,1), (−1,0), (1,0)}
@@ -767,7 +888,7 @@ v_wb = diag(g_R, g_G, g_B) · v_cam
 
 ---
 
-### Bayer mosaicking as a selection matrix (§10.1)
+### Bayer mosaicking as a selection matrix (§14.1)
 
 ```
 y = P_Bayer · x
@@ -783,7 +904,7 @@ y = P_Bayer · x
 
 ---
 
-### RGB ↔ Y′CbCr conversion (§10.3)
+### RGB ↔ Y′CbCr conversion (§14.3)
 
 ```
 Y'  = 16  + 65.481·R + 128.553·G + 24.966·B
@@ -808,7 +929,7 @@ Linear-algebra (affine) form:  u = M v + o,   v = M⁻¹(u − o)
 
 ---
 
-### Malvar-He-Cutler gradient-corrected demosaicking (§10.5)
+### Malvar-He-Cutler gradient-corrected demosaicking (§14.5)
 
 ```
 ĝ(x,y) = ĝ_lin(x,y) + α · D_R(x,y)     — interpolating G at an R pixel
@@ -824,7 +945,7 @@ D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (�
 
 | Term | Meaning |
 |---|---|
-| ĝ_lin, r̂_lin | The plain naive-average estimate (§10.1) for that channel/pixel |
+| ĝ_lin, r̂_lin | The plain naive-average estimate (§14.1) for that channel/pixel |
 | D_R, D_G, D_B | Discrete Laplacian (local curvature) of the actually-sampled channel, from same-color samples two pixels away; D_G uses a different 9-point weighting (not given numerically in these notes) |
 | α, β, γ | Fixed, empirically optimized gain constants controlling how strongly the correction is trusted |
 | r(x,y) | The actually-measured red value at (x,y) (analogous for b in D_B) |
@@ -832,109 +953,7 @@ D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (�
 
 ---
 
-### Mean squared error (MSE) (§10.6)
-
-```
-MSE = (1 / (3·m·n)) · Σ_{i=1}^{m} Σ_{j=1}^{n} Σ_{c=1}^{3} [I_estimate(i,j,c) − I_groundtruth(i,j,c)]²
-```
-
-**Computes:** The average squared per-pixel, per-channel error between a reconstructed image and ground truth — a single number summarizing reconstruction quality.
-
-| Term | Meaning |
-|---|---|
-| m, n | Image height and width, in pixels |
-| c | Color channel index (1 to 3) |
-| I_estimate | The reconstructed/estimated image |
-| I_groundtruth | The true reference image |
-| 3·m·n | Total number of pixel-channel values, normalizing the sum into an average |
-
----
-
-### Peak signal-to-noise ratio (PSNR) (§10.6)
-
-```
-PSNR = 10 · log₁₀( max(I_groundtruth)² / MSE )
-```
-
-**Computes:** Rescales MSE onto a self-normalizing, logarithmic (decibel) quality scale so reconstruction error is comparable regardless of the image's value range.
-
-| Term | Meaning |
-|---|---|
-| MSE | Mean squared error (previous formula) |
-| max(I_groundtruth) | Largest possible/occurring pixel value in the reference image (e.g. 255 for 8-bit, 1.0 for [0,1]) |
-| 10·log₁₀(...) | Decibel scale — each fixed additive step corresponds to a fixed multiplicative change in the underlying ratio |
-
----
-
-### General weighted-average denoising framework (§11.1)
-
-```
-i_denoised(x) = (1 / normalizer) · Σ_{x'} w(x, x') · i_noisy(x'),
-normalizer = Σ_{x'} w(x, x')
-```
-
-**Computes:** The umbrella template every denoising method in this week specializes — average pixels believed to share the same true value, since random noise cancels under averaging while true signal doesn't.
-
-| Term | Meaning |
-|---|---|
-| x | The pixel currently being denoised |
-| x' | A candidate pixel, ranging over a neighborhood or search window |
-| w(x,x') | Non-negative weight expressing how much x' should contribute to denoising x — this is what differs between methods |
-| i_noisy, i_denoised | The noisy input and denoised output images |
-| normalizer | Sum of all weights, making the result a true weighted average |
-
----
-
-### Gaussian filter spatial weight (§11.2)
-
-```
-w(x, x') = exp( −|x − x'|² / (2σ²) )
-```
-
-**Computes:** Weights a neighboring pixel by spatial distance alone — the simplest denoising weight, equivalent to ordinary blurring/low-pass filtering.
-
-| Term | Meaning |
-|---|---|
-| x, x' | Pixel positions |
-| \|x − x'\| | Spatial distance between them, in pixels |
-| σ | Spatial standard deviation, in pixels — the smoothing radius, user-controlled |
-
----
-
-### Gaussian blur's frequency response (§11.2)
-
-```
-H(f) = exp( −f² / (2σ_f²) ),   σ_f = 1 / (2πσ)
-```
-
-**Computes:** Gives the fraction of each image frequency that survives a Gaussian blur of spatial width σ, explaining why a Gaussian blur is a smooth (no hard cutoff) low-pass filter.
-
-| Term | Meaning |
-|---|---|
-| f | Image frequency, cycles per pixel |
-| H(f) | Fraction of that frequency's amplitude surviving the blur (1 = untouched, 0 = removed) |
-| σ | Blur's spatial width in pixels — chosen/controlled |
-| σ_f | Resulting frequency-domain width, cycles per pixel — fixed once σ is chosen |
-
----
-
-### Median filter (§11.3)
-
-```
-i_denoised(x) = median( W(i_noisy, x) )
-```
-
-**Computes:** Replaces each pixel with the median of a small surrounding window, removing outlier noise without smearing it into a halo the way an average would.
-
-| Term | Meaning |
-|---|---|
-| x | The pixel being denoised |
-| W(i_noisy, x) | The small window of the noisy image centered at x |
-| median(...) | The window's middle value — a nonlinear operation, not a weighted sum |
-
----
-
-### Bilateral filter weight (§11.4)
+### Bilateral filter weight (§16.2)
 
 ```
 w(x, x') = exp( −|x − x'|² / (2σ²) ) · exp( −|i_noisy(x') − i_noisy(x)|² / (2σ_i²) )
@@ -951,7 +970,7 @@ w(x, x') = exp( −|x − x'|² / (2σ²) ) · exp( −|i_noisy(x') − i_noisy(
 
 ---
 
-### Non-local means weight and patch distance (§11.5)
+### Non-local means weight and patch distance (§16.3)
 
 ```
 w(x, x') = exp( −‖N(x') − N(x)‖² / (2σ²) )
@@ -976,7 +995,7 @@ HW2 notation: w(i, j) = (1 / Z(i)) · exp( −‖v(N_i) − v(N_j)‖² / h² ),
 
 ---
 
-### Unsharp masking (§11.8)
+### Unsharp masking (§17)
 
 ```
 detail     = I − blur(I)
@@ -994,48 +1013,12 @@ Linear-algebra form: sharpened = ((1+k)·Id − k·G_σ) · i
 | detail | I − blur(I): the high-frequency content the blur removed |
 | k | Sharpening strength, dimensionless, user-controlled; k=0 leaves the image unchanged |
 | Id | The identity matrix |
-| G_σ | The Gaussian-blur matrix (§11.2) |
+| G_σ | The Gaussian-blur matrix (§12.2) |
 | i | The image, flattened into a vector |
 
 ---
 
-### Gamma correction — simple power law (§12)
-
-```
-I_out = I_in^(1/2.2)
-```
-
-**Computes:** Encodes a linear [0,1] intensity with a single power-law curve so finite bit-depth code values are spaced to match perceived brightness rather than physical intensity.
-
-| Term | Meaning |
-|---|---|
-| I_in | Linear intensity value, scaled to [0,1] |
-| I_out | Gamma-encoded output value |
-| 1/2.2 | Encoding exponent — reciprocal of the human-sensitivity gamma (γ≈2.2) |
-
----
-
-### Gamma correction — exact sRGB piecewise curve (§12)
-
-```
-C_sRGB = 12.92 · C_linear                          if C_linear ≤ 0.0031308
-C_sRGB = (1 + α) · C_linear^(1/2.4) − α            if C_linear > 0.0031308,   α = 0.055
-```
-
-**Computes:** The sRGB standard's exact gamma-encoding curve — a linear segment near black joined to a power-law segment, together closely approximating a γ≈2.2 power law.
-
-| Term | Meaning |
-|---|---|
-| C_linear | Linear-light input value, scaled to [0,1] |
-| C_sRGB | sRGB-encoded output value |
-| 0.0031308 | Fixed crossover threshold between the two segments |
-| 12.92 | Slope of the linear segment near zero |
-| 1/2.4 | Exponent of the power-law segment |
-| α = 0.055 | Constant shaping the power-law segment to meet the linear one smoothly |
-
----
-
-### Camera RGB → CIE XYZ calibration matrix (§13)
+### Camera RGB → CIE XYZ calibration matrix (§18)
 
 ```
 [X; Y; Z] = C · [R_cam; G_cam; B_cam]
@@ -1051,7 +1034,7 @@ C_sRGB = (1 + α) · C_linear^(1/2.4) − α            if C_linear > 0.0031308,
 
 ---
 
-### sRGB ↔ XYZ conversion matrices (§13)
+### sRGB ↔ XYZ conversion matrices (§18)
 
 ```
 sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
@@ -1070,7 +1053,7 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 
 ---
 
-### DCT as a change of basis (§14)
+### DCT as a change of basis (§19)
 
 ```
 c = T · b
@@ -1084,6 +1067,23 @@ c = T · b
 | T | 64×64 orthonormal DCT matrix, whose rows are the fixed cosine basis patterns |
 | c | The block's DCT coefficients — its coordinates in the cosine basis |
 | T⁻¹ = Tᵀ | Inverse equals transpose because T is orthonormal, so no system needs solving to invert |
+
+---
+
+### White balance as a diagonal matrix (§20)
+
+```
+v_wb = diag(g_R, g_G, g_B) · v_cam
+```
+
+**Computes:** Rescales each raw color channel independently so a neutral gray scene object reads R=G=B, removing the light source's color cast.
+
+| Term | Meaning |
+|---|---|
+| v_cam | Camera's raw (R,G,B) triplet before white balance |
+| g_R, g_G, g_B | Per-channel gain factors, stored as the camera's "as-shot" white balance — set by capture, not by this formula |
+| diag(g_R,g_G,g_B) | Diagonal gain matrix — scales each channel independently, mixes none into another |
+| v_wb | The white-balanced (R,G,B) triplet |
 
 ---
 
