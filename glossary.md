@@ -295,7 +295,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **Normal equations** — AᵀAx = Aᵀb: the residual is perpendicular to every column of A, so least squares is an orthogonal [projection](https://en.wikipedia.org/wiki/Projection_(linear_algebra)) onto the column space (§29.2).
 - **[Tikhonov regularization](https://en.wikipedia.org/wiki/Ridge_regression) (ridge)** — x = (AᵀA + λI)⁻¹Aᵀb, adding λ to every eigenvalue so the system is always solvable; λ → 0 gives the least-norm solution (§30).
 - **Least-norm solution** — among all exact solutions of an underdetermined system, the shortest one (no null-space component) (§30).
-- **Filter factors** — the per-singular-value multipliers s/(s² + λ) that regularization uses in place of 1/s (§30).
+- **Filter factors** — the per-singular-value weights s²/(s² + λ) by which regularization multiplies the plain inverse's 1/s, giving s/(s² + λ) in place of 1/s (§30).
 - **[Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent) / step size (learning rate)** — repeat x ← x − α∇f(x); for least squares ∇f = Aᵀ(Ax − b), and α must stay below 2/μ_max (§31.1).
 - **Function handle** — passing "multiply by A" and "multiply by Aᵀ" as functions instead of storing the matrix (§26, §31.1).
 - **Adjoint (of a convolution)** — Aᵀ for a blur: convolution with the flipped kernel, or multiplication by F{c}* in the Fourier domain (§31.2). See [Hermitian adjoint](https://en.wikipedia.org/wiki/Hermitian_adjoint).

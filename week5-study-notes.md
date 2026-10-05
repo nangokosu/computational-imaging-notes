@@ -695,7 +695,7 @@ If the spot has the same shape everywhere in the image, the blur is **shift-inva
 
 Slide 49 makes two simplifying assumptions, and states that it ignores overall scale factors:
 
-- **Fraunhofer (far-field) diffraction**: the sensor is far from the aperture compared with the light's wavelength. Under this assumption, the light pattern far behind an opening is the **Fourier transform of the opening's shape**. (A lens focused at infinity brings this far-field pattern onto its focal plane.)
+- **Fraunhofer (far-field) diffraction**: the sensor is far from the aperture compared with *W*²/λ, the aperture's width squared divided by the light's wavelength (being far compared with the wavelength alone is not enough). Under this assumption, the light pattern far behind an opening is the **Fourier transform of the opening's shape**. (A lens focused at infinity brings this far-field pattern onto its focal plane.)
 - **Incoherent illumination**: ordinary light (sunlight, lamps), whose waves from different scene points have random, unrelated timing, so their *intensities* add. Laser light is **coherent**: its waves keep a fixed timing relationship, so their *amplitudes* add and can cancel (interference).
 
 **Which "frequency" this section uses.** λ is the **wavelength of light** (green ≈ 550 nm). The transfer function's horizontal axis is **spatial frequency** on the sensor, in cycles/mm. These are different quantities; the wavelength enters only as a scale factor that converts aperture size into PSF size.
@@ -736,7 +736,7 @@ Slides 54–56 widen the slit: rect(*x*/2), then rect(*x*/10). By the scaling th
 Real apertures are 2D (slides 57–60).
 
 - **Circular aperture** → incoherent PSF = the **Airy pattern**: a bright central disc (the **Airy disc**) surrounded by faint concentric rings. Its OTF is a smooth, cone-like hill that falls to zero at a circular cutoff. The 2D Fourier transform of a disc is the 2D cousin of the sinc, called a **jinc** (built from a **Bessel function of the first kind**, *J*₁), so the Airy PSF is jinc².
-- **Square aperture** → PSF = sinc²(*x*)·sinc²(*y*): a bright center with streaks of bright spots along the horizontal and vertical axes, a cross. Its OTF is a pyramid (a tent in *x* times a tent in *y*).
+- **Square aperture** → PSF = sinc²(*x*)·sinc²(*y*): a bright center with streaks of bright spots along the horizontal and vertical axes, a cross. Its OTF is a pyramid-like peak, a tent in *x* times a tent in *y* (its faces are gently curved rather than flat, since a product of two tents is not a true pyramid).
 
 **Why circular apertures are preferred** (slide 59–60): "other shapes produce very anisotropic blur." **Anisotropic** means direction-dependent. A square aperture blurs detail along the diagonals differently from detail along the axes; a circle treats every direction the same.
 
@@ -1060,7 +1060,7 @@ The comparison on slide 93: without anti-aliasing the chart's lines break up int
 
 **Upsampling.** The lecture's section title includes upsampling but shows no slides on it. In brief: enlarging an image by *D* inserts *D* − 1 new samples between existing ones. In the Fourier domain the original spectrum's copies are now all inside the new, wider band, so a low-pass filter must remove the extra copies; interpolation (nearest, bilinear, bicubic, Lanczos) is that low-pass filter in disguise. Upsampling never creates detail that was not sampled.
 
-**Linear-algebra view (anti-aliased downsampling = selection matrix × blur matrix).** With the image flattened to a vector **x**, the naive downsample is **S x**, where **S** is the selection matrix of §7 (one 1 per row). The anti-aliased version is **S G x**, where **G** is the circulant Gaussian-blur matrix of §5. **S G** is a short, wide matrix whose rows are shifted Gaussian bumps, spaced *D* apart: each output pixel is a weighted average of a neighborhood instead of a single picked pixel. The null space of **S** contains high-frequency patterns that **S** would fold onto low frequencies; **G** shrinks those patterns to almost nothing first, so what remains in the null space is detail that was going to be lost anyway, rather than detail disguised as something else.
+**Linear-algebra view (anti-aliased downsampling = selection matrix × blur matrix).** With the image flattened to a vector **x**, the naive downsample is **S x**, where **S** is the selection matrix of §7 (one 1 per row). The anti-aliased version is **S G x**, where **G** is the circulant Gaussian-blur matrix of §5. **S G** is a short, wide matrix whose rows are shifted Gaussian bumps, spaced *D* apart: each output pixel is a weighted average of a neighborhood instead of a single picked pixel. **S** does not send high-frequency patterns to zero (its null space holds only patterns that are zero on every kept pixel); instead it folds them onto low frequencies, where they reappear disguised. **G** shrinks those patterns to almost nothing first, so they contribute almost nothing to **S G x**: fine detail is lost outright rather than disguised as something else.
 
 > **Summary**
 > - Keeping every *D*-th pixel samples at 1/*D* the rate, so spectral copies overlap and fine detail aliases.
@@ -1186,7 +1186,7 @@ B / K = I + N / K
 
 The first term is the right answer. The second is the noise, divided by the OTF. Noise is spread across all frequencies (unlike real images, which are concentrated at low ones), so at high frequencies, where |*K*| is tiny, *N*/*K* is enormous. "When we divide by zero, we amplify the high frequency noise" (slide 109).
 
-**What it looks like (slide 110).** The lecture blurs the parrots with a Gaussian and adds a tiny amount of noise ("example for Gaussian of σ = 0.05"), then applies the inverse kernel *k*⁻¹: the result is pure noise, with no trace of the parrots. "Even tiny noise can make the results awful." PS4's example (noise σ = 0.001) reports a PSNR (§25) of about −157 dB after inverse filtering, i.e. a result vastly worse than the blurred input, against about 26.6 dB after Wiener deconvolution (§23).
+**What it looks like (slide 110).** The lecture blurs the parrots with a ringed, Airy-like diffraction PSF and adds a small amount of Gaussian noise ("example for Gaussian of σ = 0.05", where σ is the noise's standard deviation, not a blur width), then applies the inverse kernel *k*⁻¹: the result is pure noise, with no trace of the parrots. "Even tiny noise can make the results awful." PS4's example (noise σ = 0.001) reports a PSNR (§25) of about −157 dB after inverse filtering, i.e. a result vastly worse than the blurred input, against about 26.6 dB after Wiener deconvolution (§23).
 
 > **Worked example (8 samples, a kernel with an exact zero and two near-zeros).** Use the 3-tap blur [0.25, 0.5, 0.25] on an 8-sample signal with wrap-around edges. Its DFT (the OTF at frequency indices *k* = 0 … 7) is
 >
@@ -1378,7 +1378,7 @@ PSNR = 10 · log₁₀( max(I_original)² / MSE )          in decibels (dB)
 ```
 
 - *Why this shape:* MSE alone depends on the pixel scale (an error of 4 means something different for values in 0–255 than in 0–1). Dividing the largest possible squared value by MSE gives a scale-free ratio; the logarithm in **decibels** (10 log₁₀ of a power ratio) turns huge ratios into manageable numbers. Higher is better.
-- *Term by term:* max(*I*_original) = the largest value the image's format can hold (1 for images scaled to [0, 1]; 255 for 8-bit). It must match the scale MSE was computed on.
+- *Term by term:* max(*I*_original) = as PS4 writes it, the largest pixel value in the ground-truth image. The standard definition instead uses the largest value the image's format can hold (1 for images scaled to [0, 1]; 255 for 8-bit); the two agree whenever the original reaches full brightness. Either way it must match the scale MSE was computed on.
 
 > **Worked example.** Images on [0, 1], MSE = 0.001: PSNR = 10·log₁₀(1/0.001) = 10·log₁₀(1000) = **30 dB**. Every 10× reduction in MSE adds 10 dB. A negative PSNR, like PS4's −157 dB for inverse filtering, means MSE is *larger* than max²: the restored values are wildly outside the image's range.
 
@@ -1586,7 +1586,7 @@ K*(ω) / ( |K(ω)|² + λ )
 
 which is the Wiener filter of §23 with 1/SNR(ω) replaced by the constant λ, exactly PS4's constant-*k* version. Wiener deconvolution is Tikhonov-regularized least squares, solved in closed form because the Fourier basis diagonalizes everything.
 
-**Linear-algebra view (regularization replaces 1/s by s/(s² + λ) for each singular value).** Write **A** = **UΣV**ᵀ (§27.3). The plain inverse multiplies the component along each singular direction by 1/*s*, which explodes as *s* → 0. The regularized solution multiplies it by *s*/(*s*² + λ) instead: almost 1/*s* when *s*² ≫ λ, but going smoothly to 0 when *s*² ≪ λ. These per-direction multipliers are called **filter factors**; they form a diagonal matrix between **V** and **U**ᵀ, and their curve has the same shape as the Wiener damping factor.
+**Linear-algebra view (regularization replaces 1/s by s/(s² + λ) for each singular value).** Write **A** = **UΣV**ᵀ (§27.3). The plain inverse multiplies the component along each singular direction by 1/*s*, which explodes as *s* → 0. The regularized solution multiplies it by *s*/(*s*² + λ) instead: almost 1/*s* when *s*² ≫ λ, but going smoothly to 0 when *s*² ≪ λ. These per-direction multipliers form a diagonal matrix between **V** and **U**ᵀ. Written as 1/*s* times a correction, *s*/(*s*² + λ) = (1/*s*)·*s*²/(*s*² + λ); the correction *s*²/(*s*² + λ), which goes from about 1 (large *s*) to 0 (small *s*), is what is called the **filter factor**, and it has the same shape as the Wiener damping factor |*K*|²/(|*K*|² + λ).
 
 > **Summary**
 > - Under-determined (wide **A**): **A**ᵀ**A** is singular and solutions are not unique.
@@ -1621,7 +1621,7 @@ x^(k+1) = x^(k) − α Aᵀ( A x^(k) − b )
 | **A**ᵀ(…) | carries each measurement's error back onto the unknowns that caused it | computed |
 | α | step size | you |
 
-**What each step costs.** One multiplication by **A** and one by **A**ᵀ, nothing else: no inverse, no **A**ᵀ**A** stored. "For large-scale problems, implement as function handles!" means passing these two operations around as functions (PS4 Task 3's `run_gd(A, b, step_size, num_iters, grad_fn, residual_fn)` takes the gradient and residual computations as arguments). PS4's code skeleton computes the residual (objective) as `0.5 * np.linalg.norm(A @ x - b)**2`, where `@` is Python's matrix multiplication.
+**What each step costs.** One multiplication by **A** and one by **A**ᵀ, nothing else: no inverse, no **A**ᵀ**A** stored. "For large-scale problems, implement as function handles!" means passing these two operations around as functions (PS4 Task 3's `run_gd(A, b, step_size, num_iters, grad_fn, residual)` takes the gradient and residual computations as arguments). PS4's code skeleton computes the residual (objective) as `0.5 * np.linalg.norm(A @ x - b)**2`, where `@` is Python's matrix multiplication.
 
 **Choosing α.** Too small: very slow progress. Too large: each step overshoots the valley floor, and the estimate oscillates and blows up. For least squares the precise limit is α < 2/μ_max, where μ_max is the largest eigenvalue of **A**ᵀ**A** (the steepest curvature of the bowl).
 

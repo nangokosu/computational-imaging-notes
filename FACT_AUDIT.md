@@ -983,3 +983,79 @@ burst/flutter-shutter SNR), [PS4](https://www.cs.toronto.edu/~lindell/teaching/2
 ## Markdown / artifact drift
 
 Fixed: artifact's stale section references (item 17). The artifact's glossary card merges tone reproduction curve, ColorChecker, xyY, wavefront coding and focal sweep into other entries, while glossary.md lists them separately (structure only; left as is). The markdown carries Wikipedia links despite CLAUDE.md; left. All other claims agree between md, glossary and artifact.
+
+---
+---
+
+# Week 5 Audit — 2026-10-05
+
+**Last audited:** 2026-10-05
+**Scope:** `week5-study-notes.md`, the `## Week 5` section of `glossary.md`, the artifact's `#week-5` block (Figs. 109–177) and `#glossary-week-5` card. Ground truth: [lecture5.pdf](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/lecture5.pdf) and the HW4 problem session [PS4.pdf](https://www.cs.toronto.edu/~lindell/teaching/2529/slides/PS4.pdf). Slide numbers in the notes are PDF page numbers (printed numbers run 2 higher after about page 101); used consistently.
+**Summary:** 105 confirmed (40 claim groups + 65 diagrams) / 10 corrected (7 claims + 3 diagrams) / 2 unverifiable (1 claim + 1 diagram). 69 diagrams audited in total.
+
+## Corrected
+
+1. **§13.1 Fraunhofer condition** (md + artifact). Before: "the sensor is far from the aperture compared with the light's wavelength." Now: far compared with *W*²/λ (aperture width squared over wavelength), with a note that distance large compared with λ alone is not enough. Source: [Wikipedia, Fraunhofer diffraction](https://en.wikipedia.org/wiki/Fraunhofer_diffraction) (Fresnel number W²/(Lλ) ≪ 1).
+2. **§13.4 square-aperture OTF** (md + artifact). Before: "Its OTF is a pyramid (a tent in x times a tent in y)." Now: "a pyramid-like peak, a tent in x times a tent in y (its faces are gently curved rather than flat, since a product of two tents is not a true pyramid)." Source: the autocorrelation of a square is the separable product tri(x)·tri(y), whose faces are bilinear, not planar ([Wikipedia, Triangular function](https://en.wikipedia.org/wiki/Triangular_function); [Optical transfer function](https://en.wikipedia.org/wiki/Optical_transfer_function)).
+3. **§19 Linear-algebra view, null space of S** (md + artifact). Before: "The null space of S contains high-frequency patterns that S would fold onto low frequencies ... what remains in the null space is detail that was going to be lost anyway." Now: S does not send high-frequency patterns to zero (its null space holds only patterns that are zero on every kept pixel); it folds them onto low frequencies, and G removes them first so they contribute almost nothing to S G x. Source: definition of the null space ([Wikipedia, Kernel (linear algebra)](https://en.wikipedia.org/wiki/Kernel_(linear_algebra))); a high-frequency pattern sampled by S gives nonzero (aliased) outputs, which is what aliasing means ([Aliasing](https://en.wikipedia.org/wiki/Aliasing)).
+4. **§22.2 "What it looks like (slide 110)"** (md + artifact). Before: "The lecture blurs the parrots with a Gaussian and adds a tiny amount of noise ('example for Gaussian of σ = 0.05')." Now: the kernel is a ringed, Airy-like diffraction PSF, and σ = 0.05 is the standard deviation of the added Gaussian noise, not a blur width. Source: lecture5.pdf page 110 (printed 112) shows the kernel k as a disc with concentric rings, captioned "Example for Gaussian of σ = 0.05" next to "Even tiny noise can make the results awful."
+5. **§25 PSNR, meaning of max(I_original)** (md + artifact). Before: "max(I_original) = the largest value the image's format can hold (1 ...; 255 for 8-bit)." Now: as PS4 writes it, the largest pixel value in the ground-truth image; the standard definition uses the largest value the format can hold; the two agree when the original reaches full brightness. Sources: PS4.pdf page 13 (formula literally `max(I_original)²/MSE`); [Wikipedia, Peak signal-to-noise ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) ("MAX_I is the maximum possible pixel value of the image").
+6. **§31.1 `run_gd` signature** (md + artifact). Before: `run_gd(A, b, step_size, num_iters, grad_fn, residual_fn)`. Now: `run_gd(A, b, step_size, num_iters, grad_fn, residual)`. Source: PS4.pdf page 19 (`def run_gd(A, b, step_size=1e-4, num_iters=1500, grad_fn=grad_l2, residual=residual_l2)`).
+7. **§30 filter factors** (md, glossary.md, artifact callout and artifact glossary card). Before: the multipliers s/(s² + λ) "are called filter factors ... and their curve has the same shape as the Wiener damping factor"; glossary: "Filter factors — the per-singular-value multipliers s/(s² + λ)". Now: s/(s² + λ) = (1/s)·s²/(s² + λ); the correction s²/(s² + λ) is the filter factor, and it is that factor (not s/(s² + λ), which rises then falls) that has the shape of the Wiener damping factor |K|²/(|K|² + λ). Glossary entries reworded to match. Sources: [Wikipedia, Ridge regression § Relation to singular-value decomposition and Wiener filter](https://en.wikipedia.org/wiki/Ridge_regression) (diagonal D_ii = σ_i/(σ_i² + α²)); [Wikipedia, Regularization by spectral filtering](https://en.wikipedia.org/wiki/Regularization_by_spectral_filtering) and Hansen-style filter factors φ_i = σ_i²/(σ_i² + λ²) ([O'Leary, UMD](https://www.cs.umd.edu/users/oleary/reprints/j37.pdf)).
+8. **Fig. 173** (diagram). Before: caption and aria label gave the multipliers for s = 1, 0.3, 0.1, 0.01, λ = 0.01 as "0.99, 3.03, 5.00, 0.99" while the figure's own cells read 3.00; the figure's symbol f_i and caption title "filter factors" named s/(s² + λ) as the filter factor. Now: 0.3/(0.09 + 0.01) = 3.00 in caption and aria; symbol renamed w_i; caption title "regularized multipliers (1/s times the filter factor s²/(s² + λ))". Curves re-derived: peak of s/(s² + λ) is 1/(2√λ) at s = √λ, giving 5.00 at 0.10 (λ = 0.01) and 1.58 at 0.32 (λ = 0.1), matching the plotted markers. Source: direct computation; terminology as item 7.
+9. **Fig. 109** (diagram caption). Before: "period 1/ξ = 4 pixels (bracket between crests)". Now: "(bracket between troughs)", matching the drawing (bracket at y = −2 from x = 1 to x = 5) and the in-figure label "trough to trough". Wave values re-derived: 2·cos(2π·0.25x + π/2) = −2 sin(πx/2) gives 0, −2, 0, 2 at x = 0..3.
+10. **Fig. 145** (diagram aria label). Before: "for a 31 by 31 kernel the Fourier route is about 25 times cheaper". Now: "about 23 times", matching the prose, the in-figure label and the arithmetic: P·K² = 2²⁰·961 = 1.008×10⁹; 2P log₂P + P = 41·2²⁰ = 4.30×10⁷; ratio 23.4.
+
+## Confirmed
+
+1. Sinusoid parameters (amplitude, spatial frequency in cycles/pixel, phase) and Fourier pair conventions; conjugate symmetry of a real signal's spectrum ([Fourier transform](https://en.wikipedia.org/wiki/Fourier_transform)).
+2. Convolution theorem; circulant matrices are diagonalized by the DFT, eigenvalues = DFT of the kernel ([Convolution theorem](https://en.wikipedia.org/wiki/Convolution_theorem), [Circulant matrix](https://en.wikipedia.org/wiki/Circulant_matrix)).
+3. Sampling replicates the spectrum at multiples of f_s; Dirac comb of spacing T transforms to a comb of spacing 1/T ([Dirac comb](https://en.wikipedia.org/wiki/Dirac_comb)).
+4. Nyquist–Shannon f_s ≥ 2 f_max, Nyquist frequency f_s/2, Nyquist rate 2 f_max, alias frequency |f − f_s·round(f/f_s)| ([Nyquist–Shannon](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem), [Aliasing](https://en.wikipedia.org/wiki/Aliasing)).
+5. DFT definition, N = 4 example [1, 2, 3, 4] → [10, −2 + 2j, −2, −2 − 2j] (recomputed), F⁻¹ = F^H/N ([DFT](https://en.wikipedia.org/wiki/Discrete_Fourier_transform), [DFT matrix](https://en.wikipedia.org/wiki/DFT_matrix)).
+6. DFT convolution is circular; zero-pad to N + K − 1 for linear convolution ([Circular convolution](https://en.wikipedia.org/wiki/Circular_convolution)).
+7. FFT: Cooley & Tukey 1965, O(N²) → O(N log N), radix-2 butterfly x̂[k] = E[k] ± e^{−j2πk/N}O[k], N = 4 factorization check, speed-ups ≈ 100× (N = 1024) and ≈ 52 000× (N = 2²⁰; 1.1×10¹²/2.1×10⁷ = 52 429) ([Cooley–Tukey FFT](https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm), [Twiddle factor](https://en.wikipedia.org/wiki/Twiddle_factor), [Butterfly diagram](https://en.wikipedia.org/wiki/Butterfly_diagram)).
+8. Thin lens equation; PSF as blur kernel under shift invariance; coma and distortion vary across the field (lecture5 slides 43–47; [Optical aberration](https://en.wikipedia.org/wiki/Optical_aberration)).
+9. rect → sinc (coherent PSF) → sinc² (incoherent PSF) → tent (OTF), and the autocorrelation route (lecture5 slides 50–53; [Wiener–Khinchin / autocorrelation](https://en.wikipedia.org/wiki/Autocorrelation)).
+10. Scaling-theorem table rect(x/2) → sinc(2x), tent(x/2) etc. (slides 54–56).
+11. Circular aperture → Airy pattern, jinc from J₁; square aperture PSF sinc²(x)sinc²(y) cross; "other shapes produce very anisotropic blur" (slides 57–60; [Airy disk](https://en.wikipedia.org/wiki/Airy_disk)).
+12. Airy radius 1.22 λN, OTF cutoff 1/(λN); worked numbers f/8: 5.37 µm radius, 227 cycles/mm; f/2: 2.7 µm across, 909; f/16: 21.5 µm, 114 (recomputed; [Airy disk](https://en.wikipedia.org/wiki/Airy_disk), [Optical transfer function](https://en.wikipedia.org/wiki/Optical_transfer_function)).
+13. LiDAR beam divergence θ ≈ 1.22 λ/D for a uniformly filled circular exit aperture (Airy first-null half-angle; [Airy disk](https://en.wikipedia.org/wiki/Airy_disk)). Note: [Beam divergence](https://en.wikipedia.org/wiki/Beam_divergence) states the Gaussian-beam form λ/(πw₀), a different (1/e²) convention; "at best" is therefore convention-dependent, not wrong.
+14. Detector footprint MTF |sin(πξw)/(πξw)|, first zero at 1/w; sensor Nyquist 1/(2p); fill factor ([Fill factor (image sensor)](https://en.wikipedia.org/wiki/Fill_factor_(image_sensor))).
+15. Hard cutoff rings (Gibbs, ≈ 9% overshoot; Fig. 144's 1.09 / −0.09) ([Gibbs phenomenon](https://en.wikipedia.org/wiki/Gibbs_phenomenon)).
+16. §16.3 cost model P·K² vs 2P log₂P + P, ≈ 23×, crossover K ≈ √(2 log₂P + 1) ≈ 6.4, K = 3 primal 4.6× cheaper (recomputed); PS4 runtime-chart quote.
+17. psf2otf = pad, circular shift of the kernel's center to (0, 0), FFT; kernel normalized to sum 1 gives OTF(0) = 1 (PS4 Task 1 slides).
+18. Unsharp masking forms and slide 77 note; sharpening mask 2 − C_LP ([Unsharp masking](https://en.wikipedia.org/wiki/Unsharp_masking)).
+19. 0/1 Fourier masks are orthogonal projections, P² = P ([Projection (linear algebra)](https://en.wikipedia.org/wiki/Projection_(linear_algebra))).
+20. Lens forms the Fourier transform one focal length away under coherent light; 4f system, inverted output ([Fourier optics](https://en.wikipedia.org/wiki/Fourier_optics)).
+21. Downsampling must low-pass below 1/(2D) cycles/pixel first ([Downsampling (signal processing)](https://en.wikipedia.org/wiki/Downsampling_(signal_processing))); Parmar et al.: 128×128 circle downsampled by 8 to 16×16, PIL antialiases, OpenCV/TensorFlow/PyTorch alias, FID affected ([arXiv 2104.11222](https://arxiv.org/abs/2104.11222), [clean-fid page](https://www.cs.cmu.edu/~clean-fid)).
+22. Upsampling = insert samples + low-pass interpolation ([Upsampling](https://en.wikipedia.org/wiki/Upsampling)).
+23. Wagon-wheel effect is temporal aliasing ([Wagon-wheel effect](https://en.wikipedia.org/wiki/Wagon-wheel_effect)).
+24. Pulsed LiDAR maximum unambiguous range c/(2·PRF); CW ToF phase wrap every c/(2 f_mod) ([Pulse repetition frequency](https://en.wikipedia.org/wiki/Pulse_repetition_frequency), [Time-of-flight camera](https://en.wikipedia.org/wiki/Time-of-flight_camera)).
+25. Optical low-pass filter: two birefringent layers split a point into four ([Birefringence](https://en.wikipedia.org/wiki/Birefringence), [Anti-aliasing filter](https://en.wikipedia.org/wiki/Anti-aliasing_filter)).
+26. Inverse filter B/K = I + N/K; 8-sample [0.25, 0.5, 0.25] OTF 1, 0.854, 0.5, 0.146, 0 and gain 6.83 (recomputed); [Inverse filter](https://en.wikipedia.org/wiki/Inverse_filter) resolves (article is speech-oriented but defines the inverse filter generally).
+27. PS4 example: noise σ = 0.001, PSNR −156.57 dB (inverse) and 26.61 dB (Wiener) (PS4.pdf page 14).
+28. Wiener filter K*/(|K|² + 1/SNR), damping factor form; derivation E[IN] = E[I]E[N] = 0 and H = K E‖I‖²/(K²E‖I‖² + E‖N‖²) (lecture5 pages 121–123; [Wiener deconvolution](https://en.wikipedia.org/wiki/Wiener_deconvolution)).
+29. PS4 Wiener form G′ = (1/G)·|G|²/(|G|² + k), curves k = 0.01, 0.05, 0.1; PS4's practical SNR estimate (PS4.pdf pages 11–12).
+30. MSE and PSNR formulas, 30 dB worked example, +10 dB per 10× lower MSE (PS4.pdf page 13; [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio)).
+31. b = Ax, rank, null space, condition number σ_max/σ_min, SVD, circulant singular values = |OTF| ([Condition number](https://en.wikipedia.org/wiki/Condition_number), [SVD](https://en.wikipedia.org/wiki/Singular_value_decomposition)).
+32. Least squares, gradient Aᵀ(Ax − b), normal equations as orthogonal projection ([Least squares](https://en.wikipedia.org/wiki/Least_squares)); PS4 page 17 residual/gradient.
+33. Tikhonov x = (AᵀA + λI)⁻¹Aᵀb; worked example A = [1, 2], b = 5: λ = 1 → [0.833, 1.667], λ = 0.01 → [0.998, 1.996], λ → 0 → least-norm [1, 2] (recomputed; [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression)).
+34. Wiener deconvolution = Tikhonov with λ = 1/SNR (Ridge regression article, SVD/Wiener section).
+35. Gradient descent, α < 2/μ_max; worked example AᵀA = [[3, 6], [6, 14]] eigenvalues 16.64 / 0.36 (trace 17, det 6), iterates and divergence at α = 0.13, condition number 46 (recomputed; [Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent)).
+36. Adjoint of convolution = flipped kernel = conjugate OTF ([Hermitian adjoint](https://en.wikipedia.org/wiki/Hermitian_adjoint)).
+37. SGD: unbiased E[g(x)] = ∇f(x), subset of rows = batch size, `np.random.randint` (PS4.pdf page 18; [Stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent), [Bias of an estimator](https://en.wikipedia.org/wiki/Bias_of_an_estimator)).
+38. Ill-posed problem (existence, uniqueness, stability) ([Well-posed problem](https://en.wikipedia.org/wiki/Well-posed_problem)); "need more advanced image priors ... week 7&8" (lecture5 page 124).
+39. Lecture/PS4 slide references throughout the week (PS4 slides 9, 11, 13, 14, 15–18, 19, 20; lecture pages cited in §§12–33) match the PDFs.
+40. Wikipedia link targets fetched and matching their concept: Bandlimiting, Twiddle_factor, Butterfly_diagram, Beam_divergence, Fill_factor_(image_sensor), Upsampling, Downsampling_(signal_processing), Pulse_repetition_frequency, Ridge_regression, Hermitian_adjoint, Inverse_filter, Fraunhofer_diffraction, Peak_signal-to-noise_ratio.
+
+**Diagrams confirmed (65):** Figs. 110–144, 146–150, 152–172, 174–177: geometry/curves re-derived from their formulas and source slides (labels, axes, peaks, zeros and caption numbers), and Fig. N numbering 109–177 is sequential in document order.
+
+## Unverifiable
+
+1. Fig. 151 drawing: its single SVG line (~52k characters) could not be inspected in full; its caption was checked against §19's text, but the plotted geometry was not verified.
+2. "A typical phone or camera pixel is 1–6 µm wide" (§13.5 worked example): plausible, but no independent source was fetched in this run.
+
+## Markdown / artifact drift
+
+The markdown and the artifact carried the same errors for items 1–7 (no drift between them); glossary.md and the artifact's glossary card both had the same filter-factor definition. Drift inside the artifact only: Fig. 145's aria label (25×) vs its prose and in-figure label (23×), and Fig. 173's caption/aria (3.03) vs its own cells (3.00); both fixed. Out of scope, noted for the diagram auditor: duplicate SVG marker id `w5-circ-arrow` in Figs. 118 and 166.
