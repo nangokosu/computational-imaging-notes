@@ -1388,3 +1388,561 @@ I − I * PSF_LP   ≡   Ĩ × (1 − OTF_LP)
 | μ_flutter | Mean recorded value of the coded image; computed output |
 
 ---
+
+## Week 5 — Sampling, Linear Systems, Deconvolution
+*(full derivations and diagrams in [`week5-study-notes.md`](./week5-study-notes.md); this is the lookup-speed reference)*
+
+### A sinusoidal wave (§2.1)
+
+```
+s(x) = A · cos(2π ξ x + φ)
+```
+
+**Computes:** The value at position (or time) x of a single pure wave, the building block every Fourier formula decomposes signals into.
+
+| Term | Meaning |
+|---|---|
+| x | Position or time — the axis you measure along |
+| A | Amplitude: half the peak-to-trough height; signal units — fixed by the signal |
+| ξ | Frequency: cycles per unit of x (period 1/ξ) — fixed by the signal |
+| φ | Phase: sideways shift, in radians (2π = one cycle) — fixed by the signal |
+| 2π | Converts cycles to radians — fixed |
+
+---
+
+### Euler's formula and the polar form (§2.3)
+
+```
+e^{jθ} = cos θ + j sin θ
+A e^{jφ} · e^{j2πξx} = A e^{j(2πξx + φ)}    (real part: A cos(2πξx + φ))
+cos(2πξx) = ½ e^{j2πξx} + ½ e^{−j2πξx}
+```
+
+**Computes:** Packs a wave's amplitude and phase into one complex number and writes a real cosine as two counter-rotating complex waves (at +ξ and −ξ).
+
+| Term | Meaning |
+|---|---|
+| j | Imaginary unit, j² = −1 (the slides also write it i) |
+| θ | Angle of the unit arrow, radians |
+| A e^{jφ} | Arrow of length A (amplitude) at angle φ (phase) |
+| e^{j2πξx} | Arrow spinning ξ turns per unit of x: a complex wave of frequency ξ |
+
+---
+
+### Continuous Fourier transform pair, 1D and 2D (§3.1–§3.2)
+
+```
+f̂(ξ) = ∫ f(x) e^{−j2πξx} dx          f(x) = ∫ f̂(ξ) e^{j2πξx} dξ
+f(x, y) = ∫∫ F(k_x, k_y) e^{j2π(k_x x + k_y y)} dk_x dk_y
+```
+
+**Computes:** The spectrum — one complex coefficient per frequency saying how much of each wave (1D) or grating (2D) a signal contains — and, inversely, rebuilds the signal from it with nothing lost.
+
+| Term | Meaning |
+|---|---|
+| f(x), f(x,y) | Signal in the primal domain (signal units) |
+| ξ; k_x, k_y | Frequency (1D); horizontal and vertical frequency (2D), cycles per unit length |
+| f̂(ξ), F(k_x,k_y) | Fourier coefficients: magnitude = strength, angle = shift of each wave |
+| e^{∓j2πξx} | Probe wave (forward, minus sign) / building-block wave (inverse, plus sign) |
+
+---
+
+### Conjugate symmetry of real signals (§3.3)
+
+```
+F(−k_x, −k_y) = F(k_x, k_y)*
+```
+
+**Computes:** The constraint every real image's spectrum satisfies, so its magnitude spectrum is symmetric through the center and half the coefficients are redundant.
+
+| Term | Meaning |
+|---|---|
+| F(k_x,k_y) | Fourier coefficient at frequency (k_x, k_y) |
+| * | Complex conjugate (same magnitude, opposite angle) |
+
+---
+
+### Convolution, discrete and continuous (§5.1)
+
+```
+(x ∗ h)[n] = Σ_m h[m] · x[n − m]          (f ∗ g)(x) = ∫ g(u) · f(x − u) du
+```
+
+**Computes:** The output of any linear shift-invariant system (blur, smoothing filter, lens) as a stamped-and-summed copy of its kernel at every input point.
+
+| Term | Meaning |
+|---|---|
+| x[n], f(x) | Input signal — fixed by the scene |
+| h[m], g(u) | Kernel / impulse response / PSF — chosen (a filter) or fixed by the optics (a blur) |
+| n, x | Output position |
+| m, u | Offset of a kernel weight from the output position |
+
+---
+
+### Convolution theorem (§5.2)
+
+```
+F{x ∗ g} = F{x} · F{g}          x ∗ g = F⁻¹{ F{x} · F{g} }
+```
+
+**Computes:** Convolution in the primal domain as element-wise multiplication of spectra: each frequency of the input is scaled and shifted by the kernel's spectrum (its frequency response, or OTF for a lens).
+
+| Term | Meaning |
+|---|---|
+| F{x} | Input spectrum |
+| F{g} | Kernel spectrum (frequency response / OTF): near 1 = passed, near 0 = removed |
+| · | Multiplication, one frequency at a time |
+| F⁻¹ | Inverse Fourier transform |
+
+---
+
+### Standard Fourier pairs and the scaling theorem (§6)
+
+```
+δ(x) ↔ 1                    rect(x) ↔ sinc(ξ) = sin(πξ)/(πξ)
+tent = rect ∗ rect ↔ sinc²(ξ)
+(1/(σ√(2π))) e^{−x²/(2σ²)} ↔ e^{−2π²σ²ξ²}
+comb_T(x) = Σ_n δ(x − nT) ↔ (1/T) · comb_{1/T}(ξ)
+f(x/a) ↔ |a| · f̂(aξ)
+```
+
+**Computes:** The spectra of the shapes the lecture uses (point, aperture/pixel box, triangle, Gaussian blur, sampling comb), and how stretching a signal by a squeezes its spectrum by a.
+
+| Term | Meaning |
+|---|---|
+| δ | Impulse: a single point of unit area |
+| rect | Box: 1 for \|x\| < ½ (aperture slit, pixel, shutter) |
+| sinc | Its transform; exact zeros at every nonzero integer ξ |
+| tent | Triangle 1 − \|x\| on \|x\| < 1 |
+| σ | Gaussian width (spectrum width 1/(2πσ)) — you choose for a filter |
+| T | Comb spacing (sampling interval) |
+| a | Stretch factor |
+
+---
+
+### Spectrum of a sampled signal (§7)
+
+```
+f_sampled(x) = f(x) · comb_T(x)          F{f · comb_T} = (1/T) · Σ_m f̂(ξ − m f_s),   f_s = 1/T
+```
+
+**Computes:** The effect of sampling on frequency content: copies of the original spectrum centered at every multiple of the sampling rate.
+
+| Term | Meaning |
+|---|---|
+| T | Sampling interval (pixel pitch, seconds per sample) — set by the sensor/digitizer |
+| f_s | Sampling rate, samples per unit length or per second |
+| m | Index of the spectral copy |
+| f̂(ξ − m f_s) | Original spectrum shifted to m f_s |
+
+---
+
+### Nyquist–Shannon criterion and the aliased frequency (§8)
+
+```
+f_s ≥ 2 f_max                      Nyquist frequency = f_s / 2
+f_apparent = | f − f_s · round(f / f_s) |
+```
+
+**Computes:** Whether a sampling rate is fast enough to represent a band-limited signal without aliasing, and, if not, the lower frequency an under-sampled frequency appears as (e.g. 24 Hz at f_s = 20 Hz appears as 4 Hz).
+
+| Term | Meaning |
+|---|---|
+| f_s | Sampling rate — you or the hardware choose it |
+| f_max | Highest frequency present in the signal — fixed by the signal (or by an anti-aliasing filter) |
+| f | A frequency present in the signal |
+| f_apparent | The frequency it appears as after sampling, between 0 and f_s/2 |
+
+---
+
+### Discrete Fourier transform pair (§10)
+
+```
+x̂[k] = Σ_{n=0}^{N−1} x[n] e^{−j2πkn/N}          x[n] = (1/N) Σ_{k=0}^{N−1} x̂[k] e^{j2πkn/N}
+x̂ = F x,   F[k, n] = e^{−j2πkn/N},   F⁻¹ = F^H / N
+```
+
+**Computes:** The N Fourier coefficients of N stored samples (treated as one period of a repeating signal), an orthogonal change of basis that the inverse undoes exactly.
+
+| Term | Meaning |
+|---|---|
+| x[n] | n-th sample, n = 0…N−1 |
+| N | Number of samples |
+| k | Frequency index: k cycles across the N samples, i.e. k/N cycles per sample; indices above N/2 are negative frequencies |
+| x̂[k] | k-th complex coefficient; x̂[0] = sum of samples |
+| F | N×N DFT matrix; F^H is its conjugate transpose |
+
+---
+
+### FFT recombination (butterfly) (§11)
+
+```
+x̂[k]       = E[k] + e^{−j2πk/N} · O[k]
+x̂[k + N/2] = E[k] − e^{−j2πk/N} · O[k]          (k = 0 … N/2 − 1)
+```
+
+**Computes:** The full N-point DFT from the DFTs of the even-indexed (E) and odd-indexed (O) samples; applied recursively, it reduces the cost from N² to about N log₂ N operations.
+
+| Term | Meaning |
+|---|---|
+| E[k], O[k] | Half-length DFTs of the even and odd samples |
+| e^{−j2πk/N} | Twiddle factor |
+| N | Transform length (a power of 2 in the basic version) |
+
+---
+
+### Diffraction chain: aperture → PSF → OTF (§13.2)
+
+```
+coherent PSF   = F{ aperture }
+incoherent PSF = | F{ aperture } |²
+OTF            = F{ incoherent PSF } = autocorrelation of the aperture
+1D slit:  rect(x) → sinc(x) → sinc²(x) → tent(x)
+```
+
+**Computes:** Under Fraunhofer (far-field) and incoherent-light assumptions, the diffraction-limited blur of a lens from its aperture shape, and the fraction of each spatial frequency it transmits.
+
+| Term | Meaning |
+|---|---|
+| aperture | Opening shape: 1 where light passes, 0 where blocked — set by the lens design |
+| coherent PSF | Wave amplitude on the sensor (can be negative) |
+| incoherent PSF | Intensity the sensor records (squared magnitude) |
+| OTF | Transfer function; zero beyond a cutoff |
+
+---
+
+### Airy disc radius and diffraction cutoff (§13.5)
+
+```
+r = 1.22 · λ · N          ξ_cutoff = 1 / (λ · N)
+```
+
+**Computes:** The radius of the central bright disc of a circular aperture's diffraction PSF, and the highest spatial frequency the lens transmits (e.g. 5.37 µm and 227 cycles/mm for 550 nm light at f/8).
+
+| Term | Meaning |
+|---|---|
+| λ | Wavelength of light, m — fixed by the light |
+| N | f-number f/D — you choose it |
+| 1.22 | First zero of the jinc (circular geometry) — fixed |
+| r | Airy disc radius on the sensor, m |
+| ξ_cutoff | OTF cutoff, cycles per unit length on the sensor |
+
+---
+
+### LiDAR beam divergence (§13.6)
+
+```
+θ ≈ 1.22 · λ / D          r ≈ θ · R
+```
+
+**Computes:** The diffraction-limited half-angle spread of a laser beam leaving an aperture of diameter D, and the resulting spot radius at range R (e.g. 0.11 mrad and 1.1 cm at 100 m for 905 nm, D = 10 mm).
+
+| Term | Meaning |
+|---|---|
+| λ | Laser wavelength, m — set by the laser |
+| D | Exit aperture diameter, m — set by the design |
+| θ | Half-angle beam spread, radians |
+| R | Distance to the target, m |
+| r | Spot radius on the target, m |
+
+---
+
+### Lens blur model; MTF (§14)
+
+```
+b = c ∗ x          B = C · X          MTF = |OTF| = |C|
+```
+
+**Computes:** The blurred image a lens forms from the ideal sharp image, as a convolution with the PSF or, equivalently, a per-frequency multiplication by the OTF; the MTF is the contrast-only part.
+
+| Term | Meaning |
+|---|---|
+| x, X | Sharp image and its spectrum |
+| c, C | PSF and its Fourier transform, the OTF — fixed by the optics |
+| b, B | Blurred image and its spectrum |
+
+---
+
+### Pixel integration, sampling, and the footprint MTF (§15)
+
+```
+ĩ(x, y) = i(x, y) ∗ ( rect(x/w) · rect(y/h) )
+E[i, j] = ĩ(x, y) · Σ_m Σ_n δ(x − m p, y − n p)
+MTF_footprint(ξ) = | sin(π ξ w) / (π ξ w) |          sensor Nyquist = 1 / (2p)
+```
+
+**Computes:** How a sensor turns continuous irradiance into pixel values (box-average over each pixel, then sample at pixel centers), the contrast lost to pixel averaging at each spatial frequency (zero at 1/w), and the highest frequency the pixel grid can represent (e.g. 0.64 at Nyquist and 125 cycles/mm for 4 µm pixels).
+
+| Term | Meaning |
+|---|---|
+| i(x, y) | Irradiance on the sensor, W/m² |
+| w, h | Pixel light-collecting width and height — fixed by the sensor |
+| p | Pixel pitch (center spacing) — fixed by the sensor |
+| E[i, j] | Stored value of pixel (i, j) |
+| ξ | Spatial frequency, cycles per unit length |
+
+---
+
+### Low-pass filtering in two domains, and its cost (§16)
+
+```
+b = x ∗ c          F{b} = F{x} · F{c}
+cost:  primal ≈ P · K²          Fourier ≈ 2 P log₂ P + P
+```
+
+**Computes:** A blurred (low-passed) image by direct convolution or by Fourier-domain multiplication, and the operation counts that make the Fourier route cheaper for large kernels.
+
+| Term | Meaning |
+|---|---|
+| x | Input image |
+| c | Low-pass kernel (e.g. a normalized Gaussian) — you choose it |
+| P | Number of pixels |
+| K | Kernel width in pixels (K×K kernel) |
+
+---
+
+### High-pass filtering and unsharp masking (§17)
+
+```
+high-pass:   x − x ∗ c_LP          X · (1 − C_LP)
+sharpened:   x ∗ (δ + c_highpass) = x + x ∗ c_highpass,     c_highpass = δ − c_lowpass_gauss
+Fourier:     X · (2 − C_LP)
+```
+
+**Computes:** The detail layer (image minus its blur) and a sharpened image (original plus one extra copy of its detail), in both domains.
+
+| Term | Meaning |
+|---|---|
+| c_LP, c_lowpass_gauss | Normalized low-pass (Gaussian) kernel — you choose its σ |
+| C_LP | Its Fourier transform |
+| δ | Impulse kernel (identity for convolution) |
+| c_highpass | High-pass kernel δ − c_LP |
+
+---
+
+### Anti-aliasing cutoff for downsampling (§19)
+
+```
+keep every D-th pixel  ⇒  remove image frequencies above 1 / (2D) cycles per original pixel first
+```
+
+**Computes:** How much to low-pass filter an image before downsampling by a factor D so that the subsampled image does not alias (e.g. 0.125 cycles/pixel for D = 4).
+
+| Term | Meaning |
+|---|---|
+| D | Downsampling factor — you choose it |
+| 1/(2D) | New Nyquist frequency, in cycles per original pixel |
+
+---
+
+### LiDAR range ambiguity: pulsed and continuous-wave (§20.2)
+
+```
+pulsed:            R_max = c / (2 · PRF)          d_reported = d_true − m · R_max
+continuous-wave:   R_amb = c / (2 · f_mod)        d_reported = d_true mod R_amb
+waveform sampling: range bin = c · Δt / 2
+```
+
+**Computes:** The farthest distance a LiDAR can report unambiguously (150 m at PRF = 1 MHz; 7.5 m at f_mod = 20 MHz), where a farther target is wrongly reported (time-domain aliasing), and the range spanned by one digitizer sample (15 cm at 1 GS/s).
+
+| Term | Meaning |
+|---|---|
+| c | Speed of light, ≈ 3 × 10⁸ m/s — fixed |
+| PRF | Pulse repetition frequency, Hz — set by the designer |
+| f_mod | Modulation frequency of a continuous-wave ToF sensor, Hz — set by the designer |
+| m | Number of skipped pulse gaps (integer) |
+| Δt | Digitizer sample interval, s |
+
+---
+
+### Noisy blur model and the inverse filter (§22)
+
+```
+b = k ∗ i + n          B = K · I + N
+i_est = F⁻¹( F(b) / F(k) )          B / K = I + N / K
+```
+
+**Computes:** The naive deconvolution estimate, and why it fails: the noise term N/K becomes huge wherever the OTF K is small or zero.
+
+| Term | Meaning |
+|---|---|
+| i, I | Sharp image and spectrum — unknown |
+| k, K | Blur kernel (PSF) and OTF — known (non-blind) |
+| b, B | Blurred noisy measurement and spectrum — measured |
+| n, N | Noise (zero-mean, independent of i) and its spectrum |
+
+---
+
+### Wiener deconvolution (§23)
+
+```
+i_est = F⁻¹( [ |F(k)|² / ( |F(k)|² + 1/SNR(ω) ) ] · F(b) / F(k) )
+      = F⁻¹( K* / ( |K|² + 1/SNR(ω) ) · F(b) )
+SNR(ω) = signal variance at ω / noise variance at ω          (PS4's estimate: SNR = Ī / σ_noise)
+```
+
+**Computes:** A deconvolved image that divides by the OTF only where the signal dominates the noise, damping each frequency by |K|²/(|K|² + 1/SNR) — near 1 at high SNR (inverse filter), near 0 at low SNR (frequency abandoned).
+
+| Term | Meaning |
+|---|---|
+| F(k) = K | OTF of the known blur; K* its conjugate |
+| F(b) | Spectrum of the measurement |
+| SNR(ω) | Signal-to-noise power ratio at frequency ω — estimated or chosen; often one constant |
+| Ī | Mean pixel value of the noisy image (PS4's amplitude-ratio estimate) |
+| σ_noise | Standard deviation of the added noise |
+
+---
+
+### Wiener filter as the expected-error minimizer (§24)
+
+```
+min_H  E[ |I − H B|² ]   ⇒   loss(H) = (1 − HK)² E[I²] + H² E[N²]
+H = K E[I²] / ( K² E[I²] + E[N²] ) = (1/K) · K² / ( K² + 1/SNR )
+```
+
+**Computes:** The per-frequency multiplier H that minimizes the average squared restoration error, balancing leftover blur (first loss term) against amplified noise (second term).
+
+| Term | Meaning |
+|---|---|
+| H | Restoration multiplier at one frequency — the unknown being optimized |
+| E[·] | Expected value (average over noise realizations) |
+| E[I²], E[N²] | Signal and noise power at this frequency |
+| 1/SNR | E[N²]/E[I²] |
+
+---
+
+### MSE and PSNR for a restored image (§25)
+
+```
+MSE  = (1/(m n)) Σ_i Σ_j [ I_original(i, j) − I_restored(i, j) ]²
+PSNR = 10 · log₁₀( max(I_original)² / MSE )    (dB)
+```
+
+**Computes:** The average squared pixel error of a restoration and the same error expressed as a scale-free ratio in decibels (higher PSNR is better; MSE 0.001 on [0, 1] images = 30 dB). Same metrics as Week 3 §13, single-channel form.
+
+| Term | Meaning |
+|---|---|
+| m, n | Image height and width, pixels |
+| I_original, I_restored | Ground-truth and restored pixel values |
+| max(I_original) | Largest value the image format holds (1 or 255) |
+
+---
+
+### Linear image formation (§26)
+
+```
+b = A x
+```
+
+**Computes:** The measurements produced by any linear imaging process (blur, pixel binning, sampling, mosaicking) as one matrix applied to the unknown image vector.
+
+| Term | Meaning |
+|---|---|
+| x | Unknown image, flattened to n×1 |
+| A | m×n image-formation matrix — usually known |
+| b | m×1 measurement vector |
+
+---
+
+### Singular value decomposition and condition number (§27)
+
+```
+A = U Σ Vᵀ          condition number = s_max / s_min
+```
+
+**Computes:** The input directions, output directions and stretch factors of a matrix, from which its rank (nonzero s), null space (zero s) and noise amplification (condition number) follow; for a circulant blur the singular values are |OTF|.
+
+| Term | Meaning |
+|---|---|
+| U, V | Orthogonal matrices of output and input directions |
+| Σ | Diagonal matrix of singular values s₁ ≥ s₂ ≥ … ≥ 0 |
+| s_max, s_min | Largest and smallest singular values |
+
+---
+
+### Least squares, its gradient, and the normal equations (§29)
+
+```
+minimize_x  ½ ‖b − A x‖₂²          ‖r‖₂² = Σ_i r_i²,   r = b − A x
+∇ₓ ½‖b − Ax‖₂² = AᵀA x − Aᵀb
+AᵀA x = Aᵀb          (residual ⟂ columns of A;  A x̂ = P b,  P = A(AᵀA)⁻¹Aᵀ)
+```
+
+**Computes:** The best-fitting solution of an over-determined linear system (the orthogonal projection of b onto the column space of A), and the gradient used by iterative solvers.
+
+| Term | Meaning |
+|---|---|
+| r | Residual: measurement minus prediction |
+| ‖·‖₂ | ℓ₂ norm (length) |
+| Aᵀ | Transpose of A |
+| P | Projection matrix onto the column space of A |
+
+---
+
+### Tikhonov-regularized solution (§30)
+
+```
+x_est = (AᵀA + λ I)⁻¹ Aᵀ b          minimizes ½‖b − Ax‖₂² + (λ/2)‖x‖₂²
+per singular value:  1/s  →  s / (s² + λ)
+for a circulant blur:  K* / (|K|² + λ)     (Wiener with 1/SNR = λ)
+```
+
+**Computes:** A unique, stable solution even for under-determined or ill-conditioned systems, by adding λ to every eigenvalue of AᵀA; λ → 0 gives the least-norm solution.
+
+| Term | Meaning |
+|---|---|
+| λ | Regularization weight (> 0) — you choose it |
+| I | Identity matrix |
+| s | A singular value of A |
+
+---
+
+### Gradient descent for least squares, and its step-size limit (§31.1)
+
+```
+x^(k+1) = x^(k) − α ∇f(x^(k)) = x^(k) − α Aᵀ( A x^(k) − b )
+converges if 0 < α < 2 / μ_max,   μ_max = largest eigenvalue of AᵀA
+```
+
+**Computes:** Successive estimates that move downhill on the least-squares objective, using only one product with A and one with Aᵀ per step, never an inverse.
+
+| Term | Meaning |
+|---|---|
+| x^(k) | Estimate after k iterations |
+| α | Step size / learning rate — you choose it |
+| μ_max | Largest eigenvalue of AᵀA (steepest curvature) |
+
+---
+
+### Gradient descent for deconvolution (§31.2)
+
+```
+x^(k+1) = x^(k) − α · c* ∗ ( c ∗ x^(k) − b )
+        = x^(k) − α · F⁻¹{ F{c}* · ( F{c} · F{x^(k)} − F{b} ) }
+```
+
+**Computes:** A gradient-descent deblurring step in which Aᵀ is convolution with the flipped kernel c*, implemented with FFTs as multiplication by the conjugate OTF.
+
+| Term | Meaning |
+|---|---|
+| c | Blur kernel (PSF) — known |
+| c* | Flipped kernel c(−x), the adjoint of the blur (not complex conjugation in space) |
+| F{c}* | Complex conjugate of the OTF |
+
+---
+
+### Stochastic gradient descent (§32)
+
+```
+x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )          E[ g(x) ] = ∇f(x)
+‖A x − b‖₂² = Σ_{i=1}^{m} ( a_iᵀ x − b_i )²
+```
+
+**Computes:** A gradient step using only a random batch of rows of A and b, whose gradient estimate equals the full gradient on average (exactly, with an m/B scale).
+
+| Term | Meaning |
+|---|---|
+| Ã^(k), b̃^(k) | The B randomly chosen rows of A and entries of b at iteration k |
+| B | Batch size — you choose it |
+| a_iᵀ, b_i | Row i of A and entry i of b |
+| g(x) | Random gradient estimate |

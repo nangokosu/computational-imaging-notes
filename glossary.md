@@ -197,12 +197,110 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **Parabolic sweep / motion-invariant photography** — moving the camera itself along a parabolic (constantly accelerating) trajectory during exposure so every scene object, regardless of its own velocity, ends up blurred by the same motion-invariant kernel, enabling one shared deconvolution kernel across a whole frame (§24). *(No Wikipedia article exists for this specific technique — left unlinked.)*
 
 ## Week 5 — Sampling, Linear Systems, Deconvolution
-- **[DFT](https://en.wikipedia.org/wiki/Discrete_Fourier_transform) / [FFT](https://en.wikipedia.org/wiki/Fast_Fourier_transform)** — converts an image from pixel-brightness representation to spatial-frequency representation; FFT is the efficient algorithm for computing it. The underlying idea (image as sum of 2D waves) was introduced early, in Week 1 §19, for the hybrid-images homework; this entry covers the discrete, computationally efficient version — the exact DFT formula and why the FFT algorithm is fast.
-- **[Aliasing](https://en.wikipedia.org/wiki/Aliasing)** — distortion from sampling below a signal's true frequency content (e.g. moiré).
-- **[Nyquist rate](https://en.wikipedia.org/wiki/Nyquist_rate)** — the minimum sampling rate needed to avoid aliasing for a given highest frequency present.
-- **[Diffraction](https://en.wikipedia.org/wiki/Diffraction)** — bending/spreading of light through small openings — limits how sharply any lens or pinhole can focus.
-- **PSF ([point spread function](https://en.wikipedia.org/wiki/Point_spread_function))** — how a single point of light gets smeared by an imaging system; introduced and defined in full in Week 4 §18.1 (coded-aperture imaging) — this week formalizes it further in the deconvolution/Wiener-filter context below.
-- **[Wiener filter](https://en.wikipedia.org/wiki/Wiener_filter)** — a statistically optimal deconvolution method that accounts for noise.
+*(full explanations in [`week5-study-notes.md`](./week5-study-notes.md); this is the lookup-speed version)*
+
+**The Fourier toolkit**
+- **Temporal / spatial / image frequency** — how often something repeats per second (Hz), per millimeter (cycles/mm), or per stored pixel (cycles/pixel); the wavelength of light is a separate quantity (§1).
+- **Amplitude, frequency, [phase](https://en.wikipedia.org/wiki/Phase_(waves))** — a wave A·cos(2πξx + φ) has height A, ξ cycles per unit length (period 1/ξ) and sideways shift φ (§2.1).
+- **[Complex number](https://en.wikipedia.org/wiki/Complex_number) / magnitude / angle / [conjugate](https://en.wikipedia.org/wiki/Complex_conjugate)** — a pair (a, b) drawn as an arrow; multiplying complex numbers multiplies lengths and adds angles; the conjugate mirrors the arrow (§2.2).
+- **[Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula)** — e^{jθ} = cos θ + j sin θ: a unit arrow at angle θ, so A·e^{jφ} stores an amplitude and a phase and e^{j2πξx} is a wave of frequency ξ (§2.3).
+- **Negative frequency** — the second, oppositely spinning arrow that pairs with +ξ to make a real cosine; not a physical thing (§2.3).
+- **[Fourier transform](https://en.wikipedia.org/wiki/Fourier_transform)** — f̂(ξ) = ∫ f(x) e^{−j2πξx} dx: how much of each wave a signal contains; the inverse adds the waves back and loses nothing (§3.1).
+- **Primal domain / Fourier domain / spectrum** — the slides' names for the original space-or-time description and the per-frequency description of the same signal; the spectrum is the set of Fourier coefficients (§3.1).
+- **DC component** — the zero-frequency coefficient, equal to the signal's average (times N for the DFT); the bright center of a spectrum picture (§3.2).
+- **Conjugate symmetry** — real signals satisfy F(−k) = F(k)*, so a real image's magnitude spectrum looks the same rotated 180° (§3.3).
+- **Magnitude vs. phase** — magnitude = how strong each grating is, phase = where its stripes sit; swapping phases between two photos swaps what you recognize, so phase carries the structure (§4).
+- **[Convolution](https://en.wikipedia.org/wiki/Convolution)** — (x ∗ h)[n] = Σ h[m] x[n − m]: stamp a scaled copy of the kernel at every input point and add (§5.1).
+- **Kernel / [impulse response](https://en.wikipedia.org/wiki/Impulse_response)** — the weights a convolution slides over the signal; what comes out when a single impulse goes in (for optics, the PSF) (§5.1).
+- **[LSI system](https://en.wikipedia.org/wiki/Linear_time-invariant_system)** (linear shift-invariant) — any system where outputs add and scale with inputs and the same rule applies everywhere; every such system is a convolution with its impulse response (§5.1).
+- **[Convolution theorem](https://en.wikipedia.org/wiki/Convolution_theorem)** — F{x ∗ g} = F{x}·F{g}: convolving in one domain is multiplying in the other (§5.2).
+- **[Circulant matrix](https://en.wikipedia.org/wiki/Circulant_matrix) / [eigenvector](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)** — a matrix whose rows are successive cyclic shifts of one row (the form a wrap-around convolution takes); every sampled wave is an eigenvector of it, with the kernel's spectrum as eigenvalue (§5.2).
+- **[Dirac delta](https://en.wikipedia.org/wiki/Dirac_delta_function) (impulse)** — zero everywhere except one point, with area 1; its Fourier transform is the constant 1 (§6.1).
+- **[Rectangular function](https://en.wikipedia.org/wiki/Rectangular_function) (rect, box) / [sinc](https://en.wikipedia.org/wiki/Sinc_function)** — rect(x) = 1 for |x| < ½; its transform sinc(ξ) = sin(πξ)/(πξ) crosses exactly zero at every nonzero integer (§6.2).
+- **[Triangular function](https://en.wikipedia.org/wiki/Triangular_function) (tent)** — rect ∗ rect; its transform is sinc² (§6.3).
+- **[Gaussian function](https://en.wikipedia.org/wiki/Gaussian_function)** — the bell curve; its transform is another Gaussian of width 1/(2πσ), with no ripples or negative values in either domain (§6.4).
+- **[Dirac comb](https://en.wikipedia.org/wiki/Dirac_comb) (impulse train)** — impulses spaced T apart; its transform is a comb spaced 1/T apart (§6.5).
+- **Scaling theorem** — stretching a signal by a squeezes its spectrum by a: wide in one domain is narrow in the other (§6.6). *(Covered in the Fourier transform article's properties; no standalone article.)*
+
+**Sampling and the DFT**
+- **[Sampling](https://en.wikipedia.org/wiki/Sampling_(signal_processing)) / sampling rate f_s** — keeping values only every T (f_s = 1/T); in the Fourier domain it adds copies of the spectrum at every multiple of f_s (§7).
+- **Selection matrix** — a matrix with one 1 per row that keeps some entries of a vector and drops the rest; subsampling, a Bayer mosaic and SGD's row choice are all one (§7, §32).
+- **[Nyquist–Shannon sampling theorem](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)** — sampling at f_s ≥ 2 f_max keeps the spectral copies apart, so a band-limited signal can be recovered exactly (§8.1).
+- **[Nyquist rate](https://en.wikipedia.org/wiki/Nyquist_rate)** — the minimum sampling rate needed to avoid aliasing for a given highest frequency present: 2 f_max (§8.1).
+- **[Nyquist frequency](https://en.wikipedia.org/wiki/Nyquist_frequency)** — f_s/2, the highest frequency a given sampling rate can represent (§8.1).
+- **[Band-limited](https://en.wikipedia.org/wiki/Bandlimiting)** — containing no frequencies above some f_max (§8.1).
+- **[Aliasing](https://en.wikipedia.org/wiki/Aliasing)** — distortion from sampling below a signal's true frequency content (e.g. moiré): a frequency above f_s/2 shows up at |f − f_s·round(f/f_s)|; it cannot be undone after sampling (§8.2–§8.4).
+- **[Anti-aliasing](https://en.wikipedia.org/wiki/Anti-aliasing_filter)** — low-pass filtering before sampling so nothing above the new Nyquist frequency remains (§8.4, §19).
+- **[Fourier series](https://en.wikipedia.org/wiki/Fourier_series)** — the discrete set of coefficients of a periodic signal; repeating in one domain ⇔ sampled in the other (§9).
+- **[DFT](https://en.wikipedia.org/wiki/Discrete_Fourier_transform) / [FFT](https://en.wikipedia.org/wiki/Fast_Fourier_transform)** — converts an image from pixel-brightness representation to spatial-frequency representation; FFT is the efficient algorithm for computing it. The underlying idea (image as sum of 2D waves) was introduced early, in Week 1 §19, for the hybrid-images homework. Exact formula: x̂[k] = Σ x[n] e^{−j2πkn/N}, an orthogonal change of basis x̂ = F x with F⁻¹ = F^H/N, treating the N samples as one period of a repeating signal (§10). The FFT computes it in about N log₂ N operations instead of N² by recursively splitting even and odd samples (§11).
+- **DFT matrix** — the N×N matrix with entries e^{−j2πkn/N}; its rows are orthogonal sampled waves (§10.2).
+- **Circular convolution / zero-padding** — DFT-based convolution wraps around the ends; pad to at least N + K − 1 samples for ordinary convolution (§10.3).
+- **[Butterfly](https://en.wikipedia.org/wiki/Butterfly_diagram) / [twiddle factor](https://en.wikipedia.org/wiki/Twiddle_factor)** — the FFT's combine step x̂[k] = E[k] ± e^{−j2πk/N}O[k], and the complex factor in it (§11).
+
+**The lens and the sensor as filters**
+- **[PSF](https://en.wikipedia.org/wiki/Point_spread_function) (point spread function)** — how a single point of light gets smeared by an imaging system; introduced and defined in full in Week 4 §18.1 (coded-aperture imaging). This week: the lens's blur kernel, caused by aberrations and diffraction, so that blurred = sharp ∗ PSF when the blur is shift-invariant (§12).
+- **[Optical aberration](https://en.wikipedia.org/wiki/Optical_aberration)** — a real lens's departure from ideal focusing: [chromatic](https://en.wikipedia.org/wiki/Chromatic_aberration) (colors focus differently), [spherical](https://en.wikipedia.org/wiki/Spherical_aberration) (edge rays focus closer); [coma](https://en.wikipedia.org/wiki/Coma_(optics)) and [distortion](https://en.wikipedia.org/wiki/Distortion_(optics)) vary across the frame and so are not shift-invariant (§12.2).
+- **[Diffraction](https://en.wikipedia.org/wiki/Diffraction)** — bending/spreading of light through small openings — limits how sharply any lens or pinhole can focus. Computed with Fourier transforms: aperture → coherent PSF → incoherent PSF → OTF (§13).
+- **[Fraunhofer diffraction](https://en.wikipedia.org/wiki/Fraunhofer_diffraction)** — the far-field regime in which the light pattern behind an opening is the opening's Fourier transform (§13.1).
+- **[Coherent](https://en.wikipedia.org/wiki/Coherence_(physics)) vs. incoherent light** — coherent (laser) waves add by amplitude and can interfere; incoherent (ordinary) light adds by intensity (§13.1).
+- **Coherent / incoherent PSF** — the wave amplitude on the sensor (the aperture's Fourier transform) and the intensity a sensor records (its squared magnitude) (§13.2).
+- **[Autocorrelation](https://en.wikipedia.org/wiki/Autocorrelation)** — the overlap of a function with a shifted copy of itself, as a function of shift; the aperture's autocorrelation is the OTF (§13.2).
+- **[Airy disk / Airy pattern](https://en.wikipedia.org/wiki/Airy_disk)** — the diffraction PSF of a circular aperture: a bright disc of radius 1.22 λN plus faint rings (§13.4–§13.5).
+- **Jinc / [Bessel function](https://en.wikipedia.org/wiki/Bessel_function) of the first kind** — the 2D (circular) counterpart of the sinc, J₁(2πρ)/ρ, the Fourier transform of a disc (§13.4, §16.2). *(No standalone Wikipedia article for "jinc".)*
+- **Anisotropic blur** — blur that depends on direction, as from a square aperture; circular apertures avoid it (§13.4).
+- **Beam divergence (LiDAR)** — a laser beam's angular spread, at best θ ≈ 1.22 λ/D for exit aperture D; sets the spot size and angular resolution (§13.6). See [Beam divergence](https://en.wikipedia.org/wiki/Beam_divergence).
+- **[Speckle](https://en.wikipedia.org/wiki/Speckle_(interference))** — the grainy interference pattern coherent light makes on reflection from a rough surface (§13.6).
+- **[OTF](https://en.wikipedia.org/wiki/Optical_transfer_function) / [MTF](https://en.wikipedia.org/wiki/Optical_transfer_function)** — the PSF's Fourier transform (complex: contrast and shift per frequency) and its magnitude (contrast only); a lens's OTF falls to zero at the cutoff 1/(λN) (§13–§14).
+- **[Optical low-pass filter](https://en.wikipedia.org/wiki/Anti-aliasing_filter)** — any optical element (lens blur, or a dedicated plate) that removes high spatial frequencies before the sensor (§14, §21).
+- **[Irradiance](https://en.wikipedia.org/wiki/Irradiance)** — light power per unit area arriving at the sensor, W/m² (§15.1).
+- **Pixel pitch / [fill factor](https://en.wikipedia.org/wiki/Fill_factor_(image_sensor))** — center-to-center pixel spacing p; fraction of each pixel's area that collects light (§15.1).
+- **Detector footprint MTF** — |sin(πξw)/(πξw)|, the loss of contrast from each pixel averaging over its width w; zero at ξ = 1/w (§15.2).
+- **Sensor Nyquist frequency** — 1/(2p) cycles/mm for pixel pitch p; finer detail aliases (§15.3).
+
+**Filtering**
+- **[Low-pass](https://en.wikipedia.org/wiki/Low-pass_filter) / [high-pass](https://en.wikipedia.org/wiki/High-pass_filter) / [band-pass](https://en.wikipedia.org/wiki/Band-pass_filter) filter** — keep low frequencies (broad shapes), high frequencies (edges), or a ring in between (§16–§17).
+- **Oriented band-pass filter** — keep two opposite wedges of a ring, i.e. edges of one orientation (§17.3).
+- **[Ringing](https://en.wikipedia.org/wiki/Ringing_artifacts) / [Gibbs phenomenon](https://en.wikipedia.org/wiki/Gibbs_phenomenon)** — echo bands beside edges caused by a hard frequency cutoff, whose kernel (sinc/jinc) has negative lobes (§16.2).
+- **`psf2otf`** — pads a small kernel to the image size, circularly shifts its center to index (0, 0), and FFTs it, giving the OTF array for Fourier-domain filtering (§16.4).
+- **[Unsharp masking](https://en.wikipedia.org/wiki/Unsharp_masking)** — sharpen by adding back the detail layer: x ∗ (δ + c_highpass), c_highpass = δ − c_lowpass (§17.2; first in Week 3 §17).
+- **[Fourier optics](https://en.wikipedia.org/wiki/Fourier_optics) / 4f system** — a lens produces the Fourier transform of a coherently lit input one focal length away; lens–mask–lens filters images optically (§18).
+
+**Aliasing in practice**
+- **[Downsampling](https://en.wikipedia.org/wiki/Downsampling_(signal_processing))** — keeping every D-th sample; must be preceded by a low-pass filter below 1/(2D) cycles/pixel (§19).
+- **[Upsampling](https://en.wikipedia.org/wiki/Upsampling)** — inserting new samples between existing ones, followed by a low-pass (interpolation) filter; creates no new detail (§19.2).
+- **[Wagon-wheel effect](https://en.wikipedia.org/wiki/Wagon-wheel_effect)** — temporal aliasing that makes a spinning wheel on film appear slow, stopped or reversed (§20.1).
+- **[Pulse repetition frequency](https://en.wikipedia.org/wiki/Pulse_repetition_frequency) / range ambiguity** — a pulsed LiDAR's pulse rate; echoes from beyond c/(2·PRF) are timed from the wrong pulse and reported too close (§20.2a).
+- **Phase wrapping (CW time-of-flight)** — a continuous-wave ToF sensor's measured phase repeats every 2π, so distances repeat every c/(2 f_mod) (§20.2b).
+- **[Birefringence](https://en.wikipedia.org/wiki/Birefringence) / optical anti-aliasing filter** — a crystal that splits a ray in two by polarization; two layers on a sensor split each point into four, blurring just enough to prevent aliasing (§21).
+- **[Moiré pattern](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern)** — false large-scale stripes produced when fine repeating detail aliases (§19, §21).
+
+**Deconvolution**
+- **[Deconvolution](https://en.wikipedia.org/wiki/Deconvolution) (non-blind / blind)** — recovering the sharp image from a blurred one when the kernel is known / unknown (§22.1).
+- **[Inverse filter](https://en.wikipedia.org/wiki/Inverse_filter)** — divide the blurred spectrum by the OTF: i_est = F⁻¹(F(b)/F(k)); fails because it amplifies noise as N/K where the OTF is small (§22).
+- **Noise model b = k ∗ i + n** — blurred measurement = kernel ∗ sharp image + zero-mean noise independent of the image (§22.2).
+- **Signal-to-noise ratio per frequency, SNR(ω)** — signal variance ÷ noise variance at one frequency; PS4's practical estimate is mean pixel value ÷ noise σ (§23).
+- **[Wiener filter](https://en.wikipedia.org/wiki/Wiener_filter)** — a statistically optimal deconvolution method that accounts for noise: K*/(|K|² + 1/SNR), the inverse filter times a damping factor |K|²/(|K|² + 1/SNR) that falls to 0 where noise dominates. It minimizes the expected squared error and equals Tikhonov-regularized least squares with λ = 1/SNR (§23–§24, §30).
+- **[Expected value](https://en.wikipedia.org/wiki/Expected_value) / [independence](https://en.wikipedia.org/wiki/Independence_(probability_theory))** — the long-run average of a random quantity; independent quantities satisfy E[IN] = E[I]E[N] (§24.1).
+- **[Well-posed / ill-posed problem](https://en.wikipedia.org/wiki/Well-posed_problem)** — a problem is ill-posed if its solution may not exist, may not be unique, or changes wildly with tiny data changes; deconvolution is ill-posed (§33).
+
+**Linear systems**
+- **Linear system b = Ax** — measurements = image-formation matrix × unknown image vector; ray optics is linear in intensity (§26).
+- **[Rank](https://en.wikipedia.org/wiki/Rank_(linear_algebra)) / [null space](https://en.wikipedia.org/wiki/Kernel_(linear_algebra))** — the number of independent directions a matrix preserves / the inputs it sends to zero, which no measurement can reveal (§27.1).
+- **[Condition number](https://en.wikipedia.org/wiki/Condition_number)** — largest ÷ smallest singular value; how much measurement error can be amplified in the solution (§27.2).
+- **[Singular value decomposition (SVD)](https://en.wikipedia.org/wiki/Singular_value_decomposition)** — A = UΣVᵀ: rotate, stretch each direction by a singular value, rotate; for a circulant blur the singular values are |OTF| (§27.3).
+- **[Overdetermined](https://en.wikipedia.org/wiki/Overdetermined_system) / [underdetermined](https://en.wikipedia.org/wiki/Underdetermined_system) system** — more / fewer measurements than unknowns (tall / wide A) (§28).
+- **[Convex](https://en.wikipedia.org/wiki/Convex_function) objective** — bowl-shaped, with a single minimum and no false valleys (§28).
+- **[Least squares](https://en.wikipedia.org/wiki/Least_squares) / residual / ℓ₂ norm** — minimize ½‖b − Ax‖₂², the sum of squared prediction misses r = b − Ax; ‖r‖₂ = √(Σ r_i²) (§29.1).
+- **[Gradient](https://en.wikipedia.org/wiki/Gradient)** — the vector of partial derivatives, pointing uphill; for least squares it is Aᵀ(Ax − b) (§29.2).
+- **Normal equations** — AᵀAx = Aᵀb: the residual is perpendicular to every column of A, so least squares is an orthogonal [projection](https://en.wikipedia.org/wiki/Projection_(linear_algebra)) onto the column space (§29.2).
+- **[Tikhonov regularization](https://en.wikipedia.org/wiki/Ridge_regression) (ridge)** — x = (AᵀA + λI)⁻¹Aᵀb, adding λ to every eigenvalue so the system is always solvable; λ → 0 gives the least-norm solution (§30).
+- **Least-norm solution** — among all exact solutions of an underdetermined system, the shortest one (no null-space component) (§30).
+- **Filter factors** — the per-singular-value multipliers s/(s² + λ) that regularization uses in place of 1/s (§30).
+- **[Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent) / step size (learning rate)** — repeat x ← x − α∇f(x); for least squares ∇f = Aᵀ(Ax − b), and α must stay below 2/μ_max (§31.1).
+- **Function handle** — passing "multiply by A" and "multiply by Aᵀ" as functions instead of storing the matrix (§26, §31.1).
+- **Adjoint (of a convolution)** — Aᵀ for a blur: convolution with the flipped kernel, or multiplication by F{c}* in the Fourier domain (§31.2). See [Hermitian adjoint](https://en.wikipedia.org/wiki/Hermitian_adjoint).
+- **[Stochastic gradient descent (SGD)](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) / batch size** — gradient steps computed from a random subset of B rows; the estimate is unbiased (right on average) (§32).
+- **[Bias of an estimator](https://en.wikipedia.org/wiki/Bias_of_an_estimator) (unbiased)** — an estimate whose average equals the true value, here E[g(x)] = ∇f(x) (§32).
 
 ## Week 6 — Regularized Inverse Problems with ADMM
 - **[Inverse problem](https://en.wikipedia.org/wiki/Inverse_problem)** — recovering an unknown true signal from indirect or corrupted measurements.
