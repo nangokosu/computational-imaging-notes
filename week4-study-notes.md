@@ -94,7 +94,7 @@ so:                H ∝ L · t / N²
 
 Exposure time is spaced in the same **stops** as aperture (Week 2 §8): one stop = a factor of 2 in light. The standard sequence 1/1000, 1/500, 1/250, 1/125, 1/60, 1/30, 1/15, 1/8, 1/4, 1/2, 1 s doubles at every step. Unlike the aperture sequence there is no √2, because exposure time enters *H* directly, not squared.
 
-**Stops notation for all three controls** (full primer: Week 1 §10.1; aperture: Week 2 §8):
+**Stops notation for all three controls** (full primer: Week 1 §14; aperture: Week 2 §8):
 
 - Comparing a new exposure time *t*₂ with an old one *t*₁: `stops = log₂(t₂ / t₁)`. Positive means *more* light.
 - Shutter dials print rounded values (1/60 for 1/64 s, 1/125 for 1/128 s).
@@ -296,7 +296,7 @@ Illustrative numbers: a subject crossing a 4000-pixel-wide frame in 2 s moves at
 
 The streak grows *linearly* with exposure time. "Freezing motion" just means making *t* small enough that the streak is shorter than about one pixel.
 
-*For uniform motion along one direction, each recorded pixel is a time average of the scene points that slid past it, which is a convolution with a flat "box" kernel (Week 1 §12.4.4a, §12.4.5). §23 builds the matrix and Fourier view of this and shows how to make it invertible.*
+*For uniform motion along one direction, each recorded pixel is a time average of the scene points that slid past it, which is a convolution with a flat "box" kernel (Week 1 §20, §21). §23 builds the matrix and Fourier view of this and shows how to make it invertible.*
 
 ### 4.4 Worked example: why long exposures are cleaner
 
@@ -426,7 +426,7 @@ Before choosing an exposure, a camera has to answer: *how bright is this scene, 
 
 ## 7. The Dynamic-Range Mismatch: World → Eye → Sensor → Image → Display
 
-Week 1 §10 introduced **[dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)**, the ratio between the brightest and darkest signal a system can represent, for the eye alone (~14 orders of magnitude across all adaptation states, ~5 instantaneously). This section lays *every* stage of the imaging pipeline on the same scale to see where range is lost at each handoff.
+Week 1 §15 introduced **[dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)**, the ratio between the brightest and darkest signal a system can represent, for the eye alone (~14 orders of magnitude across all adaptation states, ~5 instantaneously). This section lays *every* stage of the imaging pipeline on the same scale to see where range is lost at each handoff.
 
 **The eye vs. the world.** The lecture's illustrative scale runs from 10⁻⁶ to 10⁶ (roughly candela per m²; 12 orders of magnitude) and places the eye's full adaptation range and the band of "common real-world scenes" on it. Common scenes occupy a narrower slice roughly in the middle, which the eye's adaptation range comfortably brackets.
 
@@ -881,7 +881,7 @@ I_display = I_HDR / (1 + I_HDR)
 
 - Near *I_HDR* = 0, *I_display* ≈ *I_HDR* (dividing by 1 + a small number barely changes it): slope 1, dark detail untouched.
 - As *I_HDR* → ∞, *I_display* → 1: it asymptotes, so no value, however bright, exceeds the display's range.
-- The lecture notes this shape is **perceptually motivated**, approximating the eye's own response to intensity (Week 1 §10, Week 3 §10: perception is roughly logarithmic/power-law), so a display encoding matched to it looks more natural than a linear compression.
+- The lecture notes this shape is **perceptually motivated**, approximating the eye's own response to intensity (Week 1 §15, Week 3 §10: perception is roughly logarithmic/power-law), so a display encoding matched to it looks more natural than a linear compression.
 
 > **Worked check on §13.2's five room values** (0.002, 0.02, 0.2, 2, 20). The curve gives 0.002, 0.0196, 0.167, 0.667, 0.952, i.e. 8-bit codes **1, 5, 43, 170, 243**: five distinct, usable codes, where linear scaling gave 0, 0, 3, 26, 255 or 0, 3, 26, 255, 255.
 
@@ -945,7 +945,7 @@ HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-
 |---|---|---|---|
 | 1 | **Naive per-channel**: apply §14's curve separately to R, G, B | — | **Colors wash out**: each channel is compressed by a different amount, which distorts the ratios between channels, and those ratios encode hue and saturation |
 | 2 | **Intensity-only, in xyY**: convert to a luminance/chromaticity representation (**[xyY](https://en.wikipedia.org/wiki/CIE_1931_color_space#CIE_xyY_color_space)**, a reparameterization of Week 3 §6's CIE xy chromaticity plus a luminance axis Y), tonemap only Y, leave xy untouched | Colors no longer wash out: hue/saturation are preserved by construction | **Contrast/detail washes out**: one *global* curve still compresses every pixel's fine local contrast the same way |
-| 3 | **Low-frequency intensity-only**: split intensity into a low-spatial-frequency (coarse, blurred) component and a high-spatial-frequency (fine detail) component (the low-pass/high-pass split of Week 1 §12.4.5, §13.1), tonemap only the low-frequency part, leave detail and chromaticity untouched | Nice color *and* nice local contrast | **Halo artifacts**: a naive low-pass filter (e.g. Gaussian) blurs *across* strong edges, mixing very different brightness levels, giving ringing/halos around high-contrast boundaries |
+| 3 | **Low-frequency intensity-only**: split intensity into a low-spatial-frequency (coarse, blurred) component and a high-spatial-frequency (fine detail) component (the low-pass/high-pass split of Week 1 §21, §22.1), tonemap only the low-frequency part, leave detail and chromaticity untouched | Nice color *and* nice local contrast | **Halo artifacts**: a naive low-pass filter (e.g. Gaussian) blurs *across* strong edges, mixing very different brightness levels, giving ringing/halos around high-contrast boundaries |
 | 4 | **Edge-aware filtering**: the same base/detail split, but with an edge-preserving filter: the **[bilateral filter](https://en.wikipedia.org/wiki/Bilateral_filter)** of Week 3 §16.2 (averages nearby pixels only when they are *also* similar in intensity, so it never blurs across a strong edge) | Fixes the halos without losing earlier color and contrast gains | (None flagged by the lecture) |
 | 5 | **Gradient-domain processing** and **Local Laplacian Filters** (Paris et al., 2011) | State-of-the-art alternatives | "Too many algorithms to discuss here": the lecture declines to go deeper |
 
@@ -953,7 +953,7 @@ HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-
 
 **Linear-algebra view (gradient-domain tonemapping is solving a linear system).**
 
-- Computing an image's gradient is a **linear operator**: a fixed finite-difference matrix **G** acting on the image vector (Week 1 §12.4.5's "convolution is a matrix" idea, with a difference kernel instead of a blur kernel).
+- Computing an image's gradient is a **linear operator**: a fixed finite-difference matrix **G** acting on the image vector (Week 1 §21's "convolution is a matrix" idea, with a difference kernel instead of a blur kernel).
 - Scaling the gradient field rescales **G**'s output entry by entry.
 - Recovering a displayable image from the *modified* gradients means finding **x̂** whose own gradient **Gx̂** best matches the target: a least-squares problem whose solution (the discrete Poisson solve) is the normal-equations inverse of **G**.
 - "Re-integrating a gradient field" is, underneath the graphics vocabulary, solving a linear system for the vector that a linear operator was applied to.
@@ -1012,7 +1012,7 @@ Part 1 was about *brightness*. Part 2 is about *blur*: how to shape it on purpos
 
 ## 18. Point Spread Function and Optical Transfer Function, from Scratch
 
-This section leans on **convolution** (a kernel slid across a signal as a weighted sum), which Week 1 §12.4.4a builds from scratch with worked numbers. If its terms (kernel, impulse response, shift-invariant, convolution theorem) are unfamiliar, read that first. Week 2 §3, §9 already used the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without this name; this section (using PS4 Task 1's material) gives it its formal name and its frequency-domain partner.
+This section leans on **convolution** (a kernel slid across a signal as a weighted sum), which Week 1 §20 builds from scratch with worked numbers. If its terms (kernel, impulse response, shift-invariant, convolution theorem) are unfamiliar, read that first. Week 2 §3, §9 already used the *idea* informally (a finite pinhole's blur disc, a lens's circle of confusion, a convolution-matrix view of blur) without this name; this section (using PS4 Task 1's material) gives it its formal name and its frequency-domain partner.
 
 ### 18.1 The point spread function (PSF)
 
@@ -1021,7 +1021,7 @@ This section leans on **convolution** (a kernel slid across a signal as a weight
 - A perfect pinhole (Week 2 §2) has a PSF that is (ideally) a single point.
 - A finite pinhole gives a disc (Week 2 §3); a defocused lens gives a circle of confusion (Week 2 §9); a diffraction-limited circular aperture gives an Airy pattern.
 
-**From one point to a whole image.** If the blur behaves the same at every location (**shift-invariant**), every scene point is smeared by that same PSF shape, centered where the point's sharp image would land. The blurred image is the sum, over every scene point, of a copy of the PSF scaled by that point's brightness: the **convolution** of Week 1 §12.4.4a ("stamp a scaled copy of the kernel at every point and add," with the PSF as the stamp):
+**From one point to a whole image.** If the blur behaves the same at every location (**shift-invariant**), every scene point is smeared by that same PSF shape, centered where the point's sharp image would land. The blurred image is the sum, over every scene point, of a copy of the PSF scaled by that point's brightness: the **convolution** of Week 1 §20 ("stamp a scaled copy of the kernel at every point and add," with the PSF as the stamp):
 
 ```
 I_blurred(x, y) = (I_ideal * PSF)(x, y)
@@ -1032,7 +1032,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 - *I_ideal*(*x*,*y*): the hypothetical perfectly sharp image an ideal pinhole would give.
 - PSF(*x*,*y*): the system's blur kernel, normalized to sum (or integrate) to 1, as PS4 instructs ("normalize the filter so it sums to 1"). That makes the blur redistribute light rather than add or remove any.
 - *I_blurred*: the image actually captured.
-- `*`: convolution, the sliding weighted sum of Week 1 §12.4.4a (the PSF is that section's kernel, or "impulse response").
+- `*`: convolution, the sliding weighted sum of Week 1 §20 (the PSF is that section's kernel, or "impulse response").
 
 **Diagram.** (See Fig. — companion diagram: one bright point through an ideal pinhole lands as a sharp dot; through a real lens it lands as a blurred disc, and that disc *is* the PSF.)
 
@@ -1044,17 +1044,17 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 OTF(u, v) = FT{ PSF }(u, v)
 ```
 
-where *u*, *v* are image frequencies as built in Week 1 §12.4.2 (cycles per pixel).
+where *u*, *v* are image frequencies as built in Week 1 §19.2 (cycles per pixel).
 
 **Intuition via the convolution theorem.**
 
-1. Week 1 §12.4.4a (Part 7) showed that convolving in the spatial domain equals multiplying spectra in the frequency domain: each pure wave passes through a shift-invariant blur as the same wave, only scaled (and phase-shifted), so the blur treats each frequency independently.
+1. Week 1 §20.7 showed that convolving in the spatial domain equals multiplying spectra in the frequency domain: each pure wave passes through a shift-invariant blur as the same wave, only scaled (and phase-shifted), so the blur treats each frequency independently.
 2. In this section's terms: if *I* is the sharp image with spectrum *Ĩ*, the blurred image has spectrum *Ĩ* × OTF, entry by entry.
 3. So the OTF reports, frequency by frequency, how much of each spatial-frequency component *survives* the optics. Where |OTF(*u*,*v*)| is near 1, that frequency passes through; where it is near 0, that frequency is (nearly) destroyed, and no after-the-fact processing can recover what was never recorded.
 
 **A word we will use a lot: broadband.** A PSF or OTF is **broadband** when its OTF has **no exact zeros**: every spatial frequency survives with *some* nonzero strength, even if weakly. Being broadband is what makes a blur, in principle, invertible.
 
-**Linear-algebra view (recapping Week 1 §12.4.4a, §12.4.5 and Week 2 §3).**
+**Linear-algebra view (recapping Week 1 §20, §21 and Week 2 §3).**
 
 - Convolution by a fixed kernel is a **linear, shift-invariant operator**: a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 2 §3 applied this to a finite pinhole's blur disc).
 - Every sinusoid is an eigenvector of that matrix, with eigenvalue equal to the kernel's Fourier transform. So the OTF *is* the convolution matrix's eigenvalues, one per spatial frequency.
@@ -1063,7 +1063,7 @@ where *u*, *v* are image frequencies as built in Week 1 §12.4.2 (cycles per pix
 
 ### 18.3 Filtering in the primal domain vs. the Fourier domain (PS4 Task 1)
 
-PS4 Task 1 has you implement the *same* filtering two ways, to see the OTF's practical payoff. A **low-pass filter** (Week 1 §13.1) can be applied by convolving with a low-pass PSF in the spatial ("primal") domain, or by multiplying by the corresponding low-pass OTF in the Fourier domain. A **high-pass filter** (recovering fine detail) is the complement of the low-pass version (Week 1 §12.4.5's complementary-projection idea and §12.4.4a Part 6's "blur-then-subtract is a convolution"), now in this week's vocabulary:
+PS4 Task 1 has you implement the *same* filtering two ways, to see the OTF's practical payoff. A **low-pass filter** (Week 1 §22.1) can be applied by convolving with a low-pass PSF in the spatial ("primal") domain, or by multiplying by the corresponding low-pass OTF in the Fourier domain. A **high-pass filter** (recovering fine detail) is the complement of the low-pass version (Week 1 §21's complementary-projection idea and Week 1 §20.6's "blur-then-subtract is a convolution"), now in this week's vocabulary:
 
 ```
 I − I * PSF_LP              (primal domain: subtract a low-pass-blurred copy)
@@ -1077,7 +1077,7 @@ Here PSF_LP is a low-pass blur kernel (e.g. a Gaussian), OTF_LP its Fourier tran
 - Everything above is the *forward* direction: sharp scene → PSF → blurry photo.
 - **Deconvolution** is the reverse: recover the sharp scene from the blurry photo, dividing by the OTF at each frequency.
 - It is **non-blind** when the PSF is known (as for a coded aperture you designed) and **blind** when it must be estimated.
-- It is **ill-posed** because where |OTF| is near zero the division amplifies noise (an exact zero loses that frequency outright). This is why coded imaging designs PSFs with no zeros, and why Weeks 5–6 (Wiener filter, priors, regularization) exist. A numeric first look, with a LiDAR pulse-blur example, is in Week 1 §12.4.4b.
+- It is **ill-posed** because where |OTF| is near zero the division amplifies noise (an exact zero loses that frequency outright). This is why coded imaging designs PSFs with no zeros, and why Weeks 5–6 (Wiener filter, priors, regularization) exist. A numeric first look, with a LiDAR pulse-blur example, is in Week 1 §23.
 
 **Why Fourier-domain filtering cost is independent of kernel size.**
 
@@ -1242,7 +1242,7 @@ Two brief pointers to where coded apertures appear outside ordinary cameras:
 
 **Linear-algebra view (motion blur is a linear filter).**
 
-- Each recorded pixel is the *time average* of the scene points that slid past it. For uniform motion along one direction, that is a **convolution** (Week 1 §12.4.4a) of the sharp image with a **box kernel**: a flat line segment as long as the streak.
+- Each recorded pixel is the *time average* of the scene points that slid past it. For uniform motion along one direction, that is a **convolution** (Week 1 §20) of the sharp image with a **box kernel**: a flat line segment as long as the streak.
 - Stack the image into a vector **x**, and blur is one matrix–vector product **y** = **B x**, where **B** is a banded (Toeplitz) matrix with the box kernel repeated along its diagonals.
 - Undoing the blur means inverting **B**, and that is badly conditioned (§23.2): the box's Fourier transform has *exact zeros*, so detail at those frequencies is multiplied by zero and lands in **B**'s null space.
 - (This is exact for a periodic, wrap-around image. For a finite image with truncated edges, **B** has tiny but not necessarily exactly zero singular values there, which is just as bad in practice.)
@@ -1270,7 +1270,7 @@ Two brief pointers to where coded apertures appear outside ordinary cameras:
 **Term by term.**
 
 - *W*: the streak length in pixels; fixed by the scene and exposure time, not something you directly design.
-- *f*: spatial (image) frequency, cycles per pixel (Week 1 §12.2.1), the same axis as every other spectrum in this course.
+- *f*: spatial (image) frequency, cycles per pixel (Week 1 §16.4), the same axis as every other spectrum in this course.
 - The sinc's zeros *f* = *n*/*W* depend only on the streak length: every box-shutter photo of a given motion speed has zeros at the same frequencies, whatever the scene.
 - The coded shutter's open/closed sequence is a designed, precomputed binary code (chosen by Raskar et al. to be broadband); the lecture gives no closed form for it, only the resulting Fourier-magnitude behavior.
 
@@ -1371,8 +1371,8 @@ The lecture's reference list closes Part 2 with the papers cited by name in §19
 
 Two formal topics are built properly starting next week, both previewed informally here and in earlier weeks:
 
-- **Week 5, "Sampling, Linear Systems, Deconvolution."** This is where **PS4's Task 2** (deconvolution and inverse filtering, and **Wiener deconvolution** specifically) belongs: the formal machinery for inverting a known PSF/OTF (§18), including the noise amplification §23.2 flagged for near-zero (rather than exactly-zero) OTF values. Week 5 also formalizes the sampling theorem and aliasing (used informally in Week 3 §14.2) and the exact discrete Fourier transform machinery Week 1 §12.4 built only partially.
-- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §12.4.5 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §14.1; the circular and box-kernel null spaces of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
+- **Week 5, "Sampling, Linear Systems, Deconvolution."** This is where **PS4's Task 2** (deconvolution and inverse filtering, and **Wiener deconvolution** specifically) belongs: the formal machinery for inverting a known PSF/OTF (§18), including the noise amplification §23.2 flagged for near-zero (rather than exactly-zero) OTF values. Week 5 also formalizes the sampling theorem and aliasing (used informally in Week 3 §14.2) and the exact discrete Fourier transform machinery Week 1 §19 built only partially.
+- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §21 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §14.1; the circular and box-kernel null spaces of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
 
 > **Summary**
 > - Week 4 left one question open: how to actually *invert* a known blur (PSF/OTF) in the presence of noise.

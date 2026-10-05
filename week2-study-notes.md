@@ -12,14 +12,14 @@
 
 **Analogy.** Hold a sheet of white paper in a room with a lamp and a window. Every spot on the paper is lit by *everything* in the room at once, so you see a soft glow, not a picture. A bare sensor is that sheet of paper.
 
-A **sensor** (the electronic chip that turns light into an electrical signal; the camera's "retina", Week 1 §1, §4) pointed at a scene with nothing in front of it receives light from *every* scene point at *every* sensor location. Nothing separates "light from here" from "light from there".
+A **sensor** (the electronic chip that turns light into an electrical signal; the camera's "retina", Week 1 §2, §7) pointed at a scene with nothing in front of it receives light from *every* scene point at *every* sensor location. Nothing separates "light from here" from "light from there".
 
 The result is not a flat gray field; it is an extremely blurred scene. Each sensor location adds up light from all scene points, with unequal weights:
 
 - **Angle:** light arriving nearly head-on counts more than light arriving at a grazing angle (a cosine falloff).
 - **Distance:** light from a nearer point counts more than from a farther one. This is the **inverse-square law**: a source spreads its light over a sphere whose area grows as distance², so brightness at a point falls as 1/distance².
 
-Only the coarsest shapes (broad light/dark regions) survive this averaging; fine detail (high spatial frequency, Week 1 §12) washes out. The picture looks like maximal defocus blur.
+Only the coarsest shapes (broad light/dark regions) survive this averaging; fine detail (high spatial frequency, Week 1 §16) washes out. The picture looks like maximal defocus blur.
 
 **Linear-algebra view (image formation as a matrix–vector product).** List the brightness of every scene point as one long vector **x** (basis: "one scene point lit, all others dark") and every sensor reading as a vector **y**. Each reading is a weighted sum of scene brightnesses, so the capture is one **linear map**, **y** = **A x**, where entry *A_ij* is the cosine-and-distance weight from scene point *j* to sensor location *i*.
 
@@ -41,7 +41,7 @@ Everything in this lecture is optics or sensing built to make **A** that well-be
 
 ## 2. The Pinhole Camera
 
-**Fix:** put an opaque barrier (a **diaphragm**) with one small opening, a **pinhole** (also called a **[camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)**), between scene and sensor. The pinhole is the camera's **[aperture](https://en.wikipedia.org/wiki/Aperture)**, the opening that controls how much light gets in (the eye's pupil plays the same role, Week 1 §1).
+**Fix:** put an opaque barrier (a **diaphragm**) with one small opening, a **pinhole** (also called a **[camera obscura](https://en.wikipedia.org/wiki/Camera_obscura)**), between scene and sensor. The pinhole is the camera's **[aperture](https://en.wikipedia.org/wiki/Aperture)**, the opening that controls how much light gets in (the eye's pupil plays the same role, Week 1 §2).
 
 Of all the rays leaving one scene point, only the one heading straight at the pinhole gets through. Each scene point now lights up (ideally) one sensor location instead of smearing across the sensor as in §1.
 
@@ -80,13 +80,13 @@ An ideal pinhole would be a single point, which is impossible to build and would
 **Linear-algebra view (pinhole blur as a convolution matrix).** In §1's **y** = **A x** picture, a finite pinhole replaces the permutation matrix with one whose columns are small discs of nonzero weights instead of a single 1.
 
 - The same disc appears at every position, so each row is the previous row shifted by one: a **Toeplitz** (constant-along-diagonals) **convolution matrix**.
-- **Convolution** means "stamp a copy of the blur shape at every scene point and add them up"; the blur shape is the **kernel** or, in optics, the **point spread function (PSF)**: the image the system makes of a single point. Week 1 §12.4.4a builds convolution with worked numbers.
+- **Convolution** means "stamp a copy of the blur shape at every scene point and add them up"; the blur shape is the **kernel** or, in optics, the **point spread function (PSF)**: the image the system makes of a single point. Week 1 §20 builds convolution with worked numbers.
 - The Fourier basis **diagonalizes** such a matrix; the disc's Fourier transform gives the eigenvalues. A bigger disc pushes more eigenvalues toward zero, so more fine detail is lost.
-- Undoing the matrix is **deconvolution** (Week 1 §12.4.4b previews why it is hard; Weeks 5–6 treat it fully).
+- Undoing the matrix is **deconvolution** (Week 1 §23 previews why it is hard; Weeks 5–6 treat it fully).
 
 **Direction 2: diffraction (a wave effect).** Once the pinhole is only a few wavelengths wide, **[diffraction](https://en.wikipedia.org/wiki/Diffraction)**, the spreading of a wave after passing a narrow opening, takes over, and ray optics (which says light does not spread) fails. *The smaller the gap, the more the light fans out.* Ripples fanning out through a narrow harbor gap are the analogy.
 
-> **Optional deeper dive: why smaller means more spread.** The diffraction pattern past an opening is the 2D **[Fourier transform](https://en.wikipedia.org/wiki/Fourier_transform)** of the opening's shape. By the general Fourier fact of Week 1 §12.4.3 (a small feature in space has energy spread over large frequencies), a smaller hole gives a wider pattern and a larger hole a narrower one, close to the ray prediction.
+> **Optional deeper dive: why smaller means more spread.** The diffraction pattern past an opening is the 2D **[Fourier transform](https://en.wikipedia.org/wiki/Fourier_transform)** of the opening's shape. By the general Fourier fact of Week 1 §19.3 (a small feature in space has energy spread over large frequencies), a smaller hole gives a wider pattern and a larger hole a narrower one, close to the ray prediction.
 
 **Putting them together.** Shrinking the pinhole cuts geometric blur until diffraction takes over and blur grows again. There is a sweet-spot diameter, not "smaller is always sharper".
 
@@ -113,7 +113,7 @@ d = 2√(fλ)
 **Terms:**
 - *d* — pinhole diameter (what you choose).
 - *f* — pinhole-to-image-plane distance (fixed by your box).
-- λ — wavelength of the light imaged (fixed by the light source). Here λ is the *wavelength of light*, not a spatial or temporal frequency (Week 1 §12.0).
+- λ — wavelength of the light imaged (fixed by the light source). Here λ is the *wavelength of light*, not a spatial or temporal frequency (Week 1 §16.1).
 
 This is the formula behind "how big should the hole be" for HW1's pinhole box. Plugging in your own box's *f* to get a diameter is the homework step, left to the assignment.
 
@@ -269,7 +269,7 @@ Even a good compound lens deviates from the model. Any systematic deviation from
 
 ## 7. Field of View
 
-**[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** is the angular extent of the scene a lens/sensor combination captures. It is the camera version of the eye's FOV in Week 1 §7 (monocular ~190°, binocular ~120°). It depends on the lens's focal length *f* (intrinsic, §5.2) and the sensor's physical size (a property of the camera body):
+**[Field of view (FOV)](https://en.wikipedia.org/wiki/Field_of_view)** is the angular extent of the scene a lens/sensor combination captures. It is the camera version of the eye's FOV in Week 1 §10 (monocular ~190°, binocular ~120°). It depends on the lens's focal length *f* (intrinsic, §5.2) and the sensor's physical size (a property of the camera body):
 
 - longer *f* concentrates the sensor onto a narrower slice of the scene ("telephoto");
 - shorter *f* spreads a wider slice onto the same sensor ("wide-angle").
@@ -303,7 +303,7 @@ FOV = 2 · arctan(d / (2f))
 
 ## 8. Aperture and F-Number
 
-Most lenses have an adjustable **aperture** (the opening of §2), typically a **diaphragm** of overlapping blades playing the role of the eye's iris (Week 1 §1). It sets the opening's diameter *D*, independently of the fixed focal length *f*. *D* is a *setup* choice (an aperture ring, or the camera picks it), capped by the lens's maximum opening (an intrinsic limit).
+Most lenses have an adjustable **aperture** (the opening of §2), typically a **diaphragm** of overlapping blades playing the role of the eye's iris (Week 1 §2). It sets the opening's diameter *D*, independently of the fixed focal length *f*. *D* is a *setup* choice (an aperture ring, or the camera picks it), capped by the lens's maximum opening (an intrinsic limit).
 
 The standard way to describe aperture size is the **[f-number](https://en.wikipedia.org/wiki/F-number)** *N*, written "f/*N*":
 
@@ -320,13 +320,13 @@ Because *N* = *f*/*D*, a *larger* f-number (f/16) is a *smaller* opening, and a 
 
 **Reading "f/2.8".** The slash is a division: *D* = *f*/2.8. On a 50 mm lens, f/2.8 is 50/2.8 ≈ 17.9 mm and f/5.6 is ≈ 8.9 mm. A lens labelled "50 mm f/1.8" is a 50 mm lens whose *widest* opening is f/1.8 (its smallest *N*). Since the opening is always a fixed fraction of *f*, the same f-number gives the same *brightness* on any lens, so photographers can swap lenses and keep "f/4".
 
-**Stops.** Aperture sizes are spaced in **stops**: one full stop changes the light reaching the sensor by a factor of 2 (the same unit as Week 1 §10's dynamic-range stops). So f/2.8 lets in twice the light of f/4, which lets in twice the light of f/5.6.
+**Stops.** Aperture sizes are spaced in **stops**: one full stop changes the light reaching the sensor by a factor of 2 (the same unit as Week 1 §15's dynamic-range stops). So f/2.8 lets in twice the light of f/4, which lets in twice the light of f/5.6.
 
 **Why full stops step by √2, not 2.** Light depends on the aperture's *area* ∝ *D*² (§4). Halving the light means halving *D*², so shrinking *D* by 1/√2. Since *N* = *f*/*D* at fixed *f*, each full stop multiplies *N* by about **√2**. That is why the full-stop sequence is f/1.4, f/2, f/2.8, f/4, f/5.6, f/8, f/11, f/16, f/22: each number is about √2 times the last, while the light halves each step.
 
 By §4's area logic, halving *N* (doubling *D* at fixed *f*) quadruples the light.
 
-**Stops as a count (building on Week 1 §10.1's `stops = log₂(ratio)`).** Light through the aperture goes as *D*² ∝ 1/*N*², so the light ratio between *N*₁ and *N*₂ is (*N*₂/*N*₁)², and:
+**Stops as a count (building on Week 1 §14's `stops = log₂(ratio)`).** Light through the aperture goes as *D*² ∝ 1/*N*², so the light ratio between *N*₁ and *N*₂ is (*N*₂/*N*₁)², and:
 
 ```
 stops = log₂( (N₂ / N₁)² ) = 2 · log₂( N₂ / N₁ )
@@ -348,7 +348,7 @@ The marked numbers are rounded versions of the exact values, which is why the pr
 
 **Third-stop f-numbers.** A third of a stop multiplies *N* by 2^(1/6) ≈ 1.12. From f/2.8 the three one-third steps are ≈ 3.14 → 3.52 → 3.95, marked f/3.2, f/3.5, f/4.
 
-**Exposure compensation (aperture-priority vs. shutter-priority).** The **shutter time** is how long each pixel collects light (Week 4 §2 builds it fully). In *aperture-priority* mode you fix *N* and the camera picks the shutter time. A "+2" exposure-compensation setting (Week 1 §10.1) asks for 2 stops (4×) more light than the meter's pick, so the camera lengthens the shutter time 4× (e.g. 1/250 s → 1/60 s, up to rounding). In *shutter-priority* mode the same "+2" is delivered by opening the aperture 2 stops (e.g. f/5.6 → f/2.8). The same dial moves a different knob, and the brightness is the same (Week 4 §2.2).
+**Exposure compensation (aperture-priority vs. shutter-priority).** The **shutter time** is how long each pixel collects light (Week 4 §2 builds it fully). In *aperture-priority* mode you fix *N* and the camera picks the shutter time. A "+2" exposure-compensation setting (Week 1 §14) asks for 2 stops (4×) more light than the meter's pick, so the camera lengthens the shutter time 4× (e.g. 1/250 s → 1/60 s, up to rounding). In *shutter-priority* mode the same "+2" is delivered by opening the aperture 2 stops (e.g. f/5.6 → f/2.8). The same dial moves a different knob, and the brightness is the same (Week 4 §2.2).
 
 > **Worked example (generic, not homework).** Going from f/8 to f/2.8 gives *N*₂/*N*₁ = 2.8/8 = 0.35, so stops = 2·log₂(0.35) ≈ −3.03: about 3 stops *more* light (negative because *N* got smaller). As a multiplier, (8/2.8)² ≈ 8.2×, matching 2³ = 8 up to rounding. If correct exposure at f/8 was 1/60 s, the same brightness at f/2.8 needs about 3 stops less time: 1/60 → 1/125 → 1/250 → 1/500 s.
 
@@ -439,7 +439,7 @@ The object's own rays converge at a distance *S′_O* from the lens, found by pl
 
 **What problem this solves.** Only one distance is perfectly sharp, but a zone around it looks sharp enough. Depth of field puts a size on that zone. Input: blur tolerance ε, magnification *m*, aperture *D*, focused distance *S*. Output: the width of the acceptably sharp range. *Analogy:* a spotlight on a stage: the brightest point is one spot, but everyone in the lit circle around it is "in the light".
 
-A sensor's pixel grid has finite resolution (Week 1 §12.2.1: the pixel pitch fixes the finest "image frequency" it can record), so a blur disc below some small threshold ε is indistinguishable from a sharp point. **[Depth of field (DoF)](https://en.wikipedia.org/wiki/Depth_of_field)** is the range of actual distances *O* for which *c* stays below ε.
+A sensor's pixel grid has finite resolution (Week 1 §16.4: the pixel pitch fixes the finest "image frequency" it can record), so a blur disc below some small threshold ε is indistinguishable from a sharp point. **[Depth of field (DoF)](https://en.wikipedia.org/wiki/Depth_of_field)** is the range of actual distances *O* for which *c* stays below ε.
 
 **Derive the range from §9.2.** Require *c* ≤ *ε*:
 
@@ -602,7 +602,7 @@ d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 ```
 
 **Terms:**
-- *λ* — wavelength of the light imaged (the wavelength of light, not a spatial or temporal frequency; Week 1 §12.0).
+- *λ* — wavelength of the light imaged (the wavelength of light, not a spatial or temporal frequency; Week 1 §16.1).
 - *n* — refractive index of the medium (about 1 for air).
 - *θ* — half-angle of the widest cone of light the lens accepts or emits.
 - **Numerical aperture**, *NA = n·sinθ* — packages *n* and *θ*. A bigger NA means a wider cone of rays, which (same Fourier logic as §3, run in reverse) means a *narrower* focused spot.
@@ -639,12 +639,12 @@ d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 | Circle with ripples from lens-surface machining (a rough or *aspheric*, non-spherical, element, §6) | concentric "onion rings" inside the disc | some lenses with moulded aspheric elements |
 | A deliberately cut-out shape (heart, star) in front of the lens | that shape | creative photography; Week 4 §19.2 does this on purpose to reshape the PSF |
 
-The general statement: the blur of a point is the **point spread function (PSF)** (§3). **Bokeh is the defocus PSF.** A photograph's blurred region is every point's PSF added together, a **convolution** of the sharp scene with the PSF (Week 1 §12.4.5 has the primer). That is a *single* convolution only if every blurred point has the same disc size; with real depth variation the size changes with distance (§9.1).
+The general statement: the blur of a point is the **point spread function (PSF)** (§3). **Bokeh is the defocus PSF.** A photograph's blurred region is every point's PSF added together, a **convolution** of the sharp scene with the PSF (Week 1 §21 has the primer). That is a *single* convolution only if every blurred point has the same disc size; with real depth variation the size changes with distance (§9.1).
 
 **Linear-algebra view.** Defocus blur is a linear map: write the sharp image as a vector **x** (one entry per pixel) and the blurred image as **y**; then **y** = **B x**.
 
 - Each *column* of **B** holds the disc one scene pixel spreads into: nonzero entries form a small blob shaped like the aperture (circle, polygon, ring), with entries summing to 1.
-- If all depths are equal, every column is the same blob shifted, so **B** is a (Toeplitz or circulant, Week 1 §12.4.5) convolution matrix.
+- If all depths are equal, every column is the same blob shifted, so **B** is a (Toeplitz or circulant, Week 1 §20.7 and §21) convolution matrix.
 - If depths differ, each column carries a *different-sized* blob and **B** is not shift-invariant. This is the matrix form of "bokeh size depends on distance".
 
 ### 13.2 How big is the bokeh disc?
@@ -685,7 +685,7 @@ Why the profile matters: a convolution sums neighboring points with weights from
 
 **Why phones fake it.** From §13.2, a phone's optics cannot blur backgrounds. **Portrait mode** computes the blur after capture:
 
-1. **Estimate a depth map**: a distance *O* for each pixel. Sources: two lenses (stereo, Week 1 §14); phase differences between the two halves of each pixel (*dual-pixel* sensors, which see the scene from two slightly different aperture positions); a trained neural network guessing depth from one image; and a depth sensor (below).
+1. **Estimate a depth map**: a distance *O* for each pixel. Sources: two lenses (stereo, Week 1 §11); phase differences between the two halves of each pixel (*dual-pixel* sensors, which see the scene from two slightly different aperture positions); a trained neural network guessing depth from one image; and a depth sensor (below).
 2. **Pick the focus plane** *S* (usually the detected face) and compute each pixel's blur size from the same relation as §13.2, *c* ∝ |1/*S* − 1/*O*|, scaled to the artistic strength the maker wants.
 3. **Blur each pixel with a disc (or polygon) kernel of that size**: a depth-varying convolution, exactly the non-shift-invariant **B** of §13.1. A good implementation protects the subject's edge (hair!) with a segmentation mask and brightens saturated highlights before blurring so bokeh balls appear.
 
@@ -715,11 +715,11 @@ A camera sensor's building block is the **photodiode**: a semiconductor structur
 
 A real pixel is more than a bare photodiode:
 - A **microlens** on top of each pixel focuses light that would land on the pixel's non-light-sensitive circuitry back onto the active photodiode.
-- A **color filter** (Week 1 §4's Bayer/RGGB mosaic) beneath the microlens restricts each pixel to one color channel.
+- A **color filter** (Week 1 §7's Bayer/RGGB mosaic) beneath the microlens restricts each pixel to one color channel.
 - **[Quantum efficiency](https://en.wikipedia.org/wiki/Quantum_efficiency)** is the fraction of incoming photons actually converted into a counted electron (roughly 50% for a typical sensor); not every photon produces a usable signal.
 - **Fill factor** is the fraction of a pixel's area that is light-sensitive (the rest holds wiring and per-pixel circuitry). The microlens compensates for a fill factor below 100% by funneling light from the "dead" area to the live area.
 
-**Linear-algebra view (the Bayer mosaic as an underdetermined system).** As in Week 1 §4, stack the true color image as a vector with 3 unknowns (R, G, B) per pixel and the raw readout as a vector with 1 number per pixel.
+**Linear-algebra view (the Bayer mosaic as an underdetermined system).** As in Week 1 §7, stack the true color image as a vector with 3 unknowns (R, G, B) per pixel and the raw readout as a vector with 1 number per pixel.
 
 - The color filter array is a **selection matrix**: one row per pixel, with a single 1 in the column of the channel that pixel's filter passes.
 - For a 4×4 patch this is a 16×48 matrix of **rank** 16 (16 measurements of 48 unknowns: 4 red, 8 green, 4 blue), so its **null space** has dimension 32.
@@ -909,7 +909,7 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 
 ## 20. Dynamic Range and Bit Depth
 
-**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §10 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a sensor the definition is the same: the ratio between the brightest and darkest signal it can represent.
+**[Dynamic range](https://en.wikipedia.org/wiki/Dynamic_range)** was introduced in Week 1 §15 for the human eye (~14 orders of magnitude adapted, ~5 instantaneous). For a sensor the definition is the same: the ratio between the brightest and darkest signal it can represent.
 
 A sensor adds a second, digital limit on top of the physical one: **bit depth** (§17), the number of discrete levels the ADC can output. A sensor's *achievable* dynamic range is capped by whichever is smaller:
 
@@ -929,7 +929,7 @@ A sensor adds a second, digital limit on top of the physical one: **bit depth** 
 
 This lecture's closing slide names what comes next: **RAW images → demosaicking → denoising → deblurring → white balancing → gamma correction → compression**, the **image signal processing (ISP)** pipeline that turns the raw, single-channel-per-pixel, noisy sensor output of §14–§19 into the finished color photo a viewer sees. PS2's remaining tasks (linear, chrominance-smoothed and Malvar–He–Cutler high-quality demosaicing; gamma correction; Gaussian, median, bilateral and non-local-means denoising) live there and are covered in Week 3, not here. Week 2 has covered the optics (§1–§13) and raw sensing (§14–§20) stages that come *before* any of that.
 
-Week 3 covers more than the pipeline: before the ISP stages it builds the color science underneath them (spectral sensitivity, CIE color matching, XYZ/RGB spaces, the xy chromaticity diagram, gamuts, deepening Week 1 §3), and past the pipeline it covers gamut mapping, JPEG compression, and a one-slide preview of deconvolution ahead of Weeks 5–6.
+Week 3 covers more than the pipeline: before the ISP stages it builds the color science underneath them (spectral sensitivity, CIE color matching, XYZ/RGB spaces, the xy chromaticity diagram, gamuts, deepening Week 1 §6), and past the pipeline it covers gamut mapping, JPEG compression, and a one-slide preview of deconvolution ahead of Weeks 5–6.
 
 > **Summary**
 > - Week 2 covered optics (pinhole, lens, aperture, defocus, depth of field, diffraction, bokeh) and raw sensing (pixel, CMOS/CCD, shutters, noise, SNR, dynamic range).

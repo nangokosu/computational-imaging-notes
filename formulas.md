@@ -11,7 +11,7 @@ This covers formulas substantial enough to get the full "Equations" treatment (i
 ## Week 1 — Human Visual System
 *(full derivations and diagrams in [`week1-study-notes.md`](./week1-study-notes.md); this is the lookup-speed reference)*
 
-### Cone response as a linear map (§3)
+### Cone response as a linear map (§6)
 
 ```
 c = C s
@@ -47,39 +47,23 @@ dpi = 1 inch / p
 
 ---
 
-### Weber contrast (§11)
+### Stops and light ratio (§14)
 
 ```
-C_weber = (I_feature − I_background) / I_background
+stops = log₂(ratio)          ratio = 2^stops
 ```
 
-**Computes:** Measures the contrast of a single, small feature against a large uniform background.
+**Computes:** Converts between a brightness or light ratio (e.g. 16×) and the photographer's count of doublings ("4 stops"), including the signed "+2 / −4" exposure-compensation notation (+2 = 4× the light, −4 = 1/16).
 
 | Term | Meaning |
 |---|---|
-| C_weber | Weber contrast value (dimensionless); computed output |
-| I_feature | luminance/intensity of the single small feature being judged; measured |
-| I_background | luminance/intensity of the surrounding uniform background; measured |
+| ratio | how many times more (or, below 1, fewer) light, or brighter/darker, one quantity is than another; dimensionless; set by scene or settings |
+| stops | the same comparison counted as doublings (positive) or halvings (negative); also the unit of exposure compensation, written EV; chosen by you on the camera dial |
+| 2 | the base, because one stop is by definition a factor of 2; fixed by definition |
 
 ---
 
-### Michelson contrast (§11)
-
-```
-C_michelson = (I_max − I_min) / (I_max + I_min)
-```
-
-**Computes:** Measures the contrast of a repeating/periodic pattern (e.g. a sinusoidal grating), where there is no single well-defined background.
-
-| Term | Meaning |
-|---|---|
-| C_michelson | Michelson contrast value (dimensionless); computed output |
-| I_max | brightest luminance in the periodic pattern (light stripes); measured |
-| I_min | darkest luminance in the periodic pattern (dark stripes); measured |
-
----
-
-### Image frequency → physical spatial frequency (§12.2.1)
+### Image frequency → physical spatial frequency (§16.4)
 
 ```
 physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi (pixels/inch)
@@ -95,7 +79,39 @@ physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi
 
 ---
 
-### 2D sinusoidal grating (§12.4.2)
+### Weber contrast (§17)
+
+```
+C_weber = (I_feature − I_background) / I_background
+```
+
+**Computes:** Measures the contrast of a single, small feature against a large uniform background.
+
+| Term | Meaning |
+|---|---|
+| C_weber | Weber contrast value (dimensionless); computed output |
+| I_feature | luminance/intensity of the single small feature being judged; measured |
+| I_background | luminance/intensity of the surrounding uniform background; measured |
+
+---
+
+### Michelson contrast (§17)
+
+```
+C_michelson = (I_max − I_min) / (I_max + I_min)
+```
+
+**Computes:** Measures the contrast of a repeating/periodic pattern (e.g. a sinusoidal grating), where there is no single well-defined background.
+
+| Term | Meaning |
+|---|---|
+| C_michelson | Michelson contrast value (dimensionless); computed output |
+| I_max | brightest luminance in the periodic pattern (light stripes); measured |
+| I_min | darkest luminance in the periodic pattern (dark stripes); measured |
+
+---
+
+### 2D sinusoidal grating (§19.2)
 
 ```
 I(x, y) = A · cos(2π(u·x + v·y) + φ)
@@ -114,7 +130,7 @@ I(x, y) = A · cos(2π(u·x + v·y) + φ)
 
 ---
 
-### DFT array index → cycles per pixel (§12.4.3)
+### DFT array index → cycles per pixel (§19.3)
 
 ```
 u = k_u / W      v = k_v / H
@@ -130,7 +146,7 @@ u = k_u / W      v = k_v / H
 
 ---
 
-### Discrete 1D convolution (§12.4.4a)
+### Discrete 1D convolution (§20.2)
 
 ```
 (x * h)[n] = sum over m of  h[m] · x[n − m]
@@ -147,11 +163,11 @@ u = k_u / W      v = k_v / H
 | (x*h)[n] | output at position n, in the signal's own units; computed |
 | * | convolution operator (the kernel is reversed relative to the signal; cross-correlation is the same without the reversal) |
 
-Worked check (§12.4.4a): x = [1, 3, 2, 5, 4], h = [¼, ½, ¼] gives the full output [0.25, 1.25, 2.25, 3.00, 4.00, 3.25, 1.00] (length N + K − 1 = 7).
+Worked check (§20.3): x = [1, 3, 2, 5, 4], h = [¼, ½, ¼] gives the full output [0.25, 1.25, 2.25, 3.00, 4.00, 3.25, 1.00] (length N + K − 1 = 7).
 
 ---
 
-### Convolution theorem (§12.4.4a)
+### Convolution theorem (§20.7)
 
 ```
 DFT{ x * h } = DFT{ x } · DFT{ h }      (entry-by-entry product, one frequency at a time)
@@ -166,11 +182,11 @@ DFT{ x * h } = DFT{ x } · DFT{ h }      (entry-by-entry product, one frequency 
 | DFT{x*h} | spectrum of the output; computed |
 | · | ordinary multiplication at each frequency (not a convolution) |
 
-Worked check: x = [3, 1, −1, 1] with kernel [½, ¼, 0, ¼]: [4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2], whose inverse DFT is the circular convolution [2, 1, 0, 1]. Dividing the output spectrum by DFT{h} undoes the blur (the inverse filter of Week 1 §12.4.4b), which fails where DFT{h} is zero and amplifies noise where it is small.
+Worked check: x = [3, 1, −1, 1] with kernel [½, ¼, 0, ¼]: [4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2], whose inverse DFT is the circular convolution [2, 1, 0, 1]. Dividing the output spectrum by DFT{h} undoes the blur (the inverse filter of Week 1 §23), which fails where DFT{h} is zero and amplifies noise where it is small.
 
 ---
 
-### Hybrid-image frequency-domain combination (§12.4.5)
+### Hybrid-image frequency-domain combination (§22.2)
 
 ```
 F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
@@ -186,7 +202,7 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 
 ---
 
-### Hybrid image as a sum of projections (§13.2)
+### Hybrid image as a sum of projections (§22.2)
 
 ```
 hybrid = P_high a + P_low b
@@ -201,20 +217,6 @@ hybrid = P_high a + P_low b
 | b | Image B, as a pixel-value vector; input |
 | P_high | high-pass projection matrix, keeps high-frequency sinusoid components; equals I − P_low |
 | P_low | low-pass projection matrix, keeps low-frequency sinusoid components |
-
-### Stops and light ratio (§10.1)
-
-```
-stops = log₂(ratio)          ratio = 2^stops
-```
-
-**Computes:** Converts between a brightness or light ratio (e.g. 16×) and the photographer's count of doublings ("4 stops"), including the signed "+2 / −4" exposure-compensation notation (+2 = 4× the light, −4 = 1/16).
-
-| Term | Meaning |
-|---|---|
-| ratio | how many times more (or, below 1, fewer) light, or brighter/darker, one quantity is than another; dimensionless; set by scene or settings |
-| stops | the same comparison counted as doublings (positive) or halvings (negative); also the unit of exposure compensation, written EV; chosen by you on the camera dial |
-| 2 | the base, because one stop is by definition a factor of 2; fixed by definition |
 
 ---
 
@@ -1343,7 +1345,7 @@ I_blurred(x, y) = (I_ideal * PSF)(x, y)
 | I_ideal(x,y) | Hypothetical perfectly sharp image an ideal pinhole would produce (Week 2 §2) |
 | PSF(x,y) | System's blur kernel, normalized to sum/integrate to 1 (redistributes light, adds/removes none) — fixed by the optics |
 | I_blurred(x,y) | Image actually captured — computed output |
-| * | Convolution (sliding weighted sum, Week 1 §12.4.4a) |
+| * | Convolution (sliding weighted sum, Week 1 §20) |
 
 ---
 
@@ -1359,7 +1361,7 @@ I − I * PSF_LP   ≡   Ĩ × (1 − OTF_LP)
 
 | Term | Meaning |
 |---|---|
-| u, v | Image frequencies, cycles per pixel (Week 1 §12.4.2) |
+| u, v | Image frequencies, cycles per pixel (Week 1 §19.2) |
 | PSF | The system's blur kernel (previous entry) |
 | OTF(u,v) | Fourier transform of the PSF — fraction of each frequency that survives imaging; computed from the optics |
 | I | Spatial-domain image |

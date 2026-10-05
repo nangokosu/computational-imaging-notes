@@ -2,7 +2,7 @@
 
 **Topic:** Digital Photography II — Color Science & the Camera Processing Pipeline
 **Source:** Lecture 3 slides (D. Lindell, CSC2529, Fall 2026); Problem Session 2 ("PS2," a TA problem session covering HW2), Task 2 (image processing pipeline: demosaicing, gamma correction) and Task 3 (denoising).
-**Scope:** Announcements skipped. The lecture's own "Review" slides (sensors-as-buckets, Bayer color filter arrays, per-pixel perspective) are skipped here since Week 1 §4 and Week 2 §14 already cover this ground — notes start from "Color is an artifact of human perception." Historical/biographical detail in the source slides (early color-photography techniques and the people behind them) is omitted per this project's no-history policy — a technique is described only by what it does; a paper is cited only by author/year, the way the course itself cites it.
+**Scope:** Announcements skipped. The lecture's own "Review" slides (sensors-as-buckets, Bayer color filter arrays, per-pixel perspective) are skipped here since Week 1 §7 and Week 2 §14 already cover this ground — notes start from "Color is an artifact of human perception." Historical/biographical detail in the source slides (early color-photography techniques and the people behind them) is omitted per this project's no-history policy — a technique is described only by what it does; a paper is cited only by author/year, the way the course itself cites it.
 **Order differs from the slides, on purpose.** Each topic comes after the ideas it needs: gamma, image frequency, smoothing filters and MSE/PSNR are taught first as short primers (they are used by demosaicking, denoising and JPEG); "other ways to capture color" follows demosaicking; denoising and sharpening follow the filters; gamut mapping follows denoising; the walkthrough of opening a real RAW file comes last because it uses every stage. The pipeline stage order itself (RAW → demosaicking → denoising → gamut mapping → gamma → JPEG) is unchanged and is shown in §9. Every numbered section ends with a Summary box.
 **Exam note:** this week reuses some single-letter symbols from earlier weeks with different meanings — most importantly, the capital letter **D** meant "aperture diameter" in Week 2 (§8) but means a **gradient/difference term** in this week's demosaicking formulas (§14.5). Keep track of which week's formula you're in.
 **Symbol note for the "Linear-algebra view" asides:** the identity matrix is written **Id** (never I, which is the image in §13 and §17). A bare **M** used as a matrix always means the Y′CbCr matrix of §14.3 (in Part 1, M is still the medium-wavelength cone); color-space conversion matrices always carry subscripts, e.g. M_sRGB→XYZ. **G_σ** is a Gaussian-blur matrix, unrelated to the green channel G.
@@ -13,7 +13,7 @@
 
 ## 1. Why color needs formal treatment now
 
-Week 1 §3 gave the basic facts: the retina has three cone types (S, M, L); color is a **tristimulus** (three-number) summary of a spectrum, not a measurement of it; and two different spectra that give the same three cone responses are **metamers**. Week 2 §14's Bayer color filter array is the camera's version of the same trick.
+Week 1 §6 gave the basic facts: the retina has three cone types (S, M, L); color is a **tristimulus** (three-number) summary of a spectrum, not a measurement of it; and two different spectra that give the same three cone responses are **metamers**. Week 2 §14's Bayer color filter array is the camera's version of the same trick.
 
 Neither week explained *why* three numbers are enough, what shape the set of reachable colors has, or why building a color camera or display is harder than "just reproduce the spectrum." This section answers those questions.
 
@@ -47,7 +47,7 @@ R = ∫ Φ(λ) · f(λ) dλ
 - *R* — the sensor's scalar output (a single number, e.g. one cone cell's firing rate or one photodiode's accumulated charge). This is what gets measured.
 - Φ(λ) — the incident light's SPD, a property of the *scene and illumination*, not the sensor. Units: power per unit wavelength.
 - *f*(λ) — the sensor's SSF, a property of the *sensor* (fixed by the physical/chemical/electronic design — a cone cell's pigment, or a camera pixel's color filter plus photodiode response), not the scene.
-- The integral runs over the wavelength range the sensor can respond to at all (for a human cone or an RGB camera pixel, this is essentially the visible range, roughly 400–700 nm per Week 1 §3); outside that range *f*(λ) is taken to be zero, so those wavelengths don't contribute regardless of how much power Φ(λ) carries there.
+- The integral runs over the wavelength range the sensor can respond to at all (for a human cone or an RGB camera pixel, this is essentially the visible range, roughly 400–700 nm per Week 1 §6); outside that range *f*(λ) is taken to be zero, so those wavelengths don't contribute regardless of how much power Φ(λ) carries there.
 
 **Why this is a general fact, not a geometric one.** This is a dot-product-style weighted integral — it describes a *relationship between two functions*, not a shape in space, so there is nothing to draw. It applies identically whether the sensor is a retinal cone or a camera pixel, and it is the single mechanism underlying everything else in Part 1: three cone SSFs (or three camera-filter SSFs) applied to the same Φ(λ) is exactly how a spectrum becomes three numbers.
 
@@ -68,13 +68,13 @@ R = ∫ Φ(λ) · f(λ) dλ
 
 ## 3. The Retinal (Tristimulus) Color Space
 
-Apply §2's formula three times — once per cone SSF (S, M, L, from Week 1 §3) — to the same incident light, and the result is a point (S, M, L) in a 3D space. This section builds the geometric picture of what region of that 3D space is actually reachable by real light, and formalizes metamerism as a fact about that geometry.
+Apply §2's formula three times — once per cone SSF (S, M, L, from Week 1 §6) — to the same incident light, and the result is a point (S, M, L) in a 3D space. This section builds the geometric picture of what region of that 3D space is actually reachable by real light, and formalizes metamerism as a fact about that geometry.
 
 **The "lasso curve."** Consider a **pure beam**: a single, idealized monochromatic light source (a laser) at one exact wavelength λ, with Φ(λ) a single spike. Sweep λ across the visible range and plot the resulting (S, M, L) triplet at each wavelength — this traces a curve through 3D space, one point per wavelength. The lecture calls this the **lasso curve**, and it has three notable properties, each a direct consequence of §2's formula:
 
 - **It is confined to the positive octant** (S ≥ 0, M ≥ 0, L ≥ 0 everywhere along the curve). Both Φ(λ) (physical light power) and every cone's *f*(λ) (a physical sensitivity) are non-negative by construction, so the integral in §2 — a non-negative function times a non-negative function, integrated — can never come out negative. No real light can produce a negative cone response.
-- **It starts and ends at the origin.** At the extreme ends of the visible range, all three cone SSFs taper off toward zero (Week 1 §3's S/M/L curves are bell-shaped, not flat), so a monochromatic spike at the very edge of visibility produces a vanishingly small response in all three cones at once — (S, M, L) ≈ (0, 0, 0).
-- **It never comes close to the M axis** (i.e., it never produces a response that is almost-purely-M with S and L near zero). Week 1 §3 already noted the M and L sensitivity curves overlap heavily — there is no wavelength at which M responds strongly while L stays near zero, because their peaks sit close together and their curves largely track each other. A monochromatic light strong enough to drive M substantially always drives L at least somewhat too.
+- **It starts and ends at the origin.** At the extreme ends of the visible range, all three cone SSFs taper off toward zero (Week 1 §6's S/M/L curves are bell-shaped, not flat), so a monochromatic spike at the very edge of visibility produces a vanishingly small response in all three cones at once — (S, M, L) ≈ (0, 0, 0).
+- **It never comes close to the M axis** (i.e., it never produces a response that is almost-purely-M with S and L near zero). Week 1 §6 already noted the M and L sensitivity curves overlap heavily — there is no wavelength at which M responds strongly while L stays near zero, because their peaks sit close together and their curves largely track each other. A monochromatic light strong enough to drive M substantially always drives L at least somewhat too.
 
 *(A diagram would make this curve's shape immediately clear — a looping, lasso-shaped path swept through the positive octant of a 3D S-M-L space, bulging away from the M axis. That visualization belongs in the project's artifact, not this file; it's noted here in prose only.)*
 
@@ -84,9 +84,9 @@ Sweep every wavelength through every brightness and the lasso curve becomes a so
 
 **Mixed beams and metamerism, formalized.** Ordinary light is a **mixed beam**: many wavelengths at once. By linearity, its response is the sum of the responses of its pure parts. Geometrically its (S, M, L) point is a weighted average (a **convex combination**) of points on the cone, so it lands inside the cone. That is why every real color lies in the cone and never outside it.
 
-This also **formalizes Week 1 §3's metamerism**. The map from a full spectrum to three numbers is many-to-one, so infinitely many spectra land on the same point. Those spectra are **metamers**: different light, identical retinal color, because the eye never measures the spectrum itself.
+This also **formalizes Week 1 §6's metamerism**. The map from a full spectrum to three numbers is many-to-one, so infinitely many spectra land on the same point. Those spectra are **metamers**: different light, identical retinal color, because the eye never measures the spectrum itself.
 
-This geometric picture **formalizes Week 1 §3's metamerism**: since the map from a full spectrum Φ(λ) down to a single 3D point (S, M, L) is many-to-one (an entire continuous function collapsed to three numbers), many different spectra — potentially infinitely many — land on the exact same interior point of the cone. Any two of those spectra are **metamers**: physically different light, identical retinal color, because the eye never measures the spectrum directly, only this one 3D projection of it.
+This geometric picture **formalizes Week 1 §6's metamerism**: since the map from a full spectrum Φ(λ) down to a single 3D point (S, M, L) is many-to-one (an entire continuous function collapsed to three numbers), many different spectra — potentially infinitely many — land on the exact same interior point of the cone. Any two of those spectra are **metamers**: physically different light, identical retinal color, because the eye never measures the spectrum directly, only this one 3D projection of it.
 
 **Linear-algebra view: a 3×N matrix, its null space, and a cone.**
 - Stack the three cone SSF vectors from §2 as the rows of a 3×N matrix **A**. Then (S, M, L) = Δλ · **A**φ: all three inner products at once. **A** maps spectrum space ℝ^N down to ℝ³ (31 numbers down to 3 in the 10 nm example). "Projection" here means this many-to-one map to fewer dimensions, not the stricter linear-algebra sense of a square matrix P with P² = P.
@@ -333,7 +333,7 @@ RAW image → demosaicking → denoising → gamut mapping → gamma correction 
 
 If those 256 levels were spaced evenly in physical intensity, most would go to the brightest stops, where the eye barely notices small differences, while the dark tones the eye is most sensitive to would be squeezed into a handful of codes.
 
-Human sensitivity to luminance is roughly a power law, **γ ≈ 2.2**. Encoding brightness with a matching curve spaces the 256 codes so that **equal steps in code value look like roughly equal steps in brightness**. This echoes what Week 1 already leaned on (Week 1 §10's log-scale dynamic range, Week 1 §12's contrast-driven sensitivity): perception is non-linear, so a finite-precision format meant for human viewers should be spaced to match perception, not physics.
+Human sensitivity to luminance is roughly a power law, **γ ≈ 2.2**. Encoding brightness with a matching curve spaces the 256 codes so that **equal steps in code value look like roughly equal steps in brightness**. This echoes what Week 1 already leaned on (Week 1 §14's log-scale stops, Week 1 §18's contrast-driven sensitivity): perception is non-linear, so a finite-precision format meant for human viewers should be spaced to match perception, not physics.
 
 **Two variants appear in the source material — disambiguated explicitly:**
 
@@ -388,7 +388,7 @@ Every color-space matrix in Part 1 (§5, §8) describes mixing *amounts of light
 
 Later sections (aliasing, chroma filtering, denoising, sharpening, JPEG) lean on phrases like "high-frequency detail," "low-pass," and "sharpness." This subsection pins down what they mean in this week's context, from first principles.
 
-**Which frequency?** Week 1 §12.0 separated three meanings of "frequency." In this week's image-processing sections, it is always the third:
+**Which frequency?** Week 1 §16.1 separated three meanings of "frequency." In this week's image-processing sections, it is always the third:
 
 | Kind | What oscillates | Unit | Role in Week 3 |
 |---|---|---|---|
@@ -403,7 +403,7 @@ So "a red channel's high-frequency content" means *fine spatial detail in the re
 **Edges and texture are high frequency; shading is low frequency.**
 - **Smooth shading** (a gradual sky gradient, a softly lit wall) changes slowly across many pixels, so it is made almost entirely of low-frequency waves.
 - **Fine texture** (fabric weave, hair, gravel) alternates within a few pixels, so its content sits at high frequencies.
-- **A sharp edge** is a sudden jump. Building a jump out of smooth waves (Week 1 §12.4's "any signal is a sum of waves") needs many of them, including high-frequency ones, to make the transition abrupt.
+- **A sharp edge** is a sudden jump. Building a jump out of smooth waves (Week 1 §19's "any signal is a sum of waves") needs many of them, including high-frequency ones, to make the transition abrupt.
 
 > **Numeric illustration: a step needs many frequencies.** Over a 16-pixel repeating window, compare a hard step (8 px at 0, 8 px at 1) with a single smooth cosine bump of the same period. Their Fourier magnitudes at each image frequency (cycles/pixel):
 >
@@ -417,11 +417,11 @@ So "a red channel's high-frequency content" means *fine spatial detail in the re
 
 > **Numeric illustration: a blur widens an edge.** A 1D step edge, 0 0 0 1 1 1, goes from dark to bright in **1** pixel step. Replace each pixel with the average of itself and its two neighbors (a 3-tap average, the simplest low-pass filter) and it becomes 0 0 0.333 0.667 1 1. The transition now takes **3** pixel steps. That widening is what "the edge got blurrier" means numerically.
 
-**Where "sharpness" lives.** Perceived sharpness comes mostly from high frequencies in **luminance** (brightness), not in color. Week 1 §12's Contrast Sensitivity Function was measured with brightness gratings. The visual system's resolution for pure color changes (equal brightness, different hue) is coarser, so it runs out at lower spatial frequencies. Hence the asymmetry used twice in this week:
+**Where "sharpness" lives.** Perceived sharpness comes mostly from high frequencies in **luminance** (brightness), not in color. Week 1 §18's Contrast Sensitivity Function was measured with brightness gratings. The visual system's resolution for pure color changes (equal brightness, different hue) is coarser, so it runs out at lower spatial frequencies. Hence the asymmetry used twice in this week:
 - Chroma (Cb, Cr) can be low-passed with little visible cost: demosaicking's color cleanup and JPEG's chroma subsampling, both later.
 - Luma (Y′) cannot: low-passing it is exactly the edge-widening shown above, and the image visibly softens.
 
-The same "split an image into low- and high-frequency parts" idea powered Week 1 §13's hybrid images, and it returns in sharpening later this week. Week 5 formalizes image frequency, sampling, and aliasing with the discrete Fourier transform.
+The same "split an image into low- and high-frequency parts" idea powered Week 1 §22's hybrid images, and it returns in sharpening later this week. Week 5 formalizes image frequency, sampling, and aliasing with the discrete Fourier transform.
 
 > **Summary**
 > - In image processing, "frequency" means image frequency: light-dark cycles per pixel, unrelated to the frequency of light.
@@ -460,15 +460,15 @@ The simplest choice of *w*: weight depends **only on spatial distance** between 
 w(x, x') = exp( −|x − x'|² / (2σ²) )
 ```
 
-Nearby pixels get high weight, distant pixels get vanishingly small weight, and *nothing* about the pixels' actual intensity values enters the weight at all — this is exactly the low-pass filtering idea already introduced in Week 1 §13.1 (blurring by averaging neighbors), which Week 1 §12.4.4a formalizes as **convolution** with a **kernel** (a small grid of weights slid over the image). Here the Gaussian is one specific, spatially-weighted instance of §12.1's general framework, and its weights *are* the kernel. Because the weights don't depend on the noisy image's own values, this is both **linear** (the output is a fixed linear combination of inputs, regardless of what those inputs are) and purely **local** (weight decays with distance alone). (Slide 86 calls it a "Gaussian low-pass filter": low-pass in image frequency, cycles per pixel, per §11.)
+Nearby pixels get high weight, distant pixels get vanishingly small weight, and *nothing* about the pixels' actual intensity values enters the weight at all — this is exactly the low-pass filtering idea already introduced in Week 1 §22.1 (blurring by averaging neighbors), which Week 1 §20 formalizes as **convolution** with a **kernel** (a small grid of weights slid over the image). Here the Gaussian is one specific, spatially-weighted instance of §12.1's general framework, and its weights *are* the kernel. Because the weights don't depend on the noisy image's own values, this is both **linear** (the output is a fixed linear combination of inputs, regardless of what those inputs are) and purely **local** (weight decays with distance alone). (Slide 86 calls it a "Gaussian low-pass filter": low-pass in image frequency, cycles per pixel, per §11.)
 
-**Linear-algebra view: Gaussian filtering is a fixed matrix.** Stack the image into a vector **i**. The filtered image is G_σ**i**, where G_σ is a square matrix whose row for pixel x holds the normalized weights w(x, x′)/normalizer. For example, with σ = 1 px over a 5-pixel neighborhood, the middle pixel's row is (0.0545, 0.2442, 0.4026, 0.2442, 0.0545). Every row has the same pattern shifted over by one pixel, which makes G_σ a **convolution matrix** (Week 1 §12.4.4a, Part 7: a matrix built by repeating one kernel, shifted one position per row): convolving *is* multiplying by it, although code never builds it explicitly. G_σ doesn't depend on **i**, so the filter is linear: G_σ(a**i**₁ + b**i**₂) = aG_σ**i**₁ + bG_σ**i**₂.
+**Linear-algebra view: Gaussian filtering is a fixed matrix.** Stack the image into a vector **i**. The filtered image is G_σ**i**, where G_σ is a square matrix whose row for pixel x holds the normalized weights w(x, x′)/normalizer. For example, with σ = 1 px over a 5-pixel neighborhood, the middle pixel's row is (0.0545, 0.2442, 0.4026, 0.2442, 0.0545). Every row has the same pattern shifted over by one pixel, which makes G_σ a **convolution matrix** (Week 1 §20.7: a matrix built by repeating one kernel, shifted one position per row): convolving *is* multiplying by it, although code never builds it explicitly. G_σ doesn't depend on **i**, so the filter is linear: G_σ(a**i**₁ + b**i**₂) = aG_σ**i**₁ + bG_σ**i**₂.
 
 **Term-by-term:** *x* and *x′* are pixel positions; |x − x′| is their distance in pixels; **σ** (sigma) is the spatial standard deviation of the Gaussian, in pixels, and is **the knob you control**. The factor 2σ² sets the scale: a neighbor exactly σ pixels away gets weight exp(−1/2) ≈ 0.61 of the center's.
 
 **What σ does.** Analogy: σ is the radius of a "neighborhood vote." Small σ means only immediate neighbors get a say, so noise is averaged over few pixels and only slightly reduced, but edges stay fairly crisp. Large σ means pixels farther away also vote. More noise is averaged away, but more genuine detail is averaged away too. In short, a **larger σ → wider kernel → more smoothing → lower cutoff frequency** (finer detail is removed).
 
-**Why it is a low-pass filter: a Gaussian's Fourier transform is a Gaussian.** Week 1 §12.4.4a's convolution theorem (applied to filtering in §12.4.5) says blurring with a kernel multiplies the image's spectrum by the kernel's own Fourier transform (its *frequency response*: how much of each image frequency survives). For a Gaussian kernel of spatial width σ (in pixels), that frequency response is another Gaussian:
+**Why it is a low-pass filter: a Gaussian's Fourier transform is a Gaussian.** Week 1 §20.7's convolution theorem (applied to filtering in §12.4.5) says blurring with a kernel multiplies the image's spectrum by the kernel's own Fourier transform (its *frequency response*: how much of each image frequency survives). For a Gaussian kernel of spatial width σ (in pixels), that frequency response is another Gaussian:
 
 ```
 H(f) = exp( −f² / (2σ_f²) ),   σ_f = 1 / (2πσ)
@@ -536,7 +536,7 @@ Whichever scale you use, it must match the scale MSE was computed on. An MSE on 
 
 Squaring max puts it in the same "squared units" as MSE, so the ratio is dimensionless and PSNRs are comparable across scales when each uses its own max consistently.
 
-**Why a log (dB) scale?** Same reasoning as dynamic range in Week 1 §10 and f-stops in Week 2 §8. A near-perfect reconstruction has MSE close to 0, so the raw ratio can be huge; a log compresses that range, and each fixed additive step (a few dB) means a fixed *multiplicative* change in the ratio, which is how quality differences are naturally discussed. The factor 10 is simply the standard **decibel (dB)** convention.
+**Why a log (dB) scale?** Same reasoning as dynamic range in Week 1 §15 and f-stops in Week 2 §8. A near-perfect reconstruction has MSE close to 0, so the raw ratio can be huge; a log compresses that range, and each fixed additive step (a few dB) means a fixed *multiplicative* change in the ratio, which is how quality differences are naturally discussed. The factor 10 is simply the standard **decibel (dB)** convention.
 
 **How HW2 uses this.** PSNR is computed *after* gamma correction (§10) is applied, and is exactly the metric used to numerically compare the demosaicking methods of the next section against each other. No actual PSNR number is computed here — per this project's policy, that comparison is left to the assignment; only the method is given.
 
@@ -551,13 +551,13 @@ Squaring max puts it in the same "squared units" as MSE, so the ratio is dimensi
 
 ## 14. Demosaicking
 
-Demosaicking (Week 1 §4) is the reconstruction step that turns a single-channel-per-pixel Bayer mosaic into a full three-channel-per-pixel RGB image, by estimating each pixel's two *unmeasured* channels from its neighbors. This section builds up through increasingly capable methods, in the order HW2/PS2 present them.
+Demosaicking (Week 1 §7) is the reconstruction step that turns a single-channel-per-pixel Bayer mosaic into a full three-channel-per-pixel RGB image, by estimating each pixel's two *unmeasured* channels from its neighbors. This section builds up through increasingly capable methods, in the order HW2/PS2 present them.
 
 ### 14.1 Naive (Linear) Interpolation
 
 **What problem this solves.** Each pixel measured only one color, so two of its three values are missing. Naive interpolation fills them in. Input: the sparse Bayer mosaic. Output: a full-color image whose missing values are guesses. Analogy: a classroom where each student only knows one answer on a three-question quiz, and the missing answers are filled by asking the nearest neighbors who did measure them.
 
-The simplest approach: estimate each missing channel value at a pixel by averaging the nearest neighboring pixels that *did* measure that channel. For the green channel specifically (present at every other pixel in the Bayer mosaic — Week 1 §4's "RGGB," green doubled), the four nearest green-measuring neighbors of any non-green pixel are its four orthogonal (up/down/left/right) neighbors:
+The simplest approach: estimate each missing channel value at a pixel by averaging the nearest neighboring pixels that *did* measure that channel. For the green channel specifically (present at every other pixel in the Bayer mosaic — Week 1 §7's "RGGB," green doubled), the four nearest green-measuring neighbors of any non-green pixel are its four orthogonal (up/down/left/right) neighbors:
 
 ```
 ĝ(x,y) = (1/4) · Σ g(x+m, y+n),   (m,n) ∈ {(0,−1), (0,1), (−1,0), (1,0)}
@@ -586,7 +586,7 @@ Naive interpolation like this tends to introduce visible color fringing/artifact
 
 Each Bayer color channel is sampled more sparsely than the full pixel grid (green at half density, red and blue at a quarter). Fine scene detail beyond what that sparse sampling can represent causes **aliasing**: after demosaicking it shows up as false color patterns (moiré) that were never in the scene. The intuition needed here is just that under-sampling fine periodic detail folds it into spurious low-frequency patterns (Week 5 formalizes this with the sampling theorem).
 
-Throughout, "frequency" means **image frequency** (Week 1 §12.2.1; §11 above): light-dark cycles per pixel of the sensor grid, unrelated to the frequency (wavelength) of the light.
+Throughout, "frequency" means **image frequency** (Week 1 §16.4; §11 above): light-dark cycles per pixel of the sensor grid, unrelated to the frequency (wavelength) of the light.
 
 **Analogy.** Picture a spinning wagon wheel filmed by a camera that takes too few frames per second: the spokes can appear to crawl slowly, or even backwards. The camera isn't lying about any single frame; it just doesn't look often enough to tell a fast rotation from a slow one. A Bayer channel that samples a fine stripe pattern too sparsely is fooled the same way, except across space instead of time.
 
@@ -622,7 +622,7 @@ It is a glass sheet directly in front of the sensor that slightly pre-blurs the 
 
 Naive per-channel interpolation (§14.1) still leaves color-fringing artifacts, especially near edges, because red, green, and blue are each interpolated independently with no shared structure. The lecture (slide 71) names the root cause as a **sampling problem that persists despite the OLPF**: red and blue are the sparsest channels (one sample per 2×2 tile), so any fine detail they receive is "(too) high-frequency" for their sampling — high *image* frequency, in cycles per pixel, exactly as in §14.2's worked example. Their interpolation errors therefore come out as fine, pixel-scale color speckle and colored fringes along edges.
 
-A cheap fix exploits an asymmetry in human vision: **people are far more sensitive to sharpness in luminance than in chrominance** (§11 defines "sharpness"). This extends Week 1 §12: the Contrast Sensitivity Function was measured with *brightness* gratings, and the eye resolves fine detail in pure color (equal brightness, different hue) much more coarsely.
+A cheap fix exploits an asymmetry in human vision: **people are far more sensitive to sharpness in luminance than in chrominance** (§11 defines "sharpness"). This extends Week 1 §18: the Contrast Sensitivity Function was measured with *brightness* gratings, and the eye resolves fine detail in pure color (equal brightness, different hue) much more coarsely.
 
 So blurring the *color* information a little while leaving *brightness* detail untouched is far less visible than blurring both together.
 
@@ -687,7 +687,7 @@ and the inverse, exactly as the lecture states it structurally:
 
 **Why chroma is where demosaicking errors live.** The fringes and speckle of naive interpolation are mostly disagreements *between* channels (red says one thing, green another), not errors in overall brightness. A disagreement between channels is, by definition, a color difference, so it lands mostly in Cb and Cr. Smoothing just those two channels attacks the artifacts where they are concentrated.
 
-**Why a median filter counts as a low-pass filter here.** A low-pass filter (Week 1 §13.1) keeps broad variation and removes pixel-to-pixel variation. The median filter (§12.3) is not a weighted average, but it behaves the same on this content: an isolated wrong-colored pixel is an outlier in its window, so the median discards it, while a broad region of consistent chroma passes unchanged. Unlike a plain average, the median does not smear a speckle into a halo, which is why PS2 suggests it.
+**Why a median filter counts as a low-pass filter here.** A low-pass filter (Week 1 §22.1) keeps broad variation and removes pixel-to-pixel variation. The median filter (§12.3) is not a weighted average, but it behaves the same on this content: an isolated wrong-colored pixel is an outlier in its window, so the median discards it, while a broad region of consistent chroma passes unchanged. Unlike a plain average, the median does not smear a speckle into a halo, which is why PS2 suggests it.
 
 Filtering only Cb and Cr (e.g. via a median filter, per PS2's own suggestion of a 9×9 median window) smooths over the color artifacts naive interpolation introduced while leaving the fine, perceptually important luminance detail (the high image-frequency content in Y′ that §11 explains the eye relies on for "sharpness") fully intact.
 
@@ -916,7 +916,7 @@ sharpened  = I + k · (I − blur(I))
 
 **Intuition, step by step.**
 1. A blur is a low-pass filter (§12.2): blur(I) keeps the low image-frequency part of I (smooth shading) and drops the high-frequency part (edges, texture).
-2. Subtracting it from the original leaves exactly what the blur removed. This is the **detail layer**: the high-frequency part of the image, near zero in smooth regions and large at edges and texture. (It is the same high-pass construction Week 1 §13.1 used for hybrid images.)
+2. Subtracting it from the original leaves exactly what the blur removed. This is the **detail layer**: the high-frequency part of the image, near zero in smooth regions and large at edges and texture. (It is the same high-pass construction Week 1 §22.1 used for hybrid images.)
 3. Adding a scaled copy of the detail layer back boosts high frequencies relative to low ones. Per §11, high-frequency luminance content is what the eye reads as sharpness, so the image looks crisper.
 
 **Term-by-term:**
@@ -1037,7 +1037,7 @@ JPEG compression is lecture content, not one of HW2's tasks, so this is covered 
 1. **Transform to Y′CbCr** — exactly the same luma/chrominance representation built in §14.3, now used for compression rather than demosaicking.
 2. **Downsample the chroma channels.** Because human vision is far more sensitive to fine (high spatial-frequency) luminance detail than chrominance detail (§11; the identical fact §14.3 already used to justify chrominance-only low-pass filtering during demosaicking), JPEG throws away *spatial resolution* in Cb and Cr — not Y′ — to save space, at standard ratios: **4:4:4** (no downsampling — every luma sample has its own chroma sample), **4:2:2** (chroma downsampled 2× horizontally), and **4:2:0** (chroma downsampled 2× in both directions, the most aggressive of the three, and the most common default).
 3. **Split into 8×8 pixel blocks.**
-4. **Discrete cosine transform (DCT) each block**, per channel — conceptually the same spatial-frequency-decomposition idea (here image frequency, cycles per pixel within the block; §11) as the Fourier transform built up in Week 1 §12.4 (a different but related basis of waves, here confined to small 8×8 blocks rather than the whole image).
+4. **Discrete cosine transform (DCT) each block**, per channel — conceptually the same spatial-frequency-decomposition idea (here image frequency, cycles per pixel within the block; §11) as the Fourier transform built up in Week 1 §19 (a different but related basis of waves, here confined to small 8×8 blocks rather than the whole image).
 5. **Quantize the resulting DCT coefficients** — divide each coefficient by a (typically image-frequency-dependent) step size and round, discarding fine distinctions in coefficients human vision is least likely to notice (typically the higher image-frequency ones, where §11's fine detail and noise live).
 6. **Entropy/run-length code the quantized coefficients** — a lossless compression step (no further information is thrown away here) that exploits the fact that quantization tends to leave long runs of zero-valued coefficients, especially at high image frequencies (cycles per pixel) within a block.
 
@@ -1108,13 +1108,13 @@ The formats differ between manufacturers, so you need a decoder to get at the nu
 
 ## 21. Deblurring / Deconvolution — A One-Slide Preview
 
-The lecture shows exactly one slide on this topic, with no formula: a blurred input next to its deblurred (deconvolved) reconstruction (Heide et al. 2016), plus a short list of blur sources: defocus, geometric distortion, spherical aberration, chromatic aberration (Week 2 §6 covered the optical causes) and coma. Nothing about *how* deblurring works is given. The real treatment (inverse-problem formulation, undoing a known or estimated blur) is Week 5–6 material, with a first-look primer in Week 1 §12.4.4b. This section only previews that the topic exists.
+The lecture shows exactly one slide on this topic, with no formula: a blurred input next to its deblurred (deconvolved) reconstruction (Heide et al. 2016), plus a short list of blur sources: defocus, geometric distortion, spherical aberration, chromatic aberration (Week 2 §6 covered the optical causes) and coma. Nothing about *how* deblurring works is given. The real treatment (inverse-problem formulation, undoing a known or estimated blur) is Week 5–6 material, with a first-look primer in Week 1 §23. This section only previews that the topic exists.
 
-**Orientation, so the word is not opaque.** Every blur source on that slide acts like **convolution**: each sharp scene point is replaced by a small blob (the blur **kernel**, or point spread function), and the photo is the sum of all the blobs (Week 1 §12.4.4a; named formally in Week 4 §18).
+**Orientation, so the word is not opaque.** Every blur source on that slide acts like **convolution**: each sharp scene point is replaced by a small blob (the blur **kernel**, or point spread function), and the photo is the sum of all the blobs (Week 1 §20; named formally in Week 4 §18).
 
 **Deconvolution** is the reverse problem: given the blurry photo, estimate the sharp one. It is *non-blind* when the kernel is known and *blind* when it must be guessed too.
 
-It is hard because blur multiplies each spatial frequency by a factor that is small or zero for fine detail, and dividing that factor back out amplifies noise. This is an **ill-posed** problem, handled with **regularization** (the Wiener filter in Week 5, image priors in Week 6; Week 1 §12.4.4b works a small numeric case).
+It is hard because blur multiplies each spatial frequency by a factor that is small or zero for fine detail, and dividing that factor back out amplifies noise. This is an **ill-posed** problem, handled with **regularization** (the Wiener filter in Week 5, image priors in Week 6; Week 1 §23 works a small numeric case).
 
 It matters for this course because defocus, motion blur, coded apertures, flutter shutter, extended depth of field (Week 4 §18 to §24) and the recovery of closely spaced LiDAR returns all reduce to it.
 
