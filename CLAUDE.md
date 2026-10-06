@@ -62,7 +62,7 @@ Never compute the specific numeric answers a homework asks the student to derive
 
 A single Claude Artifact covers the whole course, updated in place every time a new week is added (never create a second artifact for a new week):
 
-- **URL:** https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0
+- **URL:** https://claude.ai/artifact/4pG6rjMnLYwEzVmncvNH1r
 - **Title:** "Optics, Sensing, Computation"
 
 **Artifact and markdown always move together.** Khai never wants a markdown-only update. Every content change to `weekN-study-notes.md`, `glossary.md`, or `formulas.md` — new text, fixes, clarifications, new sections, new figures-worthy material — must also be mirrored into the published artifact in the same piece of work (prose, tables, formulas, glossary cards, and any diagrams the new content calls for), then republished in place. Only skip the artifact for a change that has no reader-visible counterpart there (e.g. editing this CLAUDE.md or README). Artifact-editing agents must run one at a time, since all publish to the same URL.
