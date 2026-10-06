@@ -57,7 +57,9 @@ Exposure time is the one camera setting that trades *time* for *light*, and time
 | **Exposure** (strict sense, *H*) | *Total* light delivered per unit sensor area during that time: water per square centimeter of bucket opening | lux·seconds | Exposure time, aperture (Week 2 §8) and scene brightness, but **not** ISO |
 | **"An exposure"** (countable noun) | One captured frame ("take three exposures and merge them") | — | — |
 
-In this file, "exposure" alone means the strict *H*; the duration is always "exposure time." A "fast shutter speed" is a *short* exposure time.
+> **Same concept, different names: exposure time = shutter speed = shutter time.** All three name one setting: how long the shutter stays open. Camera menus and the lecture slides usually say "shutter speed"; these notes say "exposure time." Despite the word "speed," it is a duration in seconds, so a "fast" shutter speed is a *short* exposure time and a "slow" one a long exposure time.
+
+In this file, "exposure" alone means the strict *H*; the duration is always "exposure time."
 
 The lecture also uses a looser, plain-language sense: **how bright the photo looks = Gain × Flux × Time**, where *gain* is ISO (§2.5), *flux* is the light let in (set by the aperture) and *time* is exposure time. This loose product folds ISO in, so it is *not* the strict *H* below.
 
@@ -476,7 +478,7 @@ Each knob was built earlier; the table compares them side by side for *how well 
 
 | Knob | Range | Pros | Cons |
 |---|---|---|---|
-| **Shutter speed** (§2.1–§2.3) | ~30 s to 1/4000 s (about 5 orders of magnitude: 30 ÷ (1/4000) = 120,000) | Repeatable, linear (§2.2's reciprocity) | Noise and motion blur at long exposure times |
+| **Shutter speed** (= exposure time, §2.1–§2.3) | ~30 s to 1/4000 s (about 5 orders of magnitude: 30 ÷ (1/4000) = 120,000) | Repeatable, linear (§2.2's reciprocity) | Noise and motion blur at long exposure times |
 | **F-stop** (aperture, Week 2 §8) | ~f/0.98 to f/22 (about 3 orders of magnitude of light: (22/0.98)² ≈ 500) | Fully optical, no added electronic noise | Changes depth of field (Week 2 §10) |
 | **ISO** (§2.5) | ~100 to 1600 (about 1.2 orders of magnitude: a factor of 16) | Nothing physically changes between shots, so no motion | Adds noise (amplifies what was already collected) |
 | **[Neutral density (ND) filter](https://en.wikipedia.org/wiki/Neutral-density_filter)** | Up to 6 densities (6 orders of magnitude) | Works even with strobe/flash lighting | Not perfectly color-neutral; extra glass adds interreflections/aberrations (Week 2 §6) |
@@ -710,14 +712,14 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 
 *(Beyond the lecture's slides, which print §10.2's Gaussian bump.)*
 
-**What problem it solves:** the same as §10.2 (how much to trust one value from one exposure), with a cheaper shape. **In:** a pixel value *z* in [0, 1]; **out:** a weight in [0, 0.5]. **Analogy:** a tent whose peak is mid-gray and whose edges touch the ground at pure black and pure white; the credit is the tent's height. The original Debevec–Malik weight is a **triangle (hat) function**:
+**What problem it solves:** the same as §10.2 (how much to trust one value from one exposure), with a cheaper shape. **In:** a pixel value *z* in [0, 1]; **out:** a weight in [0, 1]. **Analogy:** a tent whose peak is mid-gray and whose edges touch the ground at pure black and pure white; the credit is the tent's height. The original Debevec–Malik weight is a **triangle (hat) function**:
 
 ```
-w(z) = z        if z ≤ 0.5
-w(z) = 1 − z    if z > 0.5        (equivalently  w(z) = min(z, 1 − z))
+w(z) = 2z           if z ≤ 0.5
+w(z) = 2(1 − z)     if z > 0.5        (equivalently  w(z) = 1 − |2z − 1| = 2·min(z, 1 − z))
 ```
 
-**Intuition and terms.** Same trust rule as §10.2 (peak at mid-gray, fall to the extremes) with straight lines instead of a bell. *z* is one pixel's value in one exposure on [0, 1], fixed by the data. The peak is *w* = 0.5 at *z* = 0.5, and the weight is exactly 0 at *z* = 0 and 1, so completely black or clipped values get **zero** trust (§10.2's Gaussian only gets near zero, ≈ 0.018). Both shapes are valid instances of §10.1's idea, and §10.3's merge takes either unchanged. PS3's Task 1 slides print §10.2's Gaussian form (evaluated on the linearized image), so that is the problem session's weight; the triangle is the original method's version.
+**Intuition and terms.** Same trust rule as §10.2 (peak at mid-gray, fall to the extremes) with straight lines instead of a bell. *z* is one pixel's value in one exposure on [0, 1], fixed by the data. **The peak is *w* = 1 at *z* = 0.5** (full trust, the same peak value as §10.2's Gaussian), and the weight is exactly 0 at *z* = 0 and 1, so completely black or clipped values get **zero** trust (§10.2's Gaussian only gets near zero, ≈ 0.018). Both shapes are valid instances of §10.1's idea, and §10.3's merge takes either unchanged. *Why the factor 2:* min(*z*, 1 − *z*) alone peaks at only 0.5; doubling it puts mid-gray at weight 1 so the two weight functions are on the same 0-to-1 scale. Multiplying every weight by the same constant does not change the merged result, because §10.3's merge divides by the sum of the weights, so the factor cancels. Check: *z* = 0.25 → *w* = 0.5; *z* = 0.5 → *w* = 1; *z* = 0.9 → *w* = 0.2. PS3's Task 1 slides print §10.2's Gaussian form (evaluated on the linearized image), so that is the problem session's weight; the triangle is the original method's version.
 
 **Which values go in?** §10.2 evaluates the weight on the *linear* value; the original method evaluates it on the *stored* (non-linear) value. Pick one, apply it consistently across all 16 exposures, and say which in your write-up.
 

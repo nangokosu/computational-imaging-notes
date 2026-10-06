@@ -10,6 +10,7 @@ The user is a complete beginner to computational imaging and to cameras/photogra
 
 - Define every term on first use, including ordinary camera vocabulary (aperture, image sensor, Bayer/color filter array, dpi, exposure, f-stop, etc.) — don't treat "camera" as an assumed-familiar analogy when explaining the eye; give the camera side the same from-scratch treatment.
 - Put definitions inline where a term first appears, not only in the glossary — a reader should never have to jump elsewhere to follow the current sentence. The glossary is a lookup-speed index; its entry can be a shorter echo of the inline definition.
+- **Highlight every alternative name for a concept.** When one concept goes by several names (in the lecture, in camera menus, in papers, or across weeks, e.g. exposure time = shutter speed = shutter time), state the equivalence explicitly where the concept is introduced, in a visible "Same concept, different names" note (markdown: a bold-led blockquote; artifact: a `.callout` labeled "Same concept, different names"). Wherever a later section or week switches to another of the names, add a short parenthetical such as "(= exposure time)". Glossary entries list all the names.
 - Give a plain-language analogy before the formal definition.
 - For every critical formula, follow the equation checklist below (see "Equations").
 - Cross-reference where a concept reappears or gets formalized in a later week.

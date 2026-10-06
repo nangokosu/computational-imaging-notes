@@ -374,7 +374,7 @@ stops = log₂(ratio)          ratio = 2^stops
 | Control | What it is, in one line | One stop *more* light (or brightness) | Where deepened |
 |---|---|---|---|
 | **Aperture**, written f/N | the adjustable opening in the lens, f/N meaning opening diameter = focal length ÷ N (the slash is "divided by") | f/4 → f/2.8 (N shrinks by √2 ≈ 1.41, because light follows opening *area*, which goes as diameter²) | Week 2 §8 |
-| **Shutter time** (exposure time) | how long the sensor collects light | 1/125 s → 1/60 s (time doubles; the printed numbers are rounded powers of 2) | Week 4 §2.3 |
+| **Shutter time** (also called **exposure time** or **shutter speed**: three names for one setting) | how long the sensor collects light | 1/125 s → 1/60 s (time doubles; the printed numbers are rounded powers of 2) | Week 4 §2.3 |
 | **ISO** | an electronic amplification of the recorded signal (brightens the picture without collecting more light) | ISO 100 → ISO 200 | Week 4 §2.5 |
 
 Because each control moves in stops, they trade off exactly: one stop opened on the aperture can be paid back by one stop faster on the shutter, leaving the picture's brightness unchanged (called **reciprocity**, Week 4 §2.2).

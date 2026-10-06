@@ -885,7 +885,7 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 **Term-by-term:**
 - *P* — incident photon flux (photons per pixel per second); fixed by scene brightness and optics.
 - *Qe* — quantum efficiency (§14); fixed by the sensor.
-- *t* — exposure time (Week 4 §2); you control it.
+- *t* — exposure time (also called **shutter speed**; Week 4 §2); you control it.
 - *D* — dark current (electrons per pixel per second with no light); fixed by the sensor. Its electron count is randomly timed like photon arrivals, so its variance equals its mean *D·t* (§18.3).
 - *Nr* — read noise (RMS electrons from the readout electronics, once per readout); fixed by the sensor.
 

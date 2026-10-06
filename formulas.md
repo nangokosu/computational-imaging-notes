@@ -1105,7 +1105,7 @@ Exposure = Gain × Flux × Time
 | Exposure | How bright the resulting photo looks (loose sense, not a physical energy-per-area quantity) — computed/perceived output |
 | Gain | ISO setting — amplifies the already-collected signal (and its noise) after the fact; you control this |
 | Flux | Overall light arriving at the sensor, controlled by aperture (f-number, Week 2 §8); you control this |
-| Time | Shutter speed/exposure time; you control this |
+| Time | Exposure time (also called shutter speed or shutter time: the same setting); you control this |
 
 ---
 
@@ -1287,16 +1287,17 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 ### Debevec triangle weight (§10.4)
 
 ```
-w(z) = min( z, 1 − z )
+w(z) = 1 − |2z − 1| = 2 · min( z, 1 − z )
 ```
 
-**Computes:** How much to trust one pixel value from one exposure when merging an HDR stack, peaking at mid-range and reaching exactly zero at black and at saturation (the alternative to the Gaussian weight of §10.2).
+**Computes:** How much to trust one pixel value from one exposure when merging an HDR stack, peaking at weight 1 for mid-gray (z = 0.5) and reaching exactly zero at black and at saturation (the alternative to the Gaussian weight of §10.2).
 
 | Term | Meaning |
 |---|---|
 | z | One pixel's value in one exposure on a [0, 1] scale; measured |
-| w(z) | Confidence weight in [0, 0.5], computed output |
-| 0.5 | Value at which the weight peaks; fixed |
+| w(z) | Confidence weight in [0, 1], computed output |
+| 0.5 | Pixel value at which the weight peaks, with w(0.5) = 1; fixed |
+| 2 | Scale factor making the peak 1 (cancels in the merge's normalization) |
 
 ---
 

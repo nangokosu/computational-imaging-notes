@@ -149,7 +149,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 *(full explanations in [`week4-study-notes.md`](./week4-study-notes.md); this is the lookup-speed version)*
 
 - **[Exposure](https://en.wikipedia.org/wiki/Exposure_(photography))** — total light collected per unit sensor area, H = E·t ∝ L·t/N², set by exposure time and aperture (and scene brightness); ISO scales the recorded image's brightness but does not change H (§2.1–2.2).
-- **Exposure time / shutter speed** — how long the shutter lets each pixel collect light (e.g. 1/500 s, 2 s, "bulb"); a "fast shutter speed" is a short exposure time (§2.1).
+- **Exposure time / shutter speed / shutter time** — three names for one setting: how long the shutter lets each pixel collect light (e.g. 1/500 s, 2 s, "bulb"); a "fast shutter speed" is a short exposure time (§2.1).
 - **[Shutter](https://en.wikipedia.org/wiki/Shutter_(photography))** — the mechanical curtain or electronic reset/readout that starts and stops light collection (§2.1).
 - **Equivalent exposures / reciprocity** — (time, aperture) pairs with the same t/N² deliver the same exposure; they differ in motion blur and depth of field instead of brightness (§2.2–2.3).
 - **[Exposure value (EV)](https://en.wikipedia.org/wiki/Exposure_value)** — EV = log₂(N²/t), a single number labeling a family of equivalent exposures; one EV = one stop (§2.3).
@@ -171,7 +171,7 @@ A single, cumulative glossary that grows week by week as the course progresses. 
 - **Tone reproduction curve** — the nonlinear function *f* a camera silently applies to its raw linear sensor reading before producing a viewable image (e.g. JPEG); a good generic fallback is a power law with γ ≈ 1/2.2 (§9.1, §9.4).
 - **[ColorChecker](https://en.wikipedia.org/wiki/ColorChecker)** — a standardized chart of patches with known reflectance; its bottom row of six neutral grays (reflectance about 90% down to about 3%, optical density 0.05 to 1.50, not evenly spaced in log-reflectance) is one target used to calibrate a camera's tone reproduction curve (§9.3).
 - **sRGB decoding** — undoing the standard sRGB display curve (divide the 8-bit code by 255, then apply a short linear segment near black and a roughly 2.2–2.4 power law elsewhere) to get linear values proportional to scene light (§9.5).
-- **Triangle (hat) weight** — Debevec's HDR merge weight w(z) = min(z, 1 − z): zero for black and saturated values, peaked at mid-range, the straight-line alternative to the Gaussian weight (§10.4).
+- **Triangle (hat) weight** — Debevec's HDR merge weight w(z) = 1 − |2z − 1| = 2·min(z, 1 − z): zero for black and saturated values, weight 1 at mid-gray z = 0.5, the straight-line alternative to the Gaussian weight (§10.4).
 - **Weight image** — the per-pixel confidence weights of one exposure shown as a grayscale image (bright = trusted), used to check which exposure covers which part of the scene (§10.4).
 - **Machine epsilon (ε) in log** — a tiny constant (the smallest relative float spacing) added before taking a logarithm so zero-valued pixels do not produce −∞ or NaN in the HDR merge (§10.5).
 - **Camera response function (CRF)** — the curve a camera applies between scene light and stored pixel value (the f of §9.2, or its inverse by convention); estimated by a linear least-squares fit in the Debevec–Malik method that OpenCV implements (§9.2, §11).
