@@ -2,7 +2,7 @@
 
 Running, beginner-level study notes for CSC2529 (Computational Imaging), written up week by week as the course goes.
 
-**📖 Read the notes:** [Running Notes](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0) — a running, browsable course notebook (nav per week + a cumulative glossary). The markdown in this repo is the same content in plain-text form.
+**📖 Read the notes:** [Running Notes](https://claude.ai/artifact/4pG6rjMnLYwEzVmncvNH1r) — a running, browsable course notebook (nav per week + a cumulative glossary). The markdown in this repo is the same content in plain-text form.
 
 ## Contents
 
@@ -30,7 +30,7 @@ These notes are written with [Claude Code](https://claude.com/claude-code), driv
 | [`document-skills`](https://github.com/anthropics/skills) | Extracting text/figures from the lecture-slide PDFs before writing them into notes. |
 
 Also used, no install required (bundled with Claude Code):
-- **`artifact-design` / `artifact-diagramming`** — govern the visual design and original inline-SVG diagrams in the [published running artifact](https://claude.ai/code/artifact/81a2c9a4-30d8-4c1c-83a2-e5165873f6e0).
+- **`artifact-design` / `artifact-diagramming`** — govern the visual design and original inline-SVG diagrams in the [published running artifact](https://claude.ai/artifact/4pG6rjMnLYwEzVmncvNH1r).
 - **Custom subagents**: [`.claude/agents/fact-auditor.md`](./.claude/agents/fact-auditor.md) runs the fact-checking pass recorded in `FACT_AUDIT.md`; [`.claude/agents/diagram-auditor.md`](./.claude/agents/diagram-auditor.md) audits the artifact's diagrams for rendering/formatting defects (a layout audit, distinct from factual correctness) and fixes what it finds.
 
 ## Source
