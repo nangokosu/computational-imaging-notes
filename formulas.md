@@ -1448,6 +1448,26 @@ f(x, y) = ∫∫ F(k_x, k_y) e^{j2π(k_x x + k_y y)} dk_x dk_y
 
 ---
 
+### 2D Fourier transform pair for images (§3.2)
+
+```
+F(k_x, k_y) = ∫∫ f(x, y) · e^{−j2π(k_x·x + k_y·y)} dx dy       (forward: how much of each 2D wave)
+f(x, y)     = ∫∫ F(k_x, k_y) · e^{ j2π(k_x·x + k_y·y)} dk_x dk_y   (inverse: rebuild the image from 2D waves)
+```
+
+**Computes:** An image's 2D spectrum — one complex coefficient per grating (stripe pattern) of frequency (k_x, k_y) — and, inversely, the image rebuilt from those gratings; because the 2D probe wave splits into a horizontal wave times a vertical wave, the forward transform can be done as 1D transforms along every row, then every column.
+
+| Term | Meaning |
+|---|---|
+| f(x, y) | Image brightness at position (x, y) — fixed by the scene |
+| x, y | Image-plane coordinates (mm or pixels); dummy variables summed away by the double integral |
+| k_x, k_y | Horizontal and vertical spatial frequency, cycles per unit length; the grating's stripes run perpendicular to (k_x, k_y) and have frequency √(k_x² + k_y²) |
+| F(k_x, k_y) | Complex coefficient of that grating: magnitude = strength (amplitude), angle = where its stripes sit (phase) |
+| e^{−j2π(k_x·x + k_y·y)} | 2D probe wave = e^{−j2πk_x x} · e^{−j2πk_y y} (exponent rule e^{a+b} = e^a e^b) |
+| dx dy | Area of each tiny square the double integral adds over |
+
+---
+
 ### Conjugate symmetry of real signals (§3.3)
 
 ```
@@ -1460,6 +1480,24 @@ F(−k_x, −k_y) = F(k_x, k_y)*
 |---|---|
 | F(k_x,k_y) | Fourier coefficient at frequency (k_x, k_y) |
 | * | Complex conjugate (same magnitude, opposite angle) |
+
+---
+
+### Shift theorem (§4)
+
+```
+F{ f(x − d) } = e^{−j2πξd} · f̂(ξ)          so   |F{ f(x − d) }| = |f̂(ξ)|
+```
+
+**Computes:** The spectrum of a signal moved sideways by d: every coefficient keeps its magnitude and only its phase turns by −2πξd, so all position information lives in the phase (e.g. cos(2π·0.25x) shifted by 1 pixel: phases 0° → ∓90°, magnitudes still ½).
+
+| Term | Meaning |
+|---|---|
+| f(x − d) | The signal shifted right by d |
+| d | Shift distance, units of x — set by the scene or by you |
+| ξ | Frequency, cycles per unit of x |
+| e^{−j2πξd} | Unit arrow (length 1): rotates the coefficient by −2πξd radians without changing its length |
+| f̂(ξ) | Spectrum of the unshifted signal |
 
 ---
 
@@ -1494,6 +1532,29 @@ F{x ∗ g} = F{x} · F{g}          x ∗ g = F⁻¹{ F{x} · F{g} }
 | F{g} | Kernel spectrum (frequency response / OTF): near 1 = passed, near 0 = removed |
 | · | Multiplication, one frequency at a time |
 | F⁻¹ | Inverse Fourier transform |
+
+---
+
+### The convolution theorem in both directions, and modulation (§5.3)
+
+```
+convolution in the primal domain     ⇔   multiplication in the Fourier domain:    F{ x ∗ g } = F{x} · F{g}
+multiplication in the primal domain  ⇔   convolution in the Fourier domain:       F{ x · g } = F{x} ∗ F{g}
+DFT version:  DFT{x·g} = (1/N)·(DFT{x} ⊛ DFT{g})
+F{ f(x) · e^{j2πξ₀x} } = f̂(ξ − ξ₀)          (modulation: multiply by a wave ⇒ slide the spectrum)
+```
+
+**Computes:** The spectrum of a product of two signals (sampling, cropping/windowing, modulation) as the convolution of their spectra; in particular, multiplying by a pure wave at ξ₀ slides the whole spectrum to sit at ξ₀ (e.g. cos(2π·1·x)·cos(2π·5·x) has spikes of height ¼ at ±4 and ±6).
+
+| Term | Meaning |
+|---|---|
+| x, g | Two primal-domain signals being multiplied (e.g. a signal and a comb, a box window, or a wave) |
+| F{x}, F{g} | Their spectra |
+| ∗ | Convolution (here applied to spectra) |
+| ⊛ | Wrap-around (circular) convolution of two length-N coefficient lists |
+| N | Number of samples; the 1/N is the same one as in the inverse DFT |
+| ξ₀ | Frequency of the multiplying wave — you or the system choose it |
+| f̂(ξ − ξ₀) | The original spectrum moved to be centered at ξ₀ |
 
 ---
 
@@ -1664,6 +1725,28 @@ b = c ∗ x          B = C · X          MTF = |OTF| = |C|
 
 ---
 
+### Every PSF is low-pass: OTF(0) = 1 and |OTF| ≤ 1 (§14)
+
+```
+C(0) = ∫ c(x) · e⁰ dx = ∫ c(x) dx = 1
+|C(ξ)| = | ∫ c(x) · e^{−j2πξx} dx |
+       ≤ ∫ |c(x)| · |e^{−j2πξx}| dx        the length of a sum of arrows ≤ the sum of their lengths
+       = ∫ c(x) · 1 dx                      c ≥ 0, and |e^{jθ}| = 1
+       = 1
+```
+
+**Computes:** The bound showing that any physical (never-negative, light-conserving) PSF passes average brightness exactly and can only attenuate every other spatial frequency, never strengthen it — so every lens is a low-pass filter, and undoing it means amplifying (and amplifying noise).
+
+| Term | Meaning |
+|---|---|
+| c(x) | PSF: never negative, sums to 1 (∫ c(x) dx = 1) — fixed by the optics |
+| C(ξ) | OTF, the PSF's Fourier transform; C(0) is its value at zero frequency |
+| ξ | Spatial frequency, cycles per unit length |
+| e^{−j2πξx} | Unit arrow at angle −2πξx; magnitude 1 |
+| ≤ | Triangle inequality: equality only if all arrows point the same way (ξ = 0, or a single-point PSF) |
+
+---
+
 ### Pixel integration, sampling, and the footprint MTF (§15)
 
 ```
@@ -1736,6 +1819,23 @@ keep every D-th pixel  ⇒  remove image frequencies above 1 / (2D) cycles per o
 
 ---
 
+### Exposure time as a temporal box filter (§20.1)
+
+```
+gain(f) = sinc(f · τ) = sin(π f τ) / (π f τ)          first zero at f = 1/τ
+```
+
+**Computes:** How much of each temporal frequency of motion survives a frame's exposure (= shutter speed = shutter time), i.e. the strength of motion blur as a built-in temporal anti-aliasing filter before frame-rate sampling (e.g. 0.74 at 20 Hz for τ = 1/48 s, too weak to stop the wagon-wheel effect).
+
+| Term | Meaning |
+|---|---|
+| f | Temporal frequency of the motion (e.g. spokes passing per second), Hz — fixed by the scene |
+| τ | Exposure time of each frame, s — you choose it |
+| 1/τ | First temporal frequency the exposure erases completely, Hz — follows from τ |
+| gain(f) | Fraction of that frequency's contrast kept |
+
+---
+
 ### LiDAR range ambiguity: pulsed and continuous-wave (§20.2)
 
 ```
@@ -1756,7 +1856,7 @@ waveform sampling: range bin = c · Δt / 2
 
 ---
 
-### Noisy blur model and the inverse filter (§22)
+### Noisy blur model and the inverse filter (§22.2–§22.3)
 
 ```
 b = k ∗ i + n          B = K · I + N
@@ -1770,7 +1870,30 @@ i_est = F⁻¹( F(b) / F(k) )          B / K = I + N / K
 | i, I | Sharp image and spectrum — unknown |
 | k, K | Blur kernel (PSF) and OTF — known (non-blind) |
 | b, B | Blurred noisy measurement and spectrum — measured |
-| n, N | Noise (zero-mean, independent of i) and its spectrum |
+| n, N | Noise (zero-mean, independent of i) and its spectrum; even floating-point rounding error acts as a tiny N |
+
+---
+
+### LiDAR full-waveform model and range resolution (§22.4)
+
+```
+h(t) = Σ_s a_s · δ(t − 2 d_s / c)          the scene's "impulse response": one spike per surface
+r(t) = p ∗ h (t) + n(t)                    the recorded waveform: every spike replaced by a copy of the pulse, plus noise
+range resolution ≈ c · τ_p / 2
+```
+
+**Computes:** The digitized return of a full-waveform LiDAR as the transmitted pulse stamped at each surface's round-trip delay and scaled by its reflectivity, plus noise; surfaces closer together than about c·τ_p/2 merge into one lump (0.6 m for a 4 ns pulse), and separating them is a 1D deconvolution.
+
+| Term | Meaning |
+|---|---|
+| p(t) | Transmitted pulse shape, the PSF in time (power vs. time) — set by the laser (designer) |
+| a_s | How strongly surface s reflects back to the sensor, dimensionless — fixed by the scene |
+| d_s | Distance to surface s, m — fixed by the scene (the unknown you want) |
+| c | Speed of light, 3 × 10⁸ m/s — fixed |
+| h(t) | The scene as a train of spikes at the round-trip times — unknown |
+| r(t) | The digitized waveform (power vs. time) — measured |
+| n(t) | Detector noise — from the sensor |
+| τ_p | Pulse width (full width at half maximum, FWHM), s — set by the laser |
 
 ---
 
@@ -1880,6 +2003,25 @@ AᵀA x = Aᵀb          (residual ⟂ columns of A;  A x̂ = P b,  P = A(AᵀA)
 
 ---
 
+### Least squares via the pseudoinverse (§29)
+
+```
+x̂ = V Σ⁺ Uᵀ b          A⁺ = V Σ⁺ Uᵀ   (pseudoinverse, also Moore–Penrose inverse)
+```
+
+**Computes:** The least-squares solution of a system small enough to fit in memory directly from the SVD A = UΣVᵀ, without forming (AᵀA)⁻¹ — the reference answer gradient descent is compared against (x̂ = [0.667, 0.5] for the three-point line fit).
+
+| Term | Meaning |
+|---|---|
+| b | Measurement vector — measured |
+| Uᵀ b | The measurements expressed in the output directions (columns of U) |
+| Σ⁺ | Diagonal: 1/s for each nonzero singular value s, and 0 where s = 0 (that is what the ⁺ means) |
+| V | Maps the result back to the unknowns (input directions) |
+| A⁺ | Pseudoinverse: the best substitute for A⁻¹ when A is not square or not invertible |
+| x̂ | Least-squares estimate of x |
+
+---
+
 ### Tikhonov-regularized solution (§30)
 
 ```
@@ -1929,6 +2071,23 @@ x^(k+1) = x^(k) − α · c* ∗ ( c ∗ x^(k) − b )
 | c | Blur kernel (PSF) — known |
 | c* | Flipped kernel c(−x), the adjoint of the blur (not complex conjugation in space) |
 | F{c}* | Complex conjugate of the OTF |
+
+---
+
+### L1 norm and the L1 objective (§31.3)
+
+```
+‖v‖₁ = Σ_i |v_i|          L1 objective (least absolute deviations):  minimize ‖A x − b‖₁
+```
+
+**Computes:** The total size of a vector's entries ignoring sign; as a fitting objective it grows only in proportion to each miss, so it resists outliers (the best constant for [1, 2, 3, 100] is any median between 2 and 3, not the mean 26.5) — but |t| has a corner at 0, so it is minimized with subgradients.
+
+| Term | Meaning |
+|---|---|
+| v | Any vector, e.g. the residual vector A x − b |
+| v_i | Its i-th entry |
+| \|·\| | Absolute value; its subderivative is the sign of t (−1 or +1) away from 0, and any value in [−1, 1] at t = 0 |
+| ‖·‖₁ | ℓ₁ norm = L1 norm = Manhattan / taxicab norm |
 
 ---
 

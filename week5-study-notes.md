@@ -2,9 +2,10 @@
 
 **Topic:** Review of Sampling, Deconvolution, Linear Systems — the Fourier transform, sampling and aliasing, the DFT/FFT, diffraction and the lens as a low-pass filter, image filtering, deconvolution (inverse and Wiener filtering), and linear inverse problems (least squares, gradient descent, stochastic gradient descent)
 **Source:** Lecture 5 slides (D. Lindell, CSC2529, Fall 2026); Problem Session 4 ("PS4," the HW4 problem session), all three tasks: Task 1 image filtering (primal vs. Fourier domain), Task 2 deconvolution (inverse filtering and Wiener deconvolution), Task 3 gradient descent and stochastic gradient descent.
-**HW4 supplements:** §16.4, §22, §23, §25, §29–§32 go deeper than the slides because HW4 (as described in PS4) depends on them: filtering in both domains and `psf2otf`, inverse filtering, the Wiener filter and its SNR knob, MSE/PSNR, the least-squares gradient, gradient descent and stochastic gradient descent. They explain each method and the quantities it needs, but never compute the assignment's own answers.
+**HW4 supplements:** §16.4, §17.1, §22, §23, §25, §29–§32 go deeper than the slides because HW4 (as described in PS4 and the HW4 handout) depends on them: filtering in both domains and `psf2otf`, the kernel-size rule, timing code fairly, high-pass display, inverse filtering (including why zero added noise still fails), the Wiener filter and its SNR knob, MSE/PSNR, the least-squares gradient, the SVD/pseudoinverse reference solution, the two meanings of "residual," gradient descent, stochastic gradient descent, and (§31.3, optional) the L1 objective and subgradients for the bonus task. They explain each method and the quantities it needs, but never compute the assignment's own answers.
+**Lecture-notes check:** a later pass compared these notes with the student's own lecture notes and added: a notation primer for sums and integrals (§2.4), step-by-step derivations of the key transforms (§5.2, §6, §7.2, §29.2), the shift theorem (§4), the convolution theorem in both directions (§5.3), filter vocabulary including "attenuate" (§5.4), the full "sample" vocabulary and the two senses of "sample" (§7.1), the Nyquist frequency as the fold line (§8.1), aliasing types (§8.4), temporal anti-aliasing by the exposure time (§20.1), kernel vs. PSF (§12.3), why every PSF is low-pass (§14), inverse problems and ill-posedness (§22.1), LiDAR waveform deconvolution (§22.4), and "Same concept, different names" notes throughout.
 **Ties to earlier weeks, covered again in full here.** Much of this lecture revisits ideas that earlier weeks introduced in a lighter, homework-driven form: the Fourier transform and convolution (Week 1 §19–§21), diffraction (Week 2 §3, §12), the optical low-pass filter and aliasing in demosaicking (Week 3 §14.2), unsharp masking (Week 3 §17), MSE/PSNR (Week 3 §13), and the PSF/OTF (Week 4 §18). This file re-explains each of them from scratch, at this week's greater depth, so it can be read on its own; earlier weeks are named only so you can see where an idea first appeared.
-**Order differs from the slides.** The lecture opens with the Fourier transform, then jumps to sampling, then to lenses and diffraction, then to filtering, and only near the end reviews linear algebra. These notes reorder it so each section uses only ideas already built: complex numbers and waves → the Fourier transform → convolution and the convolution theorem → a small set of standard functions (box, sinc, triangle, Gaussian, impulse train) → sampling and aliasing → the DFT and FFT → the lens and sensor as filters (diffraction, pixel integration) → filtering → aliasing in practice (downsampling, wagon wheels, LiDAR range ambiguity, the sensor's anti-aliasing filter) → deconvolution → linear systems and their solvers. The linear-algebra vocabulary each section needs (matrix–vector product, eigenvector, null space) is introduced where it is first used. Each section ends with a **Summary** box; forward pointers appear only there, as optional "where this goes next" lines.
+**Order differs from the slides.** The lecture opens with the Fourier transform, then jumps to sampling, then to lenses and diffraction, then to filtering, and only near the end reviews linear algebra. These notes reorder it so each section uses only ideas already built: complex numbers, waves and the notation of sums and integrals → the Fourier transform → convolution, the convolution theorem in both directions, and filter vocabulary → a small set of standard functions (box, sinc, triangle, Gaussian, impulse train) → sampling and aliasing → the DFT and FFT → the lens and sensor as filters (diffraction, pixel integration) → filtering → aliasing in practice (downsampling, wagon wheels, LiDAR range ambiguity, the sensor's anti-aliasing filter) → deconvolution → linear systems and their solvers. The linear-algebra vocabulary each section needs (matrix–vector product, eigenvector, null space) is introduced where it is first used. Each section ends with a **Summary** box; forward pointers appear only there, as optional "where this goes next" lines.
 **Scope:** Announcements and the "next lecture" teaser slide are skipped. The lecture's video and textbook readings (a visual Fourier-transform introduction and a Fourier-transform book) are not summarized separately; everything they would add is built here.
 
 ---
@@ -123,11 +124,49 @@ So one real cosine is two complex spinning arrows, one at frequency +ξ and one 
 
 > **Worked example.** *A* = 2, φ = π/2. Then *A e*^{*j*φ} = 2(cos 90° + *j* sin 90°) = 2*j*: an arrow of length 2 pointing straight up. Times *e*^{*j*2πξ*x*}, its real part is 2cos(2πξ*x* + π/2) = −2 sin(2πξ*x*): the same frequency, amplitude 2, shifted a quarter cycle.
 
+### 2.4 Reading the notation: sums, integrals, and exponent rules
+
+This week's formulas are dense with Σ, ∫ and exponentials. None of the derivations below skips a step that uses anything other than the rules in this subsection, so it is worth reading once slowly.
+
+**Σ (sigma), a sum written compactly.** Σ_{n=0}^{N−1} *x*[*n*] means "let *n* run through 0, 1, …, *N*−1, and add up *x*[*n*] for each." The letter under Σ is the **index**; the numbers below and above are where it starts and stops.
+
+> **Worked example.** With *x* = [1, 2, 3, 4] and *N* = 4: Σ_{n=0}^{3} *x*[*n*] = 1 + 2 + 3 + 4 = 10. And Σ_{n=0}^{3} *x*[*n*]·(−1)^*n* = 1 − 2 + 3 − 4 = −2. (Both numbers reappear in the DFT example of §10.2.)
+
+**∫ (integral), a sum over a continuum.** ∫_a^b *f*(*x*) d*x* is the area under the curve *f* between *x* = *a* and *x* = *b*. Read it as a Σ with infinitely thin slices:
+
+1. Chop the interval [*a*, *b*] into many slices of width Δ*x*.
+2. In each slice, multiply the height *f*(*x*) by the width Δ*x*: the area of a thin rectangle.
+3. Add the rectangles. As Δ*x* shrinks to zero the sum becomes the integral, and Δ*x* is written d*x*.
+
+So ∫ is "Σ over every position," and d*x* is "the width of each slice." ∫_{−∞}^{∞} means "over the whole axis." (The artifact draws the rectangles.)
+
+> **Worked example.** ∫_{−1/2}^{1/2} 1 d*x*: a rectangle of height 1 and width 1, so the area is **1**. This is the area of the box function rect (§6.2). With 10 slices of width 0.1, each rectangle has area 1 × 0.1 and the 10 of them add to 1, the same answer: for a flat function the slicing is exact.
+
+**The variable after d is a dummy.** In *f̂*(ξ) = ∫ *f*(*x*) *e*^{−*j*2πξ*x*} d*x*, the variable *x* is summed over and disappears; the answer depends only on ξ. That is why the left side is written *f̂*(ξ), not *f̂*(*x*, ξ). Renaming a dummy changes nothing: ∫ *f*(*u*) d*u* = ∫ *f*(*x*) d*x*. Convolution (§5) uses this: in ∫ *g*(*u*) *f*(*x* − *u*) d*u*, *u* is the dummy (summed away) and *x* survives as the output position.
+
+**Double integrals.** ∫∫ *f*(*x*, *y*) d*x* d*y* adds over a 2D grid of tiny squares of area d*x*·d*y*. It is how every 1D formula this week becomes a 2D image formula.
+
+**Pulling constants out.** Anything that does not depend on the dummy variable can be moved outside the integral (or sum): ∫ *c*·*f*(*x*) d*x* = *c*·∫ *f*(*x*) d*x*. The derivation of the convolution theorem (§5.2) rests on this one move.
+
+**Changing variables (substitution).** If you rename *u* = *x*/*a* (with *a* > 0), then *x* = *a u* and each slice width becomes d*x* = *a* d*u*. So ∫ *f*(*x*/*a*) d*x* = *a* ∫ *f*(*u*) d*u*. Stretching the slices by *a* stretches the area by *a*. The scaling theorem (§6.6) is this rule applied to the Fourier integral.
+
+**Exponent rules used constantly this week.**
+
+| Rule | Why it holds | Where it is used |
+|---|---|---|
+| *e*^{*a*+*b*} = *e*^{*a*}·*e*^{*b*} | the defining property of exponentials | splitting *e*^{*j*2πξ(*x*−*u*)} into an *x* part and a *u* part (§5.2) |
+| \|*e*^{*j*θ}\| = 1 | *e*^{*j*θ} is a unit arrow (§2.3) | bounding the size of a Fourier coefficient (§14) |
+| (*e*^{*j*θ})* = *e*^{−*j*θ} | conjugation flips the angle (§2.2) | conjugate symmetry (§3.3), the Wiener filter (§23) |
+| *e*^{*j*2π*m*} = 1 for every whole number *m* | *m* full turns lands back at the start | aliasing (§8.2), the DFT's periodicity (§10) |
+| *e*^{*j*θ} − *e*^{−*j*θ} = 2*j* sin θ | subtract the two Euler formulas: the cosines cancel | turning the box's transform into a sinc (§6.2) |
+| *e*^{*j*θ} + *e*^{−*j*θ} = 2 cos θ | add them: the sines cancel | the two-arrow cosine (§2.3) |
+
 > **Summary**
 > - A wave *A* cos(2πξ*x* + φ) has amplitude *A*, frequency ξ (period 1/ξ) and phase φ.
 > - A complex number is an arrow; multiplying complex numbers multiplies lengths and adds angles (a 2×2 rotate-and-scale matrix).
 > - Rule to remember: **e^{jθ} = cos θ + j sin θ**, so *A e*^{*j*φ} stores an amplitude and a phase in one number, and *e*^{*j*2πξ*x*} is a wave of frequency ξ.
 > - A real cosine = two arrows at +ξ and −ξ.
+> - Notation: Σ adds a list; ∫ … d*x* adds infinitely thin slices; the variable after d is summed away; constants move outside; *e*^{*a*+*b*} = *e*^{*a*}*e*^{*b*} and *e*^{*j*2π·whole number} = 1.
 > - Next: the Fourier transform writes any signal as a sum of these spinning arrows (§3).
 
 ---
@@ -149,7 +188,7 @@ f̂(ξ) = ∫_{−∞}^{∞} f(x) · e^{−j2πξx} dx          (forward transfo
 
 **Intuition, step by step.**
 
-1. An integral ∫ … d*x* is the limit of a sum: chop the *x*-axis into tiny pieces of width d*x*, multiply each piece's value by d*x*, and add. So read ∫ as "add up over every position."
+1. An integral ∫ … d*x* is the limit of a sum (§2.4): read ∫ as "add up over every position." The *x* is a dummy variable, summed away, so the result depends only on ξ.
 2. *Forward transform.* Multiply the signal by *e*^{−*j*2πξ*x*}, an arrow spinning at frequency ξ the *opposite* way, then add over all *x*. If the signal contains a wave at frequency ξ, that wave spins at the same rate as the probe and cancels its rotation, so the products all point the same direction and add up to something large. Every other frequency keeps spinning relative to the probe, so its products point in every direction and cancel to (nearly) zero. The result measures "how much of the signal looks like a wave at ξ."
 3. *Inverse transform.* Take every frequency's arrow *e*^{*j*2πξ*x*}, scale and rotate it by the measured coefficient *f̂*(ξ), and add them all back up. You get the signal again. Nothing is lost.
 
@@ -164,13 +203,18 @@ f̂(ξ) = ∫_{−∞}^{∞} f(x) · e^{−j2πξx} dx          (forward transfo
 
 The two formulas differ only in the sign of the exponent. That symmetry is why "transform, then transform again" almost gives back the signal, and why every pair of functions in §6 can be read in both directions.
 
+> **Same concept, different names.** **Primal domain** (the slides' word) = **spatial domain** (for images: values per position) = **time domain** (for time signals) = "the original signal." **Fourier domain** = **frequency domain** = **spectral domain** (PS4 also calls Fourier-domain results "dual"). The **Fourier transform** of a signal = its **spectrum** = its **Fourier coefficients**. Later sections switch between these names; each switch is marked.
+
 ### 3.2 From 1D to 2D: images
 
-An image varies along two directions, so its waves do too. The 2D transform (slide 9) is
+An image varies along two directions, so its waves do too. The 2D transform pair (slide 9 shows the inverse) is
 
 ```
-f(x, y) = ∫∫ F(k_x, k_y) · e^{ j2π(k_x·x + k_y·y)} dk_x dk_y
+F(k_x, k_y) = ∫∫ f(x, y) · e^{−j2π(k_x·x + k_y·y)} dx dy       (forward: how much of each 2D wave)
+f(x, y)     = ∫∫ F(k_x, k_y) · e^{ j2π(k_x·x + k_y·y)} dk_x dk_y   (inverse: rebuild the image from 2D waves)
 ```
+
+**Reading it term by term.** It is the 1D pair of §3.1 with one change: the probe wave now depends on both coordinates. The double integral ∫∫ … d*x* d*y* adds over every point of the image plane (§2.4), so *x* and *y* are summed away and the result depends only on (*k_x*, *k_y*). By the exponent rule *e*^{*a*+*b*} = *e*^{*a*}*e*^{*b*}, the 2D wave splits into a horizontal wave times a vertical wave, *e*^{−*j*2π*k_x x*}·*e*^{−*j*2π*k_y y*}. That is why the 2D transform can be computed as a 1D transform along every row followed by one along every column (§10.2).
 
 **What each building block looks like.** The real part of *e*^{*j*2π(*k_x x* + *k_y y*)} is cos(2π(*k_x x* + *k_y y*)): a **grating**, a pattern of parallel stripes.
 
@@ -230,7 +274,22 @@ Each Fourier coefficient has two parts: a magnitude (how strong a grating is) an
 
 Inverse-transform each. The first result looks like a noisy **cat**; the second like a noisy **cameraman**.
 
-**Why phase wins.** An edge is a place where many gratings line up so their crests coincide. Phase decides *where* each grating's crests sit, so phase decides where edges appear, and edges are what we recognize. Magnitude mostly says how much energy each frequency has, and most natural photos have similar magnitude spectra (strong low frequencies, falling off outward). Swapping magnitudes therefore changes the overall "texture statistics" but not the layout.
+**Why phase wins.** An edge is a place where many gratings line up so their crests coincide. Phase decides *where* each grating's crests sit, so phase decides where edges appear, and edges are what we recognize. Magnitude only says how strongly each grating is present: it scales (amplifies or weakens) each wave but never moves it. Most natural photos have similar magnitude spectra (strong low frequencies, falling off outward). Swapping magnitudes therefore changes the overall "texture statistics" but not the layout.
+
+**A direct test: move the picture, and only the phases change.** Shift a signal sideways by *d*. Every wave in it slides by *d*, which (§2.3) multiplies its coefficient by a unit arrow *e*^{−*j*2πξ*d*}: its length stays the same and only its angle turns. This is the **shift theorem**:
+
+```
+F{ f(x − d) } = e^{−j2πξd} · f̂(ξ)          so   |F{ f(x − d) }| = |f̂(ξ)|
+```
+
+So the magnitude spectrum cannot tell where anything is. All the "where" lives in the phase.
+
+> **Worked example (one cosine, shifted).** *f*(*x*) = cos(2π·0.25·*x*), with *x* in pixels: period 4 pixels. By §2.3 it is two arrows, ½*e*^{*j*2π·0.25*x*} + ½*e*^{−*j*2π·0.25*x*}, so its spectrum has coefficient ½ at ξ = +0.25 and ½ at ξ = −0.25.
+> - Shift it right by *d* = 1 pixel. The shift theorem multiplies the +0.25 coefficient by *e*^{−*j*2π·0.25·1} = *e*^{−*j*π/2} (a −90° turn) and the −0.25 coefficient by *e*^{+*j*π/2} (a +90° turn).
+> - New coefficients: ½*e*^{−*j*π/2} and ½*e*^{+*j*π/2}. **Magnitudes: still ½ and ½. Phases: 0° → −90° and 0° → +90°.**
+> - Check in the primal domain: cos(2π·0.25(*x* − 1)) = cos(2π·0.25*x* − π/2), the same wave with phase −π/2, a quarter-period (1 pixel) to the right.
+>
+> The amount of each wave did not change; only where its crests sit did. (§10.2 repeats this check on a 4-sample signal once the DFT is built.)
 
 **Why this matters later.**
 
@@ -239,7 +298,8 @@ Inverse-transform each. The first result looks like a noisy **cat**; the second 
 
 > **Summary**
 > - Magnitude says how strong each grating is; phase says where its stripes sit.
-> - Swapping phases between two photos swaps what you recognize: **phase carries the structure** (edge locations).
+> - Swapping phases between two photos swaps what you recognize: **phase carries the structure** (edge locations); magnitude only scales each wave.
+> - Shift theorem: **F{f(x − d)} = e^{−j2πξd} f̂(ξ)**; moving an image changes only phases, never magnitudes.
 > - Next: the operation that makes Fourier analysis essential to imaging, convolution (§5).
 
 ---
@@ -269,8 +329,11 @@ Inverse-transform each. The first result looks like a noisy **cat**; the second 
 | *x*[*n*] or *f*(*x*) | the input signal (e.g. sharp image brightness) |
 | *h*[*m*] or *g*(*u*) | the **kernel** (also called **filter**, **impulse response**, or for optics **point spread function, PSF**) |
 | *n*, *x* | the output position being computed |
-| *m*, *u* | how far from the output position the kernel weight sits |
+| *m*, *u* | how far from the output position the kernel weight sits: the dummy variable that is summed away (§2.4) |
+| Σ_m, ∫ … d*u* | add up the contributions from every offset *m* (discrete) or *u* (continuous) |
 | ∗ | the convolution operator (not multiplication) |
+
+> **Same concept, different names.** **Kernel** = **convolution kernel** = **filter kernel** = **filter** = **impulse response**; when it describes how an optical system spreads one point of light, it is the **point spread function (PSF)**, which the slides also call the **blur kernel**. In image-processing code a small kernel is sometimes called a **mask** or **stencil** (not to be confused with the Fourier-domain "mask" of §16). §12.3 sorts out when a kernel is, and is not, a PSF.
 
 **Intuition for *x*[*n* − *m*].** The weight *h*[*m*] multiplies the input that sits *m* steps *behind* the output position. Equivalently, input sample *x*[*p*] contributes *x*[*p*]·*h*[*m*] to output position *p* + *m*: a copy of the kernel, scaled by *x*[*p*], starting at *p*. That is the stamp view. In the window view the kernel appears reversed ("flipped"), which matters only for asymmetric kernels.
 
@@ -299,7 +362,16 @@ x ∗ g = F⁻¹{ F{x} · F{g} }          equivalently    F{x ∗ g} = F{x} · F
 **Why it is true, in three steps.**
 
 1. *A pure wave goes through any LSI system unchanged in frequency.* Feed in *e*^{*j*2πξ*x*}. Shift-invariance says a shifted input gives a shifted output. Shifting this wave by *d* just multiplies it by the constant *e*^{−*j*2πξ*d*} (rotating the arrow), and linearity says the output gets multiplied by the same constant. The only functions with this property are multiples of the same wave. So the output is *G*(ξ)·*e*^{*j*2πξ*x*}: the same wave, scaled and rotated by one complex number *G*(ξ).
-2. *That number is the kernel's spectrum.* Plug the wave into the convolution integral: ∫ *g*(*u*) *e*^{*j*2πξ(*x*−*u*)} d*u* = *e*^{*j*2πξ*x*} · ∫ *g*(*u*) *e*^{−*j*2πξ*u*} d*u* = *e*^{*j*2πξ*x*} · *ĝ*(ξ). So *G*(ξ) = *ĝ*(ξ), the Fourier transform of the kernel.
+2. *That number is the kernel's spectrum.* Plug the wave *f*(*x*) = *e*^{*j*2πξ*x*} into the convolution integral, one move at a time (each move is a rule from §2.4):
+
+   ```
+   (f ∗ g)(x) = ∫ g(u) · e^{j2πξ(x−u)} du                 replace f(x − u) by the wave evaluated at x − u
+              = ∫ g(u) · e^{j2πξx} · e^{−j2πξu} du         e^{a+b} = e^a·e^b, with a = j2πξx, b = −j2πξu
+              = e^{j2πξx} · ∫ g(u) · e^{−j2πξu} du         e^{j2πξx} does not depend on the dummy u: pull it out
+              = e^{j2πξx} · ĝ(ξ)                           the remaining integral is the definition of ĝ(ξ) (§3.1)
+   ```
+
+   So *G*(ξ) = *ĝ*(ξ), the Fourier transform of the kernel.
 3. *Assemble.* Any input is a sum of waves (§3). Convolution is linear, so each wave is handled separately: multiplied by *ĝ*(ξ). Adding the results gives an output whose spectrum is *x̂*(ξ)·*ĝ*(ξ).
 
 | Term | Meaning |
@@ -320,9 +392,91 @@ x ∗ g = F⁻¹{ F{x} · F{g} }          equivalently    F{x ∗ g} = F{x} · F
 - *Diagonalization.* Writing **F** for the matrix that takes a signal to its spectrum (built in §10), **C** = **F**⁻¹ · diag(*ĉ*) · **F**: transform, multiply each frequency by its own number, transform back. The convolution theorem *is* this diagonalization.
 - *Example.* For *N* = 4 and kernel [0.5, 0.25, 0, 0.25] (half weight on the sample itself, a quarter on each neighbor, wrapping around), **C** has rows [0.5, 0.25, 0, 0.25], [0.25, 0.5, 0.25, 0], [0, 0.25, 0.5, 0.25], [0.25, 0, 0.25, 0.5]. Its eigenvalues, one per frequency *k* = 0, 1, 2, 3, are [1, 0.5, 0, 0.5]: it keeps the average, halves the slow wave, and erases the fastest alternation. The 0 means the alternating vector [1, −1, 1, −1] is in this matrix's **null space** (the set of vectors it sends to zero), a fact §22 will lean on.
 
+### 5.3 The theorem runs both ways
+
+The lecture uses the convolution theorem in both directions, and it is easy to miss that the second direction is a separate statement:
+
+```
+convolution in the primal domain     ⇔   multiplication in the Fourier domain:    F{ x ∗ g } = F{x} · F{g}
+multiplication in the primal domain  ⇔   convolution in the Fourier domain:       F{ x · g } = F{x} ∗ F{g}
+```
+
+**Why the second line holds.** The forward and inverse transforms are the same formula except for the sign of the exponent (§3.1). Every step of the §5.2 proof can therefore be rerun with the roles of the two domains swapped: start in the Fourier domain, convolve two spectra there, and the inverse transform turns that convolution into a product of the two primal-domain signals. Nothing new is needed, only the mirror image of the same argument. (For the DFT of *N* samples, the second line picks up a factor 1/*N*: DFT{*x*·*g*} = (1/*N*)·(DFT{*x*} ⊛ DFT{*g*}), where ⊛ is wrap-around convolution of the two coefficient lists. The 1/*N* is the same one that sits in the inverse DFT, §10.)
+
+**A simple case to anchor it: multiplying by a wave shifts the spectrum.** Multiply a signal by the wave *e*^{*j*2πξ₀*x*}. A pure wave contains exactly one frequency, so its spectrum is a single spike (an impulse, §5.1) at ξ₀. Convolving the signal's spectrum with a spike just moves the spectrum to sit at ξ₀ (stamp view, §5.1). So:
+
+```
+F{ f(x) · e^{j2πξ₀x} } = f̂(ξ − ξ₀)          (modulation: multiply by a wave ⇒ slide the spectrum)
+```
+
+This is the mirror of §4's shift theorem: a shift in one domain is multiplication by a wave in the other.
+
+> **Worked example (multiplying two cosines).** *f*(*x*) = cos(2π·1·*x*) has spectrum spikes of height ½ at ξ = ±1 (two arrows, §2.3). *g*(*x*) = cos(2π·5·*x*) has spikes of height ½ at ±5.
+> - *Fourier-domain prediction (convolve the spectra, stamp view).* Stamp a copy of *g*'s two spikes at each of *f*'s two spikes, scaled by ½: spikes land at 1 + 5 = 6, 1 − 5 = −4, −1 + 5 = 4 and −1 − 5 = −6, each of height ½ × ½ = ¼.
+> - *Primal-domain check.* The identity cos *A* · cos *B* = ½cos(*A* − *B*) + ½cos(*A* + *B*) gives *f*·*g* = ½cos(2π·4*x*) + ½cos(2π·6*x*). Each of those cosines is two arrows of height ¼, at ±4 and ±6.
+>
+> The two answers agree: multiplying in the primal domain produced the **difference** (4) and **sum** (6) frequencies, which is what convolving the two spectra predicts. (§10.2 repeats this check numerically with the DFT.)
+>
+> *LiDAR aside (optional).* An indirect time-of-flight sensor (Week 4 §5.4) multiplies the returning, sinusoidally modulated light by a reference wave of the same frequency. By this rule the product contains a difference-frequency term at 0 Hz, a constant, whose value depends on the phase delay and therefore on distance. That is how such a sensor turns a fast oscillation into a slowly varying number it can read out.
+
+**Where each direction is used this week.**
+
+| What happens in the primal domain | What it does in the Fourier domain | Where |
+|---|---|---|
+| blur: **convolve** the image with a PSF | **multiply** the spectrum by the OTF | lens blur §14, filtering §16, deconvolution §22 |
+| sampling: **multiply** by an impulse train | **convolve** the spectrum with an impulse train, which stamps copies | §7 |
+| cropping or windowing: **multiply** by a box | **convolve** the spectrum with a sinc, which smears it | DFT edge effects §10.3 |
+| ideal low-pass: **convolve** with a ringing (sinc-like) kernel | **multiply** the spectrum by a hard 0/1 mask | §16.2 |
+| pixel integration: **convolve** with a box | **multiply** by a sinc | §15 |
+
+So the rule to carry around is a two-way swap: **∗ on one side is · on the other, in either direction.**
+
+### 5.4 Filters: pass, attenuate, block
+
+Because blur multiplies each frequency by one number, the kernel's spectrum F{*g*}(ξ) is called its **frequency response**: a **gain** per frequency. Any convolution, chosen on purpose, is called a **filter**, and it is described by what its gain does at each frequency.
+
+*Analogy:* a stereo's bass and treble knobs. Each knob sets how loud one range of pitches comes out, without touching the others.
+
+| Gain at frequency ξ | Word used | Meaning |
+|---|---|---|
+| \|gain\| = 1 | **passes** | that wave comes out as strong as it went in |
+| 0 < \|gain\| < 1 | **attenuates** | that wave comes out weaker, but not gone |
+| gain = 0 | **blocks** (also **stops**, **rejects**, **removes**) | that wave is erased |
+| \|gain\| > 1 | **amplifies** (also **boosts**) | that wave comes out stronger |
+
+> **Same concept, different names: attenuate = damp = suppress = weaken = roll off.** All mean "multiply a frequency's amplitude by a number smaller than 1." Engineers often express attenuation in **decibels** (the 10·log₁₀ scale of Week 3 §13; for amplitudes the convention is 20·log₁₀): a gain of 0.5 is about −6 dB. The Wiener filter's "damping factor" (§23) is an attenuation, and "roll-off" describes a gain that falls gradually as frequency rises.
+
+**Filter types, named by which frequencies they keep.**
+
+- **Low-pass filter**: passes low frequencies (slow brightness changes, broad shapes), attenuates or blocks high ones (fine stripes, sharp edges, noise). Its effect is a **blur**.
+- **High-pass filter**: the opposite. It keeps edges and fine texture and removes broad shading.
+- **Band-pass filter**: keeps only a middle range.
+- **Cutoff frequency**: where the gain drops from "passing" to "blocking." An **ideal** filter switches abruptly at the cutoff; a practical one rolls off gradually. The kept range is the **passband**, the removed range the **stopband**.
+
+**When is a kernel a low-pass filter? A rule you can check by eye.** If every kernel weight is **non-negative** and the weights **sum to 1**, the kernel is low-pass:
+
+- *At zero frequency the gain is exactly 1.* The gain at ξ = 0 is Σ *g*[*m*]·*e*⁰ = Σ *g*[*m*] = 1. The average brightness passes unchanged.
+- *Everywhere else the gain is at most 1.* The gain is a sum of arrows, one per weight, with lengths *g*[*m*] and angles that depend on ξ (each is *g*[*m*]·*e*^{−*j*2πξ*m*}). A sum of arrows is never longer than the sum of their lengths (the **triangle inequality**), and those lengths add to 1. So |gain| ≤ 1.
+- *For any kernel wider than one tap, the gain falls below 1 at nonzero frequencies,* because the arrows then point in different directions and partly cancel.
+
+So a kernel like this can only keep or weaken waves, never strengthen them, and it weakens fast waves most: it is a blur. Kernels with negative weights (sharpening, edge detection, §17) break the rule and can boost high frequencies.
+
+> **Worked example (the 3-tap blur).** Kernel [0.25, 0.5, 0.25] at offsets *m* = −1, 0, +1. Its gain at frequency ξ (cycles per sample) is the sum of three arrows:
+>
+> gain(ξ) = 0.25·*e*^{+*j*2πξ} + 0.5 + 0.25·*e*^{−*j*2πξ} = 0.5 + 0.5·cos(2πξ)   (using *e*^{*j*θ} + *e*^{−*j*θ} = 2cos θ, §2.4)
+>
+> | ξ (cycles per sample) | 0 | 1/8 | 1/4 | 3/8 | 1/2 |
+> |---|---|---|---|---|---|
+> | gain | 1 | 0.854 | 0.5 | 0.146 | 0 |
+> | verdict | passes | slightly attenuated | attenuated to half (≈ −6 dB) | strongly attenuated | blocked |
+>
+> At ξ = ½ the wave alternates +1, −1, +1, …, and 0.5·1 − 0.25·1 − 0.25·1 = 0: the fastest alternation is erased. The weights are non-negative and sum to 1, so by the rule this kernel had to be low-pass, and it is.
+
 > **Summary**
 > - Convolution stamps a scaled copy of the kernel at every input point and adds them; every linear shift-invariant system, including a lens with uniform blur, is a convolution with its impulse response (the PSF).
-> - Rule to remember: **F{x ∗ g} = F{x}·F{g}**: blur multiplies each frequency by the kernel's spectrum.
+> - Rule to remember: **F{x ∗ g} = F{x}·F{g}** *and* **F{x·g} = F{x} ∗ F{g}**: convolution on one side is multiplication on the other, in both directions.
+> - A filter's spectrum is its frequency response: per-frequency gains that pass (1), attenuate (between 0 and 1), block (0) or amplify (above 1). Low-pass keeps slow waves; high-pass keeps fast ones.
+> - Non-negative weights summing to 1 ⇒ gain 1 at zero frequency and ≤ 1 everywhere ⇒ a low-pass blur.
 > - Linear-algebra view: convolution is a circulant matrix; the waves are its eigenvectors and the kernel's spectrum lists its eigenvalues.
 > - Next: the handful of standard kernels and signals this lecture uses, and their spectra (§6).
 
@@ -338,6 +492,9 @@ The rest of the lecture is built from a few standard shapes. Each one is introdu
 - *Definition:* δ(*x*) is zero everywhere except at *x* = 0, with total area 1. (Think of a box of width ε and height 1/ε, with ε shrinking to zero.)
 - *Key property (sifting):* ∫ *f*(*x*) δ(*x* − *a*) d*x* = *f*(*a*). Multiplying by a shifted impulse picks out one value.
 - *Transform:* F{δ} = 1 for every frequency. A single point contains every wave equally. Conversely, a constant has all its energy at ξ = 0: F{1} = δ(ξ).
+- *Why F{δ} = 1, using the sifting property:* F{δ}(ξ) = ∫ δ(*x*) *e*^{−*j*2πξ*x*} d*x* = *e*^{−*j*2πξ·0} = *e*⁰ = 1. The impulse picks out the probe wave's value at *x* = 0, which is 1 for every ξ.
+
+> **Same concept, different names.** **Impulse** = **delta** = **Dirac delta** = **unit impulse** = **δ function**. On a grid of samples, the discrete version (1 at one sample, 0 elsewhere) is the **Kronecker delta** or **discrete impulse**; it is what §5.1 used. In optics, an impulse is a **point source** (a star, a pinhole lit from behind), and its image is the PSF.
 
 ### 6.2 The box (rect) and the sinc
 
@@ -351,6 +508,19 @@ F{rect(x)} = sinc(ξ) = sin(πξ) / (πξ)          (and sinc(0) = 1)
 
 - *Shape of the sinc:* a central peak of height 1 at ξ = 0, then smaller and smaller ripples that alternate positive and negative, crossing **exactly zero** at ξ = ±1, ±2, ±3, … (wherever sin(πξ) = 0, except at 0).
 - *Why the zeros:* a wave with exactly one full cycle (or two, or three) across the box's width has as much positive as negative inside the box, so averaging it over the box gives zero. That wave is completely erased.
+- *Derivation, step by step* (every move is a rule from §2.4):
+
+  ```
+  F{rect}(ξ) = ∫_{−∞}^{∞} rect(x) · e^{−j2πξx} dx            definition of the forward transform (§3.1)
+             = ∫_{−1/2}^{1/2} e^{−j2πξx} dx                    rect is 1 on (−½, ½) and 0 elsewhere, so only that stretch adds anything
+             = [ e^{−j2πξx} / (−j2πξ) ]  from x = −½ to x = ½    the antiderivative of e^{cx} is e^{cx}/c, here c = −j2πξ
+             = ( e^{−jπξ} − e^{jπξ} ) / (−j2πξ)                 plug in the two endpoints and subtract
+             = ( e^{jπξ} − e^{−jπξ} ) / (j2πξ)                  multiply top and bottom by −1
+             = 2j·sin(πξ) / (j2πξ)                              e^{jθ} − e^{−jθ} = 2j sin θ, with θ = πξ
+             = sin(πξ) / (πξ) = sinc(ξ)                         cancel 2j
+  ```
+
+  At ξ = 0 the formula reads 0/0; there the integral is simply the box's area, 1, which is why sinc(0) = 1.
 - This course uses the **normalized sinc**, with π inside. Some books define sinc(*x*) = sin(*x*)/*x* instead, which moves the zeros to multiples of π.
 
 ### 6.3 The triangle (tent) and sinc²
@@ -366,19 +536,28 @@ F{rect(x)} = sinc(ξ) = sin(πξ) / (πξ)          (and sinc(0) = 1)
 - *Transform:* *ĝ*(ξ) = *e*^{−2π²σ²ξ²}, **another Gaussian**, of width 1/(2πσ) (slide 18 shows a narrow Gaussian in the primal domain paired with a wide one in the Fourier domain).
 - *Why it matters:* the Gaussian is the one common blur with **no ripples and no negative values** in either domain. That is why Gaussian low-pass filtering does not "ring" (§16).
 
+> **Optional deeper dive: where *e*^{−2π²σ²ξ²} comes from.** Write the transform integral and combine the two exponents into one: −*x*²/(2σ²) − *j*2πξ*x*. **Complete the square** in *x*: this equals −(*x* + *j*2πσ²ξ)²/(2σ²) − 2π²σ²ξ². The second piece does not depend on *x*, so it comes out of the integral as the factor *e*^{−2π²σ²ξ²}. What remains is the area under a (shifted) Gaussian with the same normalization, which is 1. Result: *ĝ*(ξ) = *e*^{−2π²σ²ξ²}. (The shift is by an imaginary amount, which needs a fact from complex analysis to justify; the answer is still exactly this.) Nothing later depends on this derivation, only on its result.
+
 > **Worked example.** A Gaussian blur with σ = 2 pixels has a spectrum of width 1/(2π·2) ≈ 0.080 cycles/pixel. At that frequency the spectrum has fallen to *e*^{−½} ≈ 0.61; at twice that (0.16 cycles/pixel) to *e*^{−2} ≈ 0.14. So stripes finer than about one cycle per 6 pixels are mostly erased by this blur.
 
 ### 6.5 The impulse train (comb) and its transform
 
-- *What it models:* **sampling** (§7). Measuring a signal only at evenly spaced points is multiplying it by a row of impulses.
-- *Definition:* comb_T(*x*) = Σ_n δ(*x* − *nT*): impulses spaced *T* apart, forever.
+*Analogy:* a picket fence of infinitely thin posts, one every *T*, each of unit "weight." Or a strobe light that flashes for an instant every *T* seconds.
+
+- *What it models:* **sampling** (§7). Measuring a signal only at evenly spaced points is multiplying it by a row of impulses: each impulse picks out one value (sifting, §6.1) and everything between the impulses becomes zero.
+- *Definition:* comb_T(*x*) = Σ_n δ(*x* − *nT*): impulses spaced *T* apart, forever. Reading the formula: δ(*x* − *nT*) is one impulse moved to sit at *x* = *nT*; the sum over every whole number *n* (…, −2, −1, 0, 1, 2, …) places one at every multiple of *T*.
 - *Transform:* another comb, with spacing 1/*T* (scaled by 1/*T*):
 
 ```
 F{ comb_T } = (1/T) · comb_{1/T}
 ```
 
-- *Why:* a signal that repeats every *T* can contain only waves that also repeat every *T*: frequencies 0, 1/*T*, 2/*T*, …. The comb repeats every *T* and is spiky enough to contain all of them equally.
+- *Why spikes, and only at multiples of 1/T:* the comb repeats every *T*, and a signal that repeats every *T* can contain only waves that also fit a whole number of times into *T*: frequencies 0, 1/*T*, 2/*T*, …. Any other wave would not line up with itself one period later.
+- *Why every one of those spikes has the same height 1/T:* the amount of the wave at frequency *m*/*T* is measured over one period (from −*T*/2 to *T*/2) and divided by the period length *T*, i.e. averaged. Inside one period the comb is a single impulse at *x* = 0, so the sifting property gives (1/*T*)·∫ δ(*x*) *e*^{−*j*2π(*m*/*T*)*x*} d*x* = (1/*T*)·*e*⁰ = 1/*T*, the same for every *m*. A comb contains every allowed frequency equally.
+
+> **Same concept, different names.** **Impulse train** = **comb** = **comb function** = **Dirac comb** = **Shah function** (written Ш, from the letter's comb-like shape) = **sampling function**. All name a row of equally spaced impulses.
+
+> **Worked example.** Audio sampled every *T* = 0.05 s is multiplication by comb_{0.05 s}. Its transform is (1/0.05)·comb_{20 Hz} = 20·comb_{20 Hz}: spikes of height 20 at 0, ±20, ±40, … Hz. Those spikes, 20 Hz apart, are exactly where §7's spectral copies will be centered for the 20 Hz sampling exercise of §8.3.
 
 ### 6.6 The scaling theorem: wide in one domain means narrow in the other
 
@@ -387,6 +566,17 @@ F{ f(x/a) } = |a| · f̂(a·ξ)
 ```
 
 *Analogy:* playing a recording at half speed stretches it in time and lowers every pitch by half. Stretching a signal by a factor *a* squeezes its spectrum by the same factor (and scales its height).
+
+**Derivation (for *a* > 0), using the substitution rule of §2.4.** Rename *u* = *x*/*a*, so *x* = *a u* and d*x* = *a* d*u*:
+
+```
+F{ f(x/a) }(ξ) = ∫ f(x/a) · e^{−j2πξx} dx           definition
+               = ∫ f(u) · e^{−j2πξ(au)} · a du       substitute x = au, dx = a du
+               = a · ∫ f(u) · e^{−j2π(aξ)u} du       pull the constant a out; regroup ξ·a as (aξ)
+               = a · f̂(aξ)                           the integral is the transform of f, evaluated at aξ
+```
+
+The last integral is the ordinary transform of *f*, only asked at frequency *a*ξ instead of ξ. That is the "squeeze": a feature that sat at frequency ξ₀ in *f̂* now sits at ξ₀/*a*. The factor *a* in front is the "taller": the stretched signal has *a* times the area. (For negative *a* the limits flip, which is where the absolute value |*a*| comes from.)
 
 **Examples that recur this week.**
 
@@ -407,7 +597,34 @@ This single rule explains three facts later in the week: a **bigger aperture giv
 
 ## 7. Sampling: What Happens to the Spectrum
 
-**The problem.** Light on a sensor, sound in the air, and a LiDAR return waveform are continuous. A computer stores only values at evenly spaced points: pixels, audio samples, digitizer ticks. What does keeping only those points do to the signal's frequency content?
+### 7.1 What "sample" means, and its family of words
+
+**The problem.** Light on a sensor, sound in the air, and a LiDAR return waveform are continuous: they have a value at every position or instant. A computer stores only a finite list of numbers. Turning the first into the second is **sampling**.
+
+*Analogy:* a nurse taking your temperature every 4 hours. Your temperature exists at every moment, but the chart holds only the readings at 8:00, 12:00, 16:00, …. Each reading is a sample; "every 4 hours" is the sampling interval; "6 readings per day" is the sampling rate.
+
+- **A sample** (noun) is **one measured value** of a continuous signal at one position or one instant: one pixel value, one audio reading, one digitizer tick of a LiDAR waveform.
+- **To sample** (verb) is to take such measurements, usually at evenly spaced points.
+- **A pixel value is a sample.** More precisely, it is a sample of the light *after* it has been averaged over the pixel's area (§15 builds this in full).
+
+| Term | Meaning | Example |
+|---|---|---|
+| **sampling interval** *T* | the spacing between consecutive samples | 0.05 s between audio samples; 4 µm between pixel centers |
+| **sampling rate** *f_s* = 1/*T* | how many samples per unit time or length | 20 samples/s = 20 Hz; 1/(4 µm) = 250 samples/mm; a screen's **dpi** or ppi (Week 1 §9) is a sampling rate in samples per inch |
+| **resampling** | computing samples on a new grid from samples you already have | resizing, rotating or warping an image |
+| **downsampling** | resampling to *fewer* samples (a lower rate) | shrinking a 4000-pixel-wide photo to 1000 pixels |
+| **subsampling** | the simplest downsampling: keep every *D*-th sample, discard the rest | `I[::4, ::4]` in Python, `I(1:4:end, 1:4:end)` in Matlab |
+| **decimation** | downsampling by a whole-number factor *D*; in signal-processing usage it normally *includes* a low-pass filter before discarding samples | §19's "anti-aliased downsampling" |
+| **upsampling** | resampling to *more* samples (a higher rate), by **interpolation**: estimating values between existing samples | enlarging a photo |
+| **oversampling / undersampling** | sampling faster / slower than the signal needs (the threshold is set in §8) | undersampling causes aliasing |
+
+> **Same concept, different names.** **Sampling interval** = **sampling period** = **sample spacing**; on a sensor it is the **pixel pitch** (§15). **Sampling rate** = **sampling frequency** = **sample rate**; in LiDAR and electronics it is quoted in **samples per second** (S/s, e.g. 1 GS/s = 10⁹ S/s); for displays and printers it is **dpi**/**ppi**. **Subsampling** and **downsampling** are often used interchangeably; when the difference matters, "subsampling" means discarding without filtering, and "downsampling" or "decimation" means filtering first.
+
+> **Same word, different meaning: "sample" in statistics.** In §32 (stochastic gradient descent), "sample rows of **A**" means **pick a few rows at random** from a collection, the everyday statistics sense ("a random sample of voters"). That is unrelated to measuring a continuous signal at evenly spaced points. Each place this file uses the statistical sense, it says so.
+
+> **Worked example (the same signal, sampled three ways).** A 1D strip of sensor light is sampled with pixel pitch *T* = 4 µm, so *f_s* = 1/(0.004 mm) = **250 samples/mm**. Subsample by *D* = 4 (keep every 4th pixel): the new interval is 4 × 4 = 16 µm and the new rate 250/4 = **62.5 samples/mm**. Upsample the original by 2: interval 2 µm, rate **500 samples/mm**, where every second value is interpolated rather than measured.
+
+### 7.2 What sampling does to the spectrum
 
 **Sampling as multiplication by a comb (slide 20).** Keeping only the values at *x* = 0, *T*, 2*T*, … is the same as multiplying the continuous signal by the comb of §6.5:
 
@@ -418,10 +635,13 @@ f_sampled(x) = f(x) · comb_T(x)
 - *T* is the **sampling interval** (pixel pitch, or seconds between samples).
 - *f_s* = 1/*T* is the **sampling rate** (samples per unit length or per second).
 
-**What it does to the spectrum.** The convolution theorem works in both directions: multiplying in the primal domain is convolving in the Fourier domain. And F{comb_T} is a comb of spacing *f_s* (§6.5). Convolving a spectrum with a comb stamps a copy of the spectrum at every comb tooth (stamp view of convolution, §5.1). So:
+**What it does to the spectrum.** The convolution theorem works in both directions (§5.3): multiplying in the primal domain is convolving in the Fourier domain. And F{comb_T} is a comb of spacing *f_s* (§6.5). Convolving a spectrum with a comb stamps a copy of the spectrum at every comb tooth (stamp view of convolution, §5.1). Step by step:
 
 ```
-F{ f · comb_T } = (1/T) · Σ_m f̂(ξ − m·f_s)
+F{ f · comb_T } = f̂ ∗ F{comb_T}                                  convolution theorem, second direction (§5.3)
+                = f̂ ∗ (1/T) Σ_m δ(ξ − m·f_s)                     transform of the comb (§6.5), with 1/T = f_s
+                = (1/T) Σ_m ( f̂ ∗ δ(ξ − m·f_s) )                 convolution is distributive: blur a sum = sum of blurs (§5.1)
+                = (1/T) Σ_m f̂(ξ − m·f_s)                         convolving with an impulse at m·f_s shifts f̂ to sit there (sifting, §6.1)
 ```
 
 **In words:** the sampled signal's spectrum is the original spectrum **plus shifted copies of it, centered at every multiple of the sampling rate** (slide 20: "shifted copies at *f_s*").
@@ -437,6 +657,7 @@ F{ f · comb_T } = (1/T) · Σ_m f̂(ξ − m·f_s)
 **Linear-algebra view (sampling a finite signal is a selection matrix).** For a signal already stored as *N* fine samples in a vector **x**, keeping every *D*-th sample is a matrix **S** of size (*N*/*D*)×*N* with exactly **one 1 per row** and zeros elsewhere: row *r* has its 1 in column *rD*. **S x** is the sampled signal. **S** has far fewer rows than columns, so it has a large **null space**: any change to **x** that is zero at the kept positions is invisible after sampling. Aliasing (§8) is the frequency-domain description of exactly this lost information.
 
 > **Summary**
+> - A sample is one measured value of a continuous signal; *T* = sampling interval, *f_s* = 1/*T* = sampling rate. Downsampling lowers the rate (subsampling = just discard; decimation = filter, then discard); upsampling raises it by interpolation.
 > - Sampling = multiplying by an impulse train of spacing *T*.
 > - Rule to remember: **sampling at rate f_s copies the spectrum to every multiple of f_s**.
 > - Linear-algebra view: subsampling is a selection matrix (one 1 per row) with a large null space.
@@ -456,10 +677,27 @@ f_s ≥ 2·f_max          (Nyquist–Shannon sampling theorem; slide 94)
 
 - **Nyquist rate**: 2*f_max*, the lowest sampling rate that avoids overlap for a given signal.
 - **Nyquist frequency**: *f_s*/2, the highest frequency a given sampling rate can represent.
-- If the copies do not overlap, the original can be recovered exactly: cut out the central copy with an ideal low-pass filter and inverse-transform (§16). This is the "reconstruction" half of the theorem.
+- If the copies do not overlap, the original can be recovered exactly: cut out the central copy with an ideal low-pass filter (gain 1 below *f_s*/2, 0 above, §5.4) and inverse-transform. This is the "reconstruction" half of the theorem.
 - If they do overlap, a frequency from one copy lands where another copy's frequency should be. The two become indistinguishable after sampling. This is **aliasing**: a high frequency masquerading as ("taking the alias of") a lower one.
 
 **Strictly greater, in practice.** A wave at exactly *f_s*/2 sampled at *f_s* gives two samples per cycle, which can land on the zero crossings and read as zero. Real systems sample comfortably above the Nyquist rate.
+
+**The Nyquist frequency and aliasing, in one sentence.** The Nyquist frequency *f_s*/2 is the **fold line**: every frequency below it is recorded faithfully, and every frequency above it is reflected back below it like an image in a mirror placed at *f_s*/2. A frequency that is Δ above the Nyquist frequency shows up Δ *below* it (for frequencies up to *f_s*; §8.2 gives the general rule). Aliasing happens **if and only if** the signal contains energy above the Nyquist frequency.
+
+> **Same concept, different names.** **Nyquist frequency** = **folding frequency** = **Nyquist limit** = half the sampling rate. It belongs to the *sampler*. Do not confuse it with the **Nyquist rate**, 2*f_max*, which belongs to the *signal*: it is the minimum sampling rate that signal needs. The theorem, written either way, says the same thing: Nyquist frequency ≥ *f_max*, or sampling rate ≥ Nyquist rate. The theorem itself is called the **Nyquist–Shannon sampling theorem**, the **Shannon–Nyquist theorem** (slide 125), or just **the sampling theorem**.
+
+**The Nyquist frequency of every sampler in this file.**
+
+| Sampler | Sampling rate *f_s* | Nyquist frequency *f_s*/2 | Section |
+|---|---|---|---|
+| the lecture's audio-style exercise | 20 samples/s | 10 Hz (temporal) | §8.3 |
+| film camera | 24 frames/s | 12 Hz (temporal) | §20.1 |
+| sensor with 4 µm pixels | 250 samples/mm | 125 cycles/mm (spatial) | §15.3 |
+| any stored image | 1 sample/pixel | 0.5 cycles/pixel (image frequency) | §10.1 |
+| image after keeping every 4th pixel | 0.25 samples per original pixel | 0.125 cycles per original pixel | §19.2 |
+| LiDAR waveform digitizer | 1 GS/s | 500 MHz (temporal) | §20.2 |
+
+> **Worked example (folding).** Sampling at 20 Hz puts the Nyquist frequency at 10 Hz. A 12 Hz wave is 2 Hz above it, so it folds to 10 − 2 = **8 Hz**. A 16 Hz wave is 6 Hz above, so it folds to 10 − 6 = **4 Hz**. A 9 Hz wave is below the fold line and is recorded as 9 Hz. §8.3 checks these against the lecture's plots.
 
 ### 8.2 Where an aliased frequency lands
 
@@ -496,10 +734,24 @@ Slides 22–31 sample a sinusoid at *f_s* = **20 Hz** (temporal frequency: 20 sa
 
 Once two frequencies produce the same samples, no processing can tell which one was there (slide 125: "aliasing cannot be corrected digitally in post-processing"). The only cure is to remove frequencies above *f_s*/2 **before** sampling, with a low-pass filter. That is called **anti-aliasing**, and §19 and §21 show it twice: as a digital blur before downsampling, and as an optical blur in front of a camera sensor.
 
+> **Same concept, different names.** An **anti-aliasing filter** = **AA filter** = **prefilter** (because it acts *before* sampling) = a low-pass filter whose cutoff is the Nyquist frequency. In a camera it is a physical plate, the **optical low-pass filter (OLPF)**, which camera reviews often call the "AA filter" or "blur filter" (§21). In computer graphics, "anti-aliasing" means the same idea applied when rendering: average several samples inside each pixel, a box prefilter, so edges do not come out as staircases.
+
+**Aliasing comes in several guises; all are the same folding.**
+
+| Where the sampling happens | What aliasing looks like | Name | Section |
+|---|---|---|---|
+| a sensor's or display's pixel grid (space) | false stripe patterns over fine repeating detail (fabric, brickwork, screens) | **moiré** | §19, §21 |
+| a pixel grid, at a sharp slanted edge | staircase edges | **jaggies** | §19 |
+| a Bayer color mosaic | colored fringes on fine gray detail | **false color** | §21 |
+| a camera's frame rate (time) | wheels or propellers turning slowly, stopped or backwards | **wagon-wheel effect** (temporal aliasing) | §20.1 |
+| a LiDAR's pulse rate or modulation (time) | a far target reported at a wrong, nearer distance | **range aliasing** (range ambiguity) | §20.2 |
+| a sampling exercise on a 1D signal | a fast wave read as a slow one | aliasing | §8.3 |
+
 > **Summary**
-> - Rule to remember: **f_s ≥ 2 f_max** (Nyquist–Shannon); the Nyquist frequency *f_s*/2 is the highest representable frequency.
+> - Rule to remember: **f_s ≥ 2 f_max** (Nyquist–Shannon); the Nyquist frequency *f_s*/2 (= folding frequency) is the highest representable frequency and the fold line for everything above it. The Nyquist *rate* 2*f_max* is a property of the signal, not the sampler.
 > - Above it, a frequency folds back to **|f − f_s·round(f/f_s)|**: at 20 Hz sampling, 12 and 28 Hz look like 8 Hz, 16 and 24 Hz like 4 Hz, 20 Hz like 0 Hz.
-> - Aliasing is permanent; prevent it by low-pass filtering *before* sampling.
+> - Aliasing is permanent; prevent it by low-pass filtering *before* sampling (anti-aliasing filter = prefilter = OLPF in a camera).
+> - It shows up as moiré, jaggies, false color, the wagon-wheel effect and LiDAR range ambiguity: one mechanism, many names.
 > - Next: the mirror-image fact, that a *repeating* signal has a *sampled* spectrum (§9).
 
 ---
@@ -569,6 +821,20 @@ Checks:
 - *x̂*[3] is the conjugate of *x̂*[1]: index 3 is frequency −1, and a real signal's spectrum is conjugate symmetric (§3.3).
 - Inverse at *n* = 0: (1/4)(10 + (−2 + 2*j*) + (−2) + (−2 − 2*j*)) = 4/4 = 1 = *x*[0]. The other samples come back the same way (`np.fft.ifft` returns [1, 2, 3, 4]).
 
+**Two earlier rules, checked on this signal.**
+
+- *Shift theorem (§4): shifting changes only phases.* Shift *x* one place with wrap-around, [4, 1, 2, 3]. Its DFT is 10, 2+2*j*, 2, 2−2*j*.
+
+  | frequency index | 0 | 1 | 2 | 3 |
+  |---|---|---|---|---|
+  | magnitude, original | 10 | 2.83 | 2 | 2.83 |
+  | magnitude, shifted | 10 | 2.83 | 2 | 2.83 |
+  | phase, original | 0° | 135° | 180° | −135° |
+  | phase, shifted | 0° | 45° | 0° | −45° |
+
+  Magnitudes identical; each phase turned by −90° × *k* (−270° ≡ +90° at index 3).
+- *Second direction of the convolution theorem (§5.3): multiplying shifts the spectrum.* Multiply *x* by the fastest wave [1, −1, 1, −1] (frequency index 2). The product [1, −2, 3, −4] has DFT −2, −2−2*j*, 10, −2+2*j*: the original list slid by 2 places with wrap-around. Computing (1/4)·(wrap-around convolution of the two DFT lists) gives the same four numbers.
+
 **Linear-algebra view (the DFT is a change of basis by an N×N matrix).** Stack the samples as a vector **x**. The forward DFT is a matrix–vector product **x̂** = **F x**, where **F** is the *N*×*N* **DFT matrix** with entries F[*k*, *n*] = *e*^{−*j*2π*kn*/*N*}. For *N* = 4:
 
 ```
@@ -601,6 +867,8 @@ The DFT treats the *N* samples as one period of a repeating signal (§9). Two pr
 ## 11. The Fast Fourier Transform (FFT)
 
 **The problem.** Computing **F x** directly costs *N*² multiply-adds (an *N*×*N* matrix times a vector). The **fast Fourier transform (FFT)** computes exactly the same numbers in about *N* log₂ *N* operations (slides 40–41, Cooley & Tukey 1965: "O(*N*²) → O(*N* log *N*)").
+
+> **Same concept, different names (and one that is not).** The **FFT** is not a different transform: it is an *algorithm* that computes the DFT exactly, so "the FFT of an image" and "the DFT of an image" are the same numbers. `np.fft.fft2` is the 2D DFT computed by FFT. By contrast, the continuous **Fourier transform** of §3 (integrals over a continuous axis) and the **DFT** (sums over *N* samples) are different, related objects (§9 explains how they are related).
 
 **How, in one idea: split, solve the halves, recombine.** Split the *N* samples into the even-indexed ones and the odd-indexed ones. Each half is a signal of length *N*/2, whose DFT can be computed separately. Because the probe waves *e*^{−*j*2π*kn*/*N*} repeat with period *N*, the two half-length DFTs can be combined into the full one with one extra multiply per output (a **twiddle factor** *e*^{−*j*2π*k*/*N*}):
 
@@ -681,10 +949,36 @@ If the spot has the same shape everywhere in the image, the blur is **shift-inva
 
 **Defocus is a PSF too (slide 62).** A point *away from* the focal plane comes to focus in front of or behind the sensor, so it lands as a disc (Week 2 §9's circle of confusion). For a fixed scene depth that disc has the same shape everywhere, so it is also a convolution kernel; but its size depends on the depth, so a scene with many depths is blurred by different PSFs in different places.
 
+### 12.3 Kernel, PSF, blur: how the three words relate
+
+The lecture and PS4 slide between "kernel," "PSF" and "blur" without warning. They overlap but are not identical.
+
+**Every shift-invariant PSF is a convolution kernel.** §5.1 showed that convolving an impulse with a kernel returns the kernel. A point of light *is* an impulse, so the image of a point *is* the kernel. That is the whole reason the two words get swapped: the PSF is the kernel of the convolution that the optics performs.
+
+**This also tells you how a PSF is measured.** Photograph something that is effectively a single point (a distant star, a tiny pinhole lit from behind, a far-away LED). The photo of that point *is* the PSF, up to noise. Feed that measured array to the same `convolve2d` call you would use for any kernel.
+
+**Not every kernel is a PSF.** A PSF describes *light*, which imposes two constraints that a kernel chosen in software does not have to obey:
+
+| Property | A physical PSF | A kernel you design in code |
+|---|---|---|
+| values | **never negative**: light intensity cannot be negative | can be negative (sharpening, edge-detecting and high-pass kernels have negative entries, §17) |
+| sum of entries | **1** if the optics loses no light (or normalized to 1, PS4: "normalize the filter so it sums to 1") | anything; a high-pass kernel sums to 0 |
+| effect | always a blur (a low-pass filter, §14) | blur, sharpen, detect edges, shift, … |
+
+**So "blurring" means one specific thing:** convolving with a kernel that is non-negative, sums to 1 and is wider than a single pixel. That is precisely the kind of kernel §5.4's rule proved to be low-pass. A Gaussian kernel from `fspecial_gaussian_2d` meets all three conditions, which is why HW4 can use it as a stand-in for a lens's PSF ("blur the image with a Gaussian PSF").
+
+**Same object, two domains.** The PSF lives in the primal domain; its Fourier transform, the **OTF** (§14), is the same blur described as per-frequency gains. PS4's helper `psf2otf` is named for exactly this conversion.
+
+> **Worked example.** Three 3-tap kernels:
+> - [0.25, 0.5, 0.25]: non-negative, sums to 1, wider than one tap. A valid PSF, and a blur.
+> - [0, 1, 0]: the impulse itself. A valid (perfect) PSF that does nothing: an ideal lens.
+> - [−0.5, 2, −0.5]: sums to 1 but has negative entries. It sharpens (it is the impulse plus a high-pass detail term, §17.2). No lens could produce it as an intensity PSF, because some of the "light" it spreads would have to be negative.
+
 > **Summary**
 > - An ideal lens images a point to a point (1/*S′* + 1/*S* = 1/*f*); a real lens images it to a spot, the **PSF**.
 > - Causes: aberrations (chromatic, spherical) and diffraction (unavoidable, worse for small apertures). Coma and distortion are not shift-invariant and are excluded.
-> - When the PSF is the same everywhere, **blurred image = sharp image ∗ PSF**.
+> - When the PSF is the same everywhere, **blurred image = sharp image ∗ PSF**: the PSF *is* the convolution kernel, and photographing a point measures it.
+> - Every PSF is a kernel, but only non-negative kernels that sum to 1 can be PSFs; those are exactly the blurs. Sharpening and high-pass kernels are not PSFs.
 > - Next: diffraction's PSF can be computed exactly with the Fourier transform (§13).
 
 ---
@@ -812,15 +1106,37 @@ B = C · X          (Fourier domain: each frequency multiplied by the OTF)
 | *b* | the **measured, blurred image** |
 | *X*, *C*, *B* | their Fourier transforms; *C* is the **optical transfer function (OTF)** |
 
-**Why "low-pass."** A **low-pass filter** keeps low frequencies (slow brightness changes, broad shapes) and removes high ones (fine stripes, sharp edges). Every lens OTF is near 1 at low frequency and falls to zero at its cutoff (§13), so every lens is a low-pass filter. It acts on light before the sensor sees it, which makes it an **optical** low-pass filter.
+**Why "low-pass."** A **low-pass filter** (§5.4) keeps low frequencies (slow brightness changes, broad shapes) and attenuates or removes high ones (fine stripes, sharp edges). Every lens OTF is near 1 at low frequency and falls to zero at its cutoff (§13), so every lens is a low-pass filter. It acts on light before the sensor sees it, which makes it an **optical** low-pass filter.
+
+**Why *every* PSF is a low-pass filter, not just a diffraction-limited one.** The diffraction result of §13 is one case. The general reason is physical and takes three lines. A PSF *c* has two properties (§12.3): it is **never negative** (light intensity cannot be negative) and it **sums to 1** (∫ *c*(*x*) d*x* = 1, a lens that loses no light; any overall light loss is just a constant factor).
+
+1. *At zero frequency the OTF is exactly 1:* *C*(0) = ∫ *c*(*x*)·*e*⁰ d*x* = ∫ *c*(*x*) d*x* = 1. Average brightness passes untouched.
+2. *Everywhere else it is at most 1:*
+
+   ```
+   |C(ξ)| = | ∫ c(x) · e^{−j2πξx} dx |
+          ≤ ∫ |c(x)| · |e^{−j2πξx}| dx        the length of a sum of arrows ≤ the sum of their lengths
+          = ∫ c(x) · 1 dx                      c ≥ 0, and |e^{jθ}| = 1 (§2.4)
+          = 1
+   ```
+
+   Read the first line as adding up arrows (§2.2): at each *x*, an arrow of length *c*(*x*) pointing at angle −2πξ*x*. The total can never be longer than the arrows' combined length, which is 1.
+3. *Wider PSF ⇒ faster fall-off.* At nonzero ξ the arrows point in different directions and partly cancel. The wider the PSF, the more different their angles, and the more they cancel; by the scaling theorem (§6.6), a PSF twice as wide has an OTF half as wide.
+
+So a lens can only ever pass or weaken each spatial frequency, never strengthen it, and it weakens fine detail most. That is the precise meaning of the slide-125 phrase "**PSF is usually a low-pass filter**." (The "usually" covers the idealized exception of a perfect point-to-point lens, whose PSF is an impulse and whose OTF is 1 everywhere.)
+
+**What this implies for undoing blur.** If the blur multiplied fine detail by 0.01, restoring it means multiplying by 100, and any noise at that frequency gets multiplied by 100 too. That one fact drives all of Part 6.
 
 **MTF vs. OTF.** The OTF is complex: its magnitude says how much each frequency's contrast is reduced, and its angle how much each grating is shifted. Its magnitude alone is called the **modulation transfer function (MTF)**: MTF = |OTF|. Lens datasheets plot the MTF. ("Modulation" here means contrast: how far a grating swings between light and dark.)
+
+> **Same concept, different names.** **OTF** (optical transfer function) = the **frequency response** (§5.4) of the optical blur = its **transfer function** = the Fourier transform of the PSF. PS4 writes it *H* or *G*; Part 6 writes it *K*; this section writes it *C*. **MTF** = |OTF| = the **magnitude response**. A **filter's** frequency response and an **optical system's** OTF are the same idea; "OTF" is just the name used when the filter is made of glass.
 
 **A whole camera multiplies its MTFs.** Each blurring stage is a convolution, so in the Fourier domain the stages multiply. The lens's OTF times the pixel's (§15) times any anti-aliasing filter's (§21) gives the system's total transfer function.
 
 > **Summary**
 > - Rule to remember: **b = c ∗ x** and **B = C·X**; the OTF *C* is the PSF's Fourier transform.
 > - Every lens OTF falls to zero at a cutoff: a lens is an optical low-pass filter. MTF = |OTF|.
+> - In general, a non-negative PSF that sums to 1 has **|OTF| ≤ 1 with OTF(0) = 1**: it can only attenuate, and a wider PSF attenuates more. Undoing it means amplifying, which also amplifies noise.
 > - Blur stages in series multiply their transfer functions.
 > - Next: the sensor itself adds a second blur and then samples (§15).
 
@@ -939,21 +1255,31 @@ PS4's runtime chart shows exactly this: as the Gaussian's σ goes from 0.1 to 1 
 
 PS4 Task 1 asks you to filter an image in both domains and compare. PS4 names the helper functions; here is what each one does and why it is needed.
 
-- **`fspecial_gaussian_2d(size, sigma)`** builds a Gaussian kernel: a small square array, peaked in the middle. Its width should cover the bell's tails (a common choice spans about ±3σ), or the kernel is truncated and its spectrum ripples.
+- **`fspecial_gaussian_2d(size, sigma)`** builds a Gaussian kernel: a small square array, peaked in the middle. Its width should cover the bell's tails, or the kernel is truncated (cut off abruptly at its border) and its spectrum ripples. HW4's starter code sets the side length to ceil(9σ), i.e. the kernel spans about ±4.5σ around its center. At 4.5σ the Gaussian has fallen to *e*^{−4.5²/2} ≈ 4 × 10⁻⁵ of its peak, so almost nothing is cut off. A consequence worth noticing: because the kernel's side grows in proportion to σ, the primal route's cost, *P*·*K*², grows in proportion to σ² (§16.3); what that means for the measured timings is the assignment's question.
 - **Normalize the kernel to sum to 1** (PS4). Then the blur redistributes brightness without adding or removing any: flat regions keep their value, and the OTF equals exactly 1 at zero frequency.
 - **`scipy.signal.convolve2d(image, kernel, mode='same')`**: the primal route. `mode='same'` returns an output the size of the input. Pixels near the border use zero-padding unless told otherwise, so borders darken.
 - **`pypher.psf2otf(kernel, image_shape)`**: turns the small kernel into a full-size OTF. Three steps happen inside:
   1. *Zero-pad* the kernel to the image's size, because the DFT multiplies arrays of equal size (§10).
-  2. *Circularly shift* it so the kernel's **center** sits at array index (0, 0). The DFT measures position from index 0; a kernel centered elsewhere would shift the whole filtered image by that offset (a shift in the primal domain is a phase ramp in the Fourier domain, §5.2, step 1).
+  2. *Circularly shift* it so the kernel's **center** sits at array index (0, 0). The DFT measures position from index 0; a kernel centered elsewhere would shift the whole filtered image by that offset (a shift in the primal domain is a phase ramp in the Fourier domain: the shift theorem, §4).
   3. *Take the 2D FFT.*
 - **`numpy.fft.fft2(image)`**, multiply element-wise by the OTF, then **`numpy.fft.ifft2`**, and keep the real part. (Tiny imaginary parts, around 10⁻¹⁶, are rounding error; a real image times a conjugate-symmetric OTF has a real result, §3.3.)
 - **Expect the two routes to match in the interior and differ at the borders.** The Fourier route is circular (§10.3): blur wraps around from the opposite edge, while `convolve2d` with zero-padding pulls in black. PS4's example results "look similar," as they should away from the edges.
+
+**Timing an algorithm fairly (HW4 Tasks 1 and 3 both ask for timings).** A timing is only meaningful if it measures the same work each time and nothing else.
+
+- *What a timer measures.* `time.time()` (named in HW4) or `time.perf_counter()` (finer resolution) returns the current clock reading. Read it immediately before and immediately after the operation; the difference is the **wall-clock time** (real elapsed time, as a stopwatch would measure it), in seconds.
+- *Decide what counts, and say so.* For the Fourier route, "the operation" could include `psf2otf` and both FFTs, or only the multiply-and-inverse step. Either is defensible; the comparison is only fair if both routes include everything they need to turn an image and a kernel into a filtered image, and your write-up states the choice.
+- *Repeat, and take a typical value.* One run can be slowed by unrelated work on the computer, and the first call to a library function is often slower (code being loaded or memory being set up, sometimes called a **warm-up** effect). Time several runs and report the median or the minimum.
+- *Use a log axis when timings span orders of magnitude.* PS4's bar chart uses one: on a linear axis the smallest bars would be invisible next to the largest.
+
+**Displaying a high-pass result (Task 1.2).** A high-pass image (§17.1) is the image *minus* its blur, so its values cluster around 0 and are as often negative as positive. Shown directly as an image (where 0 = black and negative values are clipped to black), it looks almost black. To see it, either add 0.5 to center it on mid-gray (for images on [0, 1]), or rescale its minimum to 0 and maximum to 1 before display. This changes only how it is shown, not the result.
 
 > **Summary**
 > - Low-pass = convolve with a small kernel, or multiply the spectrum by a mask; small kernel ↔ wide mask.
 > - A hard (disc) cutoff has a jinc kernel with negative rings, so it **rings** at edges; a Gaussian has an all-positive kernel and does not.
 > - Rule to remember: primal cost ≈ **P·K²**, Fourier cost ≈ **P log P**, independent of kernel size.
 > - In code: normalize the kernel, use `psf2otf` (pad, center at (0,0), FFT), multiply, `ifft2`, take the real part; borders differ because the FFT wraps around.
+> - Time only the operation, include the same work in both routes, repeat and report a typical value, and plot on a log axis; show high-pass results shifted or rescaled to mid-gray.
 > - Next: the other filters built from the same parts: high-pass, sharpening, band-pass (§17).
 
 ---
@@ -969,7 +1295,7 @@ primal domain:   x − x ∗ c_LP            (subtract a blurred copy)
 Fourier domain:  X · (1 − C_LP)          (multiply by one minus the low-pass mask)
 ```
 
-Subtracting the blurred copy cancels everything the blur kept (the slow variation), leaving only what it removed. Slide 76 applies a hard disc-shaped high-pass mask to the parrots: the result is a dark image with only the feather edges outlined, plus visible ringing ("sharpening, possibly with ringing").
+Subtracting the blurred copy cancels everything the blur kept (the slow variation), leaving only what it removed. In gain terms (§5.4): wherever the low-pass gain is near 1, the high-pass gain 1 − *C*_LP is near 0 (blocked), and wherever the low-pass gain is near 0, the high-pass gain is near 1 (passed). The high-pass kernel δ − *c*_LP sums to 1 − 1 = 0, so a flat region comes out exactly 0. Any low-pass kernel produces a high-pass one this way: a Gaussian (smooth, no ringing), a hard disc in the Fourier domain (ringing, §16.2), or a box. Which three to use in HW4 Task 1.2 is your choice. Slide 76 applies a hard disc-shaped high-pass mask to the parrots: the result is a dark image with only the feather edges outlined, plus visible ringing ("sharpening, possibly with ringing").
 
 ### 17.2 Unsharp masking: sharpening without ringing
 
@@ -1050,7 +1376,9 @@ The total length is 4*f*, hence the name. The mask performs, at the speed of lig
 "Anti-aliasing → **before** re-sampling, apply appropriate filter!" (slide 94). Slides 88–89 show the recipe in the Fourier domain:
 
 1. Low-pass filter the image so its spectrum fits inside the *new* Nyquist band (red cutoff lines on slide 88).
-2. Then keep every *D*-th pixel. The copies are now narrower than their spacing, so nothing overlaps: "then no aliasing after downsampling!"
+2. Then keep every *D*-th pixel (subsample). The copies are now narrower than their spacing, so nothing overlaps: "then no aliasing after downsampling!"
+
+Filter-then-subsample is what §7.1 called **decimation** (= anti-aliased downsampling); subsampling alone is the naive version of §19.1.
 
 **How much filtering** ("what determines the cutoff?", slide 88). Keeping every *D*-th pixel gives a new sampling rate of 1/*D* samples per original pixel, so by the Nyquist–Shannon theorem (*f_s* ≥ 2*f_max*) the image must contain no image frequency above **1/(2*D*) cycles per original pixel**. For *D* = 4: 1/8 = 0.125 cycles/pixel, i.e. nothing finer than one stripe cycle per 8 original pixels. In practice a Gaussian blur is used (no ringing, §16.2), which attenuates rather than removes the frequencies near the cutoff, so its width is a trade-off between leftover aliasing and extra softness.
 
@@ -1085,6 +1413,22 @@ In films, a fast-spinning wheel can appear to turn slowly, stop, or spin backwar
 > - Apparent motion: −7.5° per frame × 24 frames/s = −180°/s = **−0.5 revolutions/s**: the wheel seems to turn slowly backwards.
 > - Same answer from §8.2: 20 Hz sampled at 24 Hz appears at 20 − 24 = −4 Hz, i.e. the spoke pattern moving backwards at 4 spokes/s, which is 4/8 = 0.5 revolutions/s.
 
+**Temporal anti-aliasing: the exposure time is a built-in low-pass filter in time.** A video frame is not an instantaneous sample. Each frame collects light for its **exposure time** (= shutter speed = shutter time, Week 4 §2), and that collection averages the scene over a short time window. Averaging over a window of duration τ is a convolution in time with a box of width τ (exactly as a pixel averages over its width in space, §15), so by §6.2 its temporal-frequency gain is a sinc:
+
+```
+gain(f) = sinc(f · τ) = sin(π f τ) / (π f τ)          first zero at f = 1/τ
+```
+
+| Symbol | Meaning | Units | Who sets it |
+|---|---|---|---|
+| *f* | temporal frequency of the motion (e.g. spokes passing per second) | Hz | the scene |
+| τ | exposure time of each frame | s | you (the camera operator) |
+| 1/τ | the first temporal frequency the exposure erases completely | Hz | follows from τ |
+
+The visible effect of this filter is **motion blur**: fast motion smears within each frame. Motion blur is the temporal counterpart of the optical anti-aliasing filter (§21): it attenuates fast temporal frequencies *before* the frame-rate sampling, so less of them can alias.
+
+> **Worked example (why the wagon wheel survives).** At 24 frames/s a common film exposure time is half the frame interval, τ = 1/48 s. The gain at the wheel's 20 Hz is sinc(20/48) = sin(0.417π)/(0.417π) ≈ **0.74**. The box's first zero is at 1/τ = 48 Hz, far above the 12 Hz Nyquist frequency. So the exposure removes only about a quarter of the 20 Hz spoke pattern's contrast, and the reversed wheel remains clearly visible. A true temporal anti-aliasing filter would need to block everything above 12 Hz, which a single box of exposure cannot do without blurring every moving thing heavily.
+
 ### 20.2 LiDAR: range aliasing is temporal aliasing
 
 A LiDAR measures distance from the **round-trip time** of light: a pulse travels to the target and back, so distance *d* = *c*·*t*/2 (*c* = speed of light ≈ 3 × 10⁸ m/s, Week 4 §5.1). Because distance is read from a time or a phase, sampling and periodicity in time produce **range aliasing**: a far target reported at a wrong, nearer distance. This happens in both main LiDAR families.
@@ -1118,6 +1462,7 @@ reported range (if beyond):  d_reported = d_true mod R_amb
 
 > **Summary**
 > - Filming a periodic motion slower than twice its frequency makes it appear slower, stopped, or reversed (8-spoke wheel at 2.5 rev/s, 24 fps → appears −0.5 rev/s).
+> - The exposure time (= shutter speed) is a box filter in time, gain **sinc(fτ)**; its visible effect is motion blur, a weak temporal anti-aliasing filter (gain 0.74 at 20 Hz for τ = 1/48 s).
 > - Rule to remember: LiDAR ranges alias too: pulsed **R_max = c/(2·PRF)** (150 m at 1 MHz), continuous-wave **R_amb = c/(2·f_mod)** (7.5 m at 20 MHz).
 > - Digitizing a LiDAR waveform obeys Nyquist like any signal; one sample = *c*Δ*t*/2 of range (15 cm at 1 GS/s).
 > - Next: aliasing on the camera sensor, and the optical filter that prevents it (§21).
@@ -1148,7 +1493,38 @@ Notation for this part follows slides 102–123: *i* = sharp image (from a perfe
 
 ## 22. Deconvolution and Why Naive Inversion Fails
 
-### 22.1 The forward model and the naive inverse
+### 22.1 Forward problems and inverse problems
+
+*Analogy:* given a recipe, baking the cake is easy and always gives one answer. Given only the cake, working out the recipe is hard: several recipes might give nearly the same cake, and a small crumb of evidence can mislead you. The first is a **forward problem**, the second an **inverse problem**.
+
+- **Forward model** (also **image formation model**, **sensing model** or **measurement model**): a description of how the thing you care about (the scene, the cause) produces the thing you record (the measurement, the effect). In this week's notation it is *b* = *k* ∗ *i* + *n*, or in matrix form **b** = **A x** + noise (Part 7).
+- **Forward problem**: given the scene and the model, predict the measurement. One clear answer, computed by running the model.
+- **Inverse problem**: given the measurement and the model, work backwards to the scene. Almost every task in computational imaging is one.
+
+**Is deconvolution an inverse problem? Yes, the textbook example.** The forward model is blur (plus noise); deconvolution runs it backwards to recover the sharp image.
+
+| Inverse problem | Measurement | Forward model | Unknown |
+|---|---|---|---|
+| **deconvolution** (deblurring) | blurred photo | convolve with the PSF, add noise | sharp image |
+| **denoising** | noisy photo | add noise (the "blur" is the identity) | clean image |
+| **demosaicking** (Week 3) | one color per pixel | keep one color channel per pixel (a selection) | full-color image |
+| **HDR merging** (Week 4) | several exposures | scale by exposure time, clip, apply the camera response | scene radiance |
+| **LiDAR ranging** (Week 4, §20.2) | return time or phase | distance → round-trip delay (or phase, mod 2π) | distance to each surface |
+| **full-waveform LiDAR** (§22.4) | digitized return waveform | pulse shape convolved with the scene's surfaces | how many surfaces, where, how bright |
+
+**Well-posed or ill-posed.** An inverse problem is **well-posed** if it has all three of these properties; it is **ill-posed** if any one fails:
+
+1. **Existence**: some scene explains the measurement.
+2. **Uniqueness**: only one scene explains it.
+3. **Stability**: a small change in the measurement (such as a little noise) causes only a small change in the answer.
+
+Deconvolution fails two of the three. *Uniqueness* fails wherever the OTF is exactly zero: detail at that frequency is erased, so scenes that differ only in that detail give identical photos. *Stability* fails wherever the OTF is tiny: undoing it means multiplying by a huge number (§14), and the noise at that frequency is multiplied too. §22.3 shows both failures concretely. That is why the lecture's summary (slide 125) calls deconvolution "an **ill-posed** inverse problem."
+
+**What to do about it: regularize.** Adding an extra assumption about what a plausible answer looks like (for example, "the image is not dominated by enormous high-frequency noise") turns an ill-posed problem into a solvable one. That is called **regularization**. The Wiener filter (§23) and Tikhonov regularization (§30) are this week's two examples.
+
+> **Same concept, different names.** **Deconvolution** = **deblurring** = **image restoration** (when the degradation is blur) = **inverse filtering** (only for the plain divide-by-the-OTF version of §22.2). **Non-blind** deconvolution = the PSF is known; **blind** deconvolution = the PSF must be estimated too.
+
+### 22.2 The forward model and the naive inverse
 
 **Forward model (slides 102–103).** An imperfect lens blurs the image a perfect lens would make:
 
@@ -1156,7 +1532,7 @@ Notation for this part follows slides 102–123: *i* = sharp image (from a perfe
 i ∗ k = b          (sharp image convolved with lens PSF gives the blurred image)
 ```
 
-**Deconvolution** is the inverse problem: if we know *b* and *k*, can we recover *i*? "**Non-blind**" deconvolution means the kernel is known (measured or calibrated); "blind" means it must also be estimated, a much harder problem not covered this week.
+**Deconvolution** is the inverse problem (§22.1): if we know *b* and *k*, can we recover *i*? "**Non-blind**" deconvolution means the kernel is known (measured or calibrated); "blind" means it must also be estimated, a much harder problem not covered this week.
 
 **The naive answer (slides 105–106).** Convolution is multiplication in the Fourier domain, so divide:
 
@@ -1168,7 +1544,7 @@ i_est    = F⁻¹( F(b) / F(k) )                (then inverse-transform)
 
 This is the **inverse filter** (PS4: "simple inverse filtering"; PS4 writes the restoration filter as *H′* = 1/*H*, where *H* is the blur's OTF). The slides write "\" for this element-wise division.
 
-### 22.2 Two problems (slides 107–109)
+### 22.3 Two problems (slides 107–109)
 
 **Problem 1: the OTF has zeros at high frequencies.** The OTF of a lens is a low-pass filter (§14): near zero at high frequency, and exactly zero beyond its cutoff (§13) or at a box's sinc zeros (§6.2). Dividing by zero is undefined; dividing by a tiny number gives a huge one.
 
@@ -1188,6 +1564,8 @@ The first term is the right answer. The second is the noise, divided by the OTF.
 
 **What it looks like (slide 110).** The lecture blurs the parrots with a ringed, Airy-like diffraction PSF and adds a small amount of Gaussian noise ("example for Gaussian of σ = 0.05", where σ is the noise's standard deviation, not a blur width), then applies the inverse kernel *k*⁻¹: the result is pure noise, with no trace of the parrots. "Even tiny noise can make the results awful." PS4's example (noise σ = 0.001) reports a PSNR (§25) of about −157 dB after inverse filtering, i.e. a result vastly worse than the blurred input, against about 26.6 dB after Wiener deconvolution (§23).
 
+**"No added noise" is not "no noise."** Even when you add zero noise on purpose, the computer stores every number with finite precision. Standard 64-bit floating-point numbers carry a relative rounding error of about 10⁻¹⁶ (and an image saved as 8-bit integers carries a much larger rounding error, up to half a gray level). That rounding behaves like a tiny noise term *N*. A Gaussian blur's OTF falls off extremely fast: for σ = 3 pixels it is *e*^{−2π²·9·0.25} ≈ 5 × 10⁻²⁰ at the fastest image frequency, 0.5 cycles/pixel (§6.4's formula). Dividing a rounding error of 10⁻¹⁶ by an OTF of 5 × 10⁻²⁰ gives about 2000: an error two thousand times larger than the whole [0, 1] brightness range. So the "two problems" above apply even to a noise-free experiment; how badly they show up for HW4's own blur and noise levels is for the assignment to find.
+
 > **Worked example (8 samples, a kernel with an exact zero and two near-zeros).** Use the 3-tap blur [0.25, 0.5, 0.25] on an 8-sample signal with wrap-around edges. Its DFT (the OTF at frequency indices *k* = 0 … 7) is
 >
 > | frequency index | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
@@ -1203,10 +1581,41 @@ The first term is the right answer. The second is the noise, divided by the OTF.
 - An eigenvalue of 0 (*K* = 0 at *k* = 4) means **C** is **singular**: the alternating vector is in its **null space**, **C**⁻¹ does not exist, and the matrix's **rank** (number of independent directions it preserves) is 7 rather than 8.
 - A tiny eigenvalue (0.146) means the inverse exists but multiplies noise along that direction by 1/0.146. The ratio of largest to smallest eigenvalue magnitude, the **condition number** (§27), is 1/0.146 ≈ 6.8 for the 7 surviving directions, and infinite for the full matrix. A real lens blur on a megapixel image has condition numbers so large that naive inversion is hopeless.
 
+### 22.4 LiDAR: the return waveform is a blurred picture of the scene's depths
+
+Deconvolution is not only for photos. A **full-waveform LiDAR** (§20.2(c)) records the entire returned light signal over time, not just one echo time. That recording is a 1D convolution, and pulling separate surfaces out of it is a 1D deconvolution: the same inverse problem as this section, in time instead of space.
+
+**The forward model.** The LiDAR fires a short pulse *p*(*t*). Each surface the beam touches (a leaf, a branch, the ground underneath) sends back a copy of the pulse, delayed by its round-trip time 2*d*/*c* and scaled by how much light it reflects. Write the scene as a row of impulses, one per surface:
+
+```
+h(t) = Σ_s a_s · δ(t − 2 d_s / c)          the scene's "impulse response": one spike per surface
+r(t) = p ∗ h (t) + n(t)                    the recorded waveform: every spike replaced by a copy of the pulse, plus noise
+```
+
+| Symbol | Meaning | Units | Who sets it |
+|---|---|---|---|
+| *p*(*t*) | the transmitted pulse shape: this is the **PSF in time** | power vs. time | the laser (designer) |
+| *a_s* | how strongly surface *s* reflects back to the sensor | dimensionless | the scene |
+| *d_s* | distance to surface *s* | m | the scene (the unknown you want) |
+| *c* | speed of light, 3 × 10⁸ m/s | m/s | fixed |
+| *h*(*t*) | the scene as a train of spikes at the round-trip times | — | the unknown |
+| *r*(*t*) | the digitized waveform | power vs. time | measured |
+| *n*(*t*) | detector noise | power | the sensor |
+
+It is the stamp view of convolution (§5.1) exactly: every surface stamps a copy of the pulse, scaled by its reflectivity, at its own delay, and the copies add.
+
+**Why it is ill-posed for close surfaces.** The pulse has a width, so it acts as a low-pass filter in time (§14's argument applies to any non-negative pulse). Two surfaces closer together than about the pulse's length produce copies that overlap into one lump. The rule of thumb is a **range resolution** of about *c*·τ_p/2, where τ_p is the pulse width (full width at half maximum, FWHM).
+
+> **Worked example (a leaf above the ground).** A 4 ns pulse (the same pulse as §20.2(c)) gives range resolution 3 × 10⁸ × 4 × 10⁻⁹ / 2 ≈ **0.6 m**. A leaf canopy layer 0.3 m above the ground: the two round-trip times differ by 2 × 0.3 / (3 × 10⁸) = **2 ns**, half the pulse width. For a Gaussian-shaped pulse (FWHM 4 ns ⇒ standard deviation 4/2.355 ≈ 1.7 ns), two equal copies only show two separate peaks when they are more than about 2 standard deviations apart (≈ 3.4 ns). At 2 ns apart they merge into **one** broadened lump. A peak-finder would report one surface at a distance in between. Deconvolving the waveform by the known pulse shape tries to sharpen the lump back into two spikes, and, exactly as for photos, it can do so only as far as the noise allows: the pulse's spectrum (a Gaussian, §6.4) is tiny at high temporal frequencies, so that is where noise gets amplified. In practice Wiener-type damping (§23) or other regularized methods are used.
+
+**Linear-algebra view (the waveform is a Toeplitz matrix times the scene's spike train).** Sample the waveform at the digitizer rate (1 GS/s ⇒ one sample per ns ⇒ 15 cm per range bin, §20.2(c)). Put the scene into a vector **h** with one entry per range bin: zero everywhere except at the bins where a surface sits. Then **r** = **P h** + **n**, where **P** is the **Toeplitz** convolution matrix of §5.2: each column is the pulse shape, shifted down by one more bin than the column before. With the leaf at bin 0 and the ground at bin 2 (2 ns later), **h** has two nonzero entries, **P h** adds the two shifted pulse columns, and their overlap is the merged lump. Deconvolution asks for **h** given **r** and **P**: a linear inverse problem **b** = **A x** in disguise, which is how Part 7 will treat every problem in this file.
+
 > **Summary**
+> - Forward problem = predict the measurement from the scene; **inverse problem** = recover the scene from the measurement. Deconvolution is an inverse problem, and it is **ill-posed**: OTF zeros break uniqueness, OTF near-zeros break stability.
 > - Rule to remember: inverse filter **i_est = F⁻¹(F(b)/F(k))**; it divides each frequency by the OTF.
-> - It fails because the OTF is (near) zero at high frequencies and **b = k ∗ i + n** contains noise: the error term is **N/K**, huge where *K* is tiny.
+> - It fails because the OTF is (near) zero at high frequencies and **b = k ∗ i + n** contains noise (even rounding error counts): the error term is **N/K**, huge where *K* is tiny.
 > - Exact zeros destroy information (null space); near-zeros amplify noise (large condition number).
+> - LiDAR: a full waveform is **pulse ∗ surface spikes + noise**; surfaces closer than about *c*τ_p/2 (0.6 m for a 4 ns pulse) merge, and separating them is 1D deconvolution.
 > - Next: divide only where it is safe, the Wiener filter (§23).
 
 ---
@@ -1223,7 +1632,9 @@ The first term is the right answer. The second is the noise, divided by the OTF.
 i_est = F⁻¹( [ |F(k)|² / ( |F(k)|² + 1/SNR(ω) ) ] · F(b) / F(k) )
 ```
 
-It is the inverse filter F(*b*)/F(*k*) multiplied by a **noise-dependent damping factor** (the bracketed term), which lies between 0 and 1.
+It is the inverse filter F(*b*)/F(*k*) multiplied by a **noise-dependent damping factor** (the bracketed term), which lies between 0 and 1: an attenuation (§5.4) applied on top of the inverse filter.
+
+> **Same concept, different names.** **Wiener filter** = **Wiener deconvolution** (when used to undo blur) = **Wiener–Kolmogorov filter**. Its bracketed term is called the **damping factor** (HW4, PS4), the **regularizing factor**, or (in the SVD view of §30) the **filter factor**. PS4 writes the whole filter as *H′* (slide 9) or *G′* (slide 11), with *H* or *G* the blur's OTF; this file writes the OTF as *K*.
 
 | Symbol | Meaning | Who sets it |
 |---|---|---|
@@ -1512,17 +1923,30 @@ minimize over x:   ½ ‖b − A x‖₂²          where   ‖r‖₂² = Σ_i 
 - *Why squared:* positive and negative misses would cancel otherwise, and squaring gives a smooth bowl-shaped (convex) objective with a single minimum. Squared error is also the natural choice for Gaussian noise (as in §24).
 - *Why the ½:* it cancels the 2 that appears when differentiating; it does not change where the minimum is.
 
+> **Same word, two meanings: "residual."** The **residual vector** **r** = **b** − **A x** (sometimes written **A x** − **b**; the sign does not matter once squared) lists every measurement's miss. HW4, PS4 and its starter code (`residual_l2`) also use "residual" for the **single number** ½‖**A x** − **b**‖₂², the objective value. When the assignment says "plot the residual vs. iteration," it means that number. This file says "residual vector" for the first and "objective" or "residual norm" for the second.
+
+> **Same concept, different names.** **Least squares** = **ℓ₂ (L2) fitting** = **minimizing the sum of squared errors**; the objective ½‖**b** − **A x**‖₂² is also called the **loss**, **cost** or **data term**. ‖·‖₂ is the **ℓ₂ norm** = **Euclidean norm** = a vector's length.
+
 ### 29.2 The gradient and the normal equations
 
 **Gradient primer.** The **gradient** ∇ₓ*f* of a function of many variables is the vector of its partial derivatives: it points in the direction in which *f* increases fastest, and is zero at a minimum of a smooth bowl.
 
-**Computing it (slide 136).** Expand the square (‖**v**‖² = **v**ᵀ**v**):
+**Computing it (slide 136; PS4 slide 17).** Expand the square, one move at a time:
 
 ```
-½ ‖b − A x‖₂² = ½ ( bᵀb − 2 bᵀA x + xᵀAᵀA x )
+½ ‖b − A x‖₂² = ½ (b − A x)ᵀ (b − A x)                          ‖v‖² = vᵀv (sum of squared entries)
+              = ½ ( bᵀb − bᵀA x − xᵀAᵀb + xᵀAᵀA x )              multiply out the four products; (A x)ᵀ = xᵀAᵀ
+              = ½ ( bᵀb − 2 bᵀA x + xᵀAᵀA x )                    xᵀAᵀb is a single number, and a number equals its own transpose, bᵀA x
 ```
 
-Two matrix-calculus rules (each the multi-variable version of d(*ax*)/d*x* = *a* and d(*ax*²)/d*x* = 2*ax*): the gradient of **c**ᵀ**x** is **c**, and of **x**ᵀ**M x** (for symmetric **M**) is 2**M x**. So
+PS4 writes the same thing in the opposite order, ½**x**ᵀ**A**ᵀ**A x** − **x**ᵀ**A**ᵀ**b** + ½**b**ᵀ**b**.
+
+**Two matrix-calculus rules**, each the multi-variable version of a familiar 1D rule, checked on two unknowns **x** = (*x*₁, *x*₂):
+
+- *Gradient of* **c**ᵀ**x** *is* **c** (1D: d(*cx*)/d*x* = *c*). With **c** = (*c*₁, *c*₂), **c**ᵀ**x** = *c*₁*x*₁ + *c*₂*x*₂; its partial derivatives are *c*₁ and *c*₂, i.e. the vector **c**.
+- *Gradient of* **x**ᵀ**M x** *is* 2**M x** *for symmetric* **M** (1D: d(*mx*²)/d*x* = 2*mx*). With **M** = [[*m*₁₁, *m*₁₂], [*m*₁₂, *m*₂₂]], **x**ᵀ**M x** = *m*₁₁*x*₁² + 2*m*₁₂*x*₁*x*₂ + *m*₂₂*x*₂². Its partial derivatives are 2*m*₁₁*x*₁ + 2*m*₁₂*x*₂ and 2*m*₁₂*x*₁ + 2*m*₂₂*x*₂, which is exactly 2**M x**.
+
+Apply them with **c** = **A**ᵀ**b** (since **b**ᵀ**A x** = (**A**ᵀ**b**)ᵀ**x**) and **M** = **A**ᵀ**A** (symmetric, because (**A**ᵀ**A**)ᵀ = **A**ᵀ**A**); the constant ½**b**ᵀ**b** does not depend on **x**, so its gradient is zero. So
 
 ```
 ∇ₓ ½ ‖b − A x‖₂² = AᵀA x − Aᵀb  =  Aᵀ(A x − b)
@@ -1549,10 +1973,24 @@ AᵀA x = Aᵀb          equivalently    Aᵀ(A x − b) = 0
 
 **Why not solve the normal equations directly?** **A**ᵀ**A** is *n*×*n*: still 10⁶×10⁶ for a megapixel image, and squaring **A** squares its condition number (6.8 → 46 in the example), making the system more sensitive. Hence gradient descent (§31).
 
+**How a "reference" least-squares answer is computed for small problems (HW4 Task 3's starter code).** When **A** is small enough to fit in memory, a library can solve least squares directly, and HW4 provides two such solutions for comparison. Both avoid forming (**A**ᵀ**A**)⁻¹ explicitly.
+
+- *Via the SVD (§27.3).* Write **A** = **U Σ V**ᵀ. Then the least-squares solution is
+
+  ```
+  x̂ = V Σ⁺ Uᵀ b
+  ```
+
+  Read right to left: **U**ᵀ**b** expresses the measurements in the output directions; **Σ**⁺ divides each component by its singular value (and sets it to 0 where the singular value is 0, which is what the ⁺ means); **V** maps the result back to the unknowns. The matrix **V Σ**⁺**U**ᵀ is called the **pseudoinverse** **A**⁺ (also **Moore–Penrose inverse**): the best substitute for **A**⁻¹ when **A** is not square or not invertible.
+- *Via a standard matrix factorization.* Library routines such as `np.linalg.lstsq` factor **A** (for example as **Q R**, an orthogonal matrix times a triangular one) and solve by back-substitution, which is faster than an SVD and numerically safer than solving the normal equations.
+
+> **Worked example (the line fit again).** **A** = [[1, 1], [1, 2], [1, 3]] has singular values 4.079 and 0.600 (condition number 4.079/0.600 ≈ 6.8, the number quoted above). Both **V Σ**⁺**U**ᵀ**b** and `np.linalg.lstsq(A, b)` return **x̂** = [0.667, 0.5], the same line as the normal equations. HW4 asks gradient descent to reach "roughly the same residual" as this reference.
+
 > **Summary**
 > - Least squares minimizes **½‖b − Ax‖₂²**, the sum of squared residuals.
 > - Rule to remember: gradient **Aᵀ(Ax − b)**; setting it to zero gives the **normal equations AᵀAx = Aᵀb**.
 > - The residual is perpendicular to the columns of **A**: least squares is an orthogonal projection of **b** onto the column space.
+> - "Residual" means the vector **b** − **A x** *or* (in HW4's plots) the number ½‖**A x** − **b**‖². Small problems are solved directly with the pseudoinverse **x̂ = VΣ⁺Uᵀb** or `lstsq`, the reference GD should match.
 > - Next: the under-determined case, which needs one more ingredient (§30).
 
 ---
@@ -1603,6 +2041,8 @@ which is the Wiener filter of §23 with 1/SNR(ω) replaced by the constant λ, e
 **The idea.** *Analogy:* walking downhill in fog. You cannot see the valley floor, but you can feel which way the ground slopes under your feet. Take a step in the steepest downhill direction, feel again, repeat.
 
 PS4 (slide 15) states it for any objective *f*(**x**): move "in the direction of the negative gradient, the direction in which the function is most steeply decreasing," with **step size** α (also called the **learning rate**):
+
+> **Same concept, different names.** **Step size** = **learning rate** = α (machine-learning code usually says "learning rate," often `lr`). **Iteration** = **optimization step** = **update**. **Gradient descent (GD)** is also called **full-batch** or **vanilla** gradient descent (PS4 slide 18) when contrasted with SGD (§32).
 
 ```
 x^(k+1) = x^(k) − α ∇f(x^(k))
@@ -1657,10 +2097,40 @@ x^(k+1) = x^(k) − α · F⁻¹{ F{c}* · ( F{c} · F{x^(k)} − F{b} ) }
 
 **Linear-algebra view (the adjoint of a convolution is the transposed Toeplitz matrix).** The 5×3 convolution matrix **A** above has the kernel running down each column; **A**ᵀ (3×5) has the same kernel running along each row, read left to right as 1, 2, 3, which, when slid as a convolution kernel, is the flipped kernel [3, 2, 1]. In the Fourier basis, **A** is diag(*C*) and **A**ᵀ is diag(*C**): transposing a real circulant matrix conjugates its eigenvalues.
 
+### 31.3 Optional: the L1 objective and subgradients (supports the HW4 bonus)
+
+**The problem it solves.** Least squares treats one wildly wrong measurement (an **outlier**: a dead pixel, a LiDAR echo from a raindrop) as a disaster to be avoided at almost any cost, because its miss is squared. An objective that grows only in proportion to the miss lets the other measurements outvote it.
+
+**The L1 norm.** ‖**v**‖₁ = Σ_i |*v_i*|: add up the absolute values (the sizes of the misses, ignoring sign).
+
+> **Same concept, different names.** **ℓ₁ norm** = **L1 norm** = **Manhattan** or **taxicab norm** (the distance a taxi drives on a city grid: blocks east plus blocks north). Minimizing ‖**A x** − **b**‖₁ is called **least absolute deviations (LAD)** or **L1 regression**.
+
+> **Worked example (why L1 resists outliers).** Fit a single constant *c* to the measurements [1, 2, 3, 100], where 100 is an outlier.
+> - *L2:* minimize Σ(*c* − *b_i*)². The minimizer is the **mean**, (1 + 2 + 3 + 100)/4 = **26.5**: dragged far from the three sensible values by one bad one. The outlier's squared miss (73.5² ≈ 5400) dominates the sum.
+> - *L1:* minimize Σ|*c* − *b_i*|. The minimizer is any **median**, i.e. any *c* between 2 and 3 (the total is 100 everywhere on that stretch). The outlier pulls with a fixed strength no matter how far away it is, so it cannot drag the answer.
+
+**The difficulty: |t| has a corner.** Gradient descent needs a derivative. The derivative of |*t*| is −1 for *t* < 0 and +1 for *t* > 0 (the **sign** of *t*), but at *t* = 0 the graph has a sharp corner, and there is no single slope.
+
+**Subderivatives.** At a corner, any line through the corner point that stays **below** the graph everywhere is a reasonable stand-in for the tangent. Its slope is called a **subderivative** (in several variables, a **subgradient**), and the set of all such slopes is the **subdifferential**. For |*t*| at *t* = 0, every slope from −1 to +1 works: the lines *y* = *s*·*t* with −1 ≤ *s* ≤ 1 all touch the V at its tip and stay under it. Where the function is smooth, the only such slope is the ordinary derivative.
+
+| Point | Ordinary derivative of \|*t*\| | Subdifferential |
+|---|---|---|
+| *t* < 0 | −1 | {−1} |
+| *t* = 0 | does not exist | every value in [−1, 1] |
+| *t* > 0 | +1 | {+1} |
+
+**Subgradient descent.** Run the gradient-descent update with any subgradient in place of the gradient. Two behaviors differ from §31.1:
+
+- *It does not settle with a fixed step size.* Near the minimum the subgradient does not shrink toward zero (|*t*|'s slope is ±1 right up to the corner), so a fixed α keeps overshooting back and forth across the minimum. The objective plotted against iteration therefore jitters instead of flattening smoothly. Shrinking α over the iterations (for example α_k ∝ 1/√*k*) makes the jitter die down.
+- *Which value to return at an exact zero is a choice.* Any value in [−1, 1] is a valid subderivative there.
+
+Assembling the gradient of ‖**A x** − **b**‖₁ from these pieces (with the chain rule, the same way §29.2 assembled **A**ᵀ(**A x** − **b**) for the squared norm) and choosing what your function returns at zero entries are the bonus task's questions, left to the assignment.
+
 > **Summary**
 > - Rule to remember: **x^(k+1) = x^(k) − α Aᵀ(Ax^(k) − b)**; each step needs only one product with **A** and one with **A**ᵀ.
 > - α must be below 2/μ_max (0.12 in the line fit) or it diverges; ill-conditioning makes convergence slow (200 iterations to approach the answer).
 > - For blur, **A**ᵀ = convolution with the **flipped kernel**, = multiplying by **F{c}\*** in the Fourier domain.
+> - Optional (HW4 bonus): the L1 objective ‖**A x** − **b**‖₁ resists outliers (median, not mean) but has corners; use a **subgradient** (any slope in [−1, 1] at a corner of |*t*|), and expect jitter unless the step size shrinks.
 > - Next: when even one product with the full **A** is too expensive (§32).
 
 ---
@@ -1675,7 +2145,7 @@ x^(k+1) = x^(k) − α · F⁻¹{ F{c}* · ( F{c} · F{x^(k)} − F{b} ) }
 ‖A x − b‖₂² = Σ_{i=1}^{m} ( a_iᵀ x − b_i )²          (a_iᵀ = row i of A)
 ```
 
-so its gradient is a sum of per-measurement gradients. At each iteration, use only a random subset of rows ("sampling entries/rows from **b** and **A**"):
+so its gradient is a sum of per-measurement gradients. At each iteration, use only a random subset of rows ("sampling entries/rows from **b** and **A**"). Here "sampling" is the **statistical sense** of §7.1, picking rows at random, not measuring a signal at evenly spaced points; the chosen rows are called a **batch** (or **mini-batch**):
 
 ```
 b̃ = Ã x                                           (the sampled rows only)
@@ -1695,7 +2165,9 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )
 - **Gradient descent** is expensive per iteration but converges smoothly and precisely ("better convergence").
 - **SGD** is cheap per iteration and makes fast progress far from the minimum, but near the minimum the randomness keeps it jittering ("struggles close to minima"; slide 144's contour plot shows the blue GD path heading straight to the center and the red SGD path zig-zagging). Its randomness can help escape poor regions of **non-convex** objectives (bumpy landscapes with many valleys), which is why it dominates neural-network training.
 - **Per iteration vs. per second.** PS4's plots: against *iteration count*, full GD and large-batch SGD drop fastest, and small batches (*B* = 10) crawl; the flat "SVD" line is the exact least-squares answer, computed directly as a reference floor. Against *wall-clock time*, the cheap SGD iterations can win. "Exact runtimes and order of convergence in wall clock time may vary!"
-- **Measuring progress fairly.** PS4: "Use full **A** matrix, not subsampled **A**, to compute residual." The objective reported each iteration must be the full ½‖**A x** − **b**‖², or different batch sizes are not comparable.
+- **Measuring progress fairly.** PS4: "Use full **A** matrix, not subsampled **A**, to compute residual." The objective reported each iteration must be the full ½‖**A x** − **b**‖², or different batch sizes are not comparable. ("Subsampled" here is the statistical sense too: the batch of randomly chosen rows.)
+- **Plotting against time.** For a residual-vs-time curve, record a running total of elapsed time after each iteration (§16.4's timing advice) and plot the objective against that total. Time the update step itself; the full-residual evaluation is bookkeeping for the plot and is usually kept outside the timed part, so that it does not add the same cost to every method. State your choice in the write-up.
+- **The batch-size trade-off, in terms of what each step costs and how noisy it is.** A batch of *B* rows costs about *B*/*m* of a full gradient step, and its gradient estimate becomes less noisy as *B* grows (averaging more rows). Small *B*: cheap, noisy steps. Large *B*: expensive, accurate steps; *B* = *m* is plain GD. How this plays out on HW4's problem, and with HW4's fixed step size, is the assignment's question.
 
 **Linear-algebra view (SGD multiplies by a random row-selection matrix).** Choosing rows is multiplying by a *B*×*m* selection matrix **S**^(*k*) (one 1 per row, like §7's): **Ã** = **S**^(*k*)**A**, **b̃** = **S**^(*k*)**b**. The SGD step uses **A**ᵀ**S**^(*k*)ᵀ**S**^(*k*)(**A x** − **b**). Averaged over random choices, **S**ᵀ**S** is (*B*/*m*) times the identity, which is why the scaled estimate is unbiased.
 
@@ -1713,7 +2185,7 @@ The lecture's summary slide (slide 125) and closing slides, restated with where 
 
 - **Shannon–Nyquist theorem:** "always sample signal at a sampling rate ≥ 2 × highest frequency of signal!" (§8).
 - **If it is violated, aliasing occurs**, and "aliasing cannot be corrected digitally in post-processing (see optical anti-aliasing filter)" (§8.4, §19, §21).
-- **"PSF is usually a low-pass filter, so deconvolution is an ill-posed inverse problem"** (§22). An **ill-posed** problem is one whose solution does not exist, is not unique, or changes wildly with tiny changes in the data; deconvolution fails the last two.
+- **"PSF is usually a low-pass filter, so deconvolution is an ill-posed inverse problem"**: a non-negative PSF can only attenuate (§14), so undoing it must amplify; an **inverse problem** runs the forward model backwards, and it is **ill-posed** when its solution does not exist, is not unique, or changes wildly with tiny changes in the data; deconvolution fails the last two (§22.1).
 - Wiener filtering gives results that are "not too bad, but noisy"; doing better needs "more advanced image **priors**": assumptions about what real images look like (slide 124).
 
 **Where this goes next (optional).** Week 6 ("Solving regularized inverse problems with ADMM") replaces §30's simple preference for small ‖**x**‖ with richer natural-image priors (for example, "images are mostly smooth, with a few sharp edges"), and introduces ADMM, an optimization method that splits such problems into easier alternating steps. Every forward model there is still **b** = **A x**, and the inner steps still use the FFT-based tricks of §16, §23 and §31.
@@ -1737,6 +2209,8 @@ Moved to the project's running, cumulative glossary so terminology stays in one 
 
 **Part 3.** If asked why stopping a lens down from f/2 to f/16 makes a photo blurrier even though it increases depth of field, you should be able to answer using only "aperture," "Fourier transform," and "OTF cutoff."
 
-**Part 6.** If asked why the inverse filter turns a slightly noisy blurred photo into pure noise while the Wiener filter does not, you should be able to answer using only "OTF zeros," "N/K," and "damping factor."
+**Part 5.** If asked why the Nyquist frequency is called the folding frequency, and why motion blur in a video is a (weak) anti-aliasing filter, you should be able to answer using only "fold line," "exposure time," and "sinc."
+
+**Part 6.** If asked why the inverse filter turns a slightly noisy blurred photo into pure noise while the Wiener filter does not, you should be able to answer using only "OTF zeros," "N/K," and "damping factor." If asked whether deconvolution is an inverse problem and why it is ill-posed, use only "forward model," "uniqueness," and "stability."
 
 **Part 7.** If asked why nobody computes **A**⁻¹**b** for a megapixel deblurring problem, and what they do instead, you should be able to answer using only "rank," "condition number," "Aᵀ," and "step size."
