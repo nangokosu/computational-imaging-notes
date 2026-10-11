@@ -359,20 +359,29 @@ x ∗ g = F⁻¹{ F{x} · F{g} }          equivalently    F{x ∗ g} = F{x} · F
 
 **In words:** convolving two signals in the primal domain is the same as multiplying their spectra, frequency by frequency, in the Fourier domain.
 
+**Intuition before the math.** When you blur an image with a kernel, each frequency in the image gets scaled and phase-shifted by the kernel's response at that frequency. The kernel's spectrum tells you how much to scale each frequency — its "gain" at that frequency (§5.4). So instead of convolving (which is slow), you could compute the spectrum of the image, multiply by the kernel's spectrum at each frequency, and transform back. The theorem says these two routes give exactly the same result.
+
 **Why it is true, in three steps.**
 
-1. *A pure wave goes through any LSI system unchanged in frequency.* Feed in *e*^{*j*2πξ*x*}. Shift-invariance says a shifted input gives a shifted output. Shifting this wave by *d* just multiplies it by the constant *e*^{−*j*2πξ*d*} (rotating the arrow), and linearity says the output gets multiplied by the same constant. The only functions with this property are multiples of the same wave. So the output is *G*(ξ)·*e*^{*j*2πξ*x*}: the same wave, scaled and rotated by one complex number *G*(ξ).
-2. *That number is the kernel's spectrum.* Plug the wave *f*(*x*) = *e*^{*j*2πξ*x*} into the convolution integral, one move at a time (each move is a rule from §2.4):
+1. *A pure wave stays a pure wave.* Feed a single pure wave *e*^{*j*2πξ*x*} into a blur. Because the blur is shift-invariant (it treats all positions the same) and linear (blurring a scaled signal scales the result), the output must be the same wave, only scaled and rotated. So:
+   - Input: *e*^{*j*2πξ*x*}
+   - Output: (some number *G*(ξ)) × *e*^{*j*2πξ*x*}
+   
+   That number is the kernel's response to that frequency.
+
+2. *That number is the kernel's spectrum.* To find *G*(ξ), feed the wave through the convolution integral:
 
    ```
-   (f ∗ g)(x) = ∫ g(u) · e^{j2πξ(x−u)} du                 replace f(x − u) by the wave evaluated at x − u
-              = ∫ g(u) · e^{j2πξx} · e^{−j2πξu} du         e^{a+b} = e^a·e^b, with a = j2πξx, b = −j2πξu
-              = e^{j2πξx} · ∫ g(u) · e^{−j2πξu} du         e^{j2πξx} does not depend on the dummy u: pull it out
-              = e^{j2πξx} · ĝ(ξ)                           the remaining integral is the definition of ĝ(ξ) (§3.1)
+   (f ∗ g)(x) = ∫ g(u) · f(x − u) du                     definition of convolution
+              = ∫ g(u) · e^{j2πξ(x−u)} du                f is our pure wave
+              = ∫ g(u) · e^{j2πξx} · e^{−j2πξu} du       split the exponent: e^{a+b} = e^a · e^b
+              = e^{j2πξx} · ∫ g(u) · e^{−j2πξu} du       the first exponential doesn't depend on u: factor it out
+              = e^{j2πξx} · ĝ(ξ)                         the integral is the definition of ĝ(ξ) (§3.1)
    ```
+   
+   So *G*(ξ) = *ĝ*(ξ), the Fourier transform of the kernel. Each frequency is multiplied by the kernel's spectrum at that frequency.
 
-   So *G*(ξ) = *ĝ*(ξ), the Fourier transform of the kernel.
-3. *Assemble.* Any input is a sum of waves (§3). Convolution is linear, so each wave is handled separately: multiplied by *ĝ*(ξ). Adding the results gives an output whose spectrum is *x̂*(ξ)·*ĝ*(ξ).
+3. *Any input is a sum of waves.* By §3, any signal is a sum of pure waves. Since convolution is linear, you blur each wave separately (each gets multiplied by the kernel's spectrum at its frequency), then add the results. The output's spectrum is the input's spectrum times the kernel's spectrum, component by component: *x̂*(ξ)·*ĝ*(ξ).
 
 | Term | Meaning |
 |---|---|
@@ -626,7 +635,7 @@ This single rule explains three facts later in the week: a **bigger aperture giv
 
 ### 7.2 What sampling does to the spectrum
 
-**Sampling as multiplication by a comb (slide 20).** Keeping only the values at *x* = 0, *T*, 2*T*, … is the same as multiplying the continuous signal by the comb of §6.5:
+**Sampling as multiplication by a comb (slide 20).** Keeping only the values at *x* = 0, *T*, 2*T*, … is the same as multiplying the continuous signal by a row of impulses spaced *T* apart:
 
 ```
 f_sampled(x) = f(x) · comb_T(x)
@@ -635,16 +644,20 @@ f_sampled(x) = f(x) · comb_T(x)
 - *T* is the **sampling interval** (pixel pitch, or seconds between samples).
 - *f_s* = 1/*T* is the **sampling rate** (samples per unit length or per second).
 
-**What it does to the spectrum.** The convolution theorem works in both directions (§5.3): multiplying in the primal domain is convolving in the Fourier domain. And F{comb_T} is a comb of spacing *f_s* (§6.5). Convolving a spectrum with a comb stamps a copy of the spectrum at every comb tooth (stamp view of convolution, §5.1). Step by step:
+**What it does to the spectrum: an intuitive picture first.** Multiply the signal by a comb, and by the convolution theorem (§5.3), multiplication in the primal domain becomes convolution in the Fourier domain. Convolving with a comb stamps a shifted copy of the spectrum at every comb tooth. Since the comb has teeth spaced 1/*T* apart, the copies sit every *f_s* apart. The result: **the original spectrum plus shifted copies centered at every multiple of f_s**.
+
+This is the core fact: when you sample, your spectrum **repeats forever**, with copies *f_s* apart.
+
+**The detailed steps** (using the convolution theorem and the rules from §2.4):
 
 ```
 F{ f · comb_T } = f̂ ∗ F{comb_T}                                  convolution theorem, second direction (§5.3)
-                = f̂ ∗ (1/T) Σ_m δ(ξ − m·f_s)                     transform of the comb (§6.5), with 1/T = f_s
-                = (1/T) Σ_m ( f̂ ∗ δ(ξ − m·f_s) )                 convolution is distributive: blur a sum = sum of blurs (§5.1)
-                = (1/T) Σ_m f̂(ξ − m·f_s)                         convolving with an impulse at m·f_s shifts f̂ to sit there (sifting, §6.1)
+                = f̂ ∗ (1/T) Σ_m δ(ξ − m·f_s)                     F{comb_T} is a comb with spacing f_s (§6.5)
+                = (1/T) Σ_m [ f̂ ∗ δ(ξ − m·f_s) ]                 convolution is distributive (§5.1)
+                = (1/T) Σ_m f̂(ξ − m·f_s)                         sifting: convolving with δ at m·f_s shifts f̂ there (§6.1)
 ```
 
-**In words:** the sampled signal's spectrum is the original spectrum **plus shifted copies of it, centered at every multiple of the sampling rate** (slide 20: "shifted copies at *f_s*").
+**In words:** each copy is shifted by *m·f_s*, where *m* = …, −1, 0, 1, … are all the integers. The central copy (*m* = 0) is your original spectrum, unchanged. The copies (*m* ≠ 0) are the "aliases" that will create trouble if they overlap with the central one (§8).
 
 | Symbol | Meaning | Units |
 |---|---|---|
@@ -669,20 +682,31 @@ F{ f · comb_T } = f̂ ∗ F{comb_T}                                  convolutio
 
 ### 8.1 The theorem
 
-Suppose the signal contains no frequency above some highest frequency *f_max* (the signal is **band-limited**). Its spectrum lives between −*f_max* and +*f_max*, a band of total width 2*f_max*. After sampling, copies sit every *f_s* apart (§7). They do not overlap if each copy fits in the gap:
+**The intuitive setup.** Sampling at rate *f_s* creates copies of the spectrum every *f_s* apart (§7). If the signal is slow (its highest frequency is below *f_s*/2), the central copy is isolated — no other copy sits near it. But if the signal is fast (frequency above *f_s*/2), the copies overlap, and frequencies get mixed up. This is the sampling theorem.
+
+Suppose the signal contains no frequency above *f_max* (the signal is **band-limited**). Its spectrum sits between −*f_max* and +*f_max*. The copies, spaced *f_s* apart, do not overlap if *f_s* is large enough:
 
 ```
 f_s ≥ 2·f_max          (Nyquist–Shannon sampling theorem; slide 94)
 ```
 
-- **Nyquist rate**: 2*f_max*, the lowest sampling rate that avoids overlap for a given signal.
-- **Nyquist frequency**: *f_s*/2, the highest frequency a given sampling rate can represent.
-- If the copies do not overlap, the original can be recovered exactly: cut out the central copy with an ideal low-pass filter (gain 1 below *f_s*/2, 0 above, §5.4) and inverse-transform. This is the "reconstruction" half of the theorem.
-- If they do overlap, a frequency from one copy lands where another copy's frequency should be. The two become indistinguishable after sampling. This is **aliasing**: a high frequency masquerading as ("taking the alias of") a lower one.
+**Key concepts:**
 
-**Strictly greater, in practice.** A wave at exactly *f_s*/2 sampled at *f_s* gives two samples per cycle, which can land on the zero crossings and read as zero. Real systems sample comfortably above the Nyquist rate.
+- **Nyquist rate**: 2*f_max*, the minimum sampling rate to avoid overlap for this signal.
+- **Nyquist frequency**: *f_s*/2, the highest frequency your sampling rate can represent unambiguously.
+- **Reconstruction:** If the copies do not overlap, extract the central copy with a low-pass filter (gain 1 below *f_s*/2, 0 above, §5.4) and inverse-transform to recover the original exactly.
+- **Aliasing:** If they overlap, a frequency from one copy sits where another frequency should be. The two become indistinguishable after sampling. This is **aliasing** — high frequencies masquerading as lower ones.
 
-**The Nyquist frequency and aliasing, in one sentence.** The Nyquist frequency *f_s*/2 is the **fold line**: every frequency below it is recorded faithfully, and every frequency above it is reflected back below it like an image in a mirror placed at *f_s*/2. A frequency that is Δ above the Nyquist frequency shows up Δ *below* it (for frequencies up to *f_s*; §8.2 gives the general rule). Aliasing happens **if and only if** the signal contains energy above the Nyquist frequency.
+**Strictly greater, in practice.** A wave at exactly *f_s*/2 sampled at *f_s* gives only two samples per cycle, which can hit zero-crossings and read as nothing. Real systems oversample (sample faster than *f_s* = 2*f_max*).
+
+**The folding picture.** Imagine the frequency axis folded like a paper fan at every multiple of *f_s*/2:
+- Frequencies below *f_s*/2 are recorded as-is.
+- Frequencies above *f_s*/2 fold back *down* below it.
+- A frequency Δ above *f_s*/2 appears as though it were Δ *below* it (appears as *f_s*/2 − Δ).
+
+The fold happens because of the spectral copies: a frequency above *f_s*/2 in the original lands inside the central copy of a neighboring replica. When you sample, you cannot tell which replica it came from, so it reads as the frequency *inside* the central band that has the same distance from zero.
+
+Aliasing happens **if and only if** the signal contains energy above the Nyquist frequency *f_s*/2.
 
 > **Same concept, different names.** **Nyquist frequency** = **folding frequency** = **Nyquist limit** = half the sampling rate. It belongs to the *sampler*. Do not confuse it with the **Nyquist rate**, 2*f_max*, which belongs to the *signal*: it is the minimum sampling rate that signal needs. The theorem, written either way, says the same thing: Nyquist frequency ≥ *f_max*, or sampling rate ≥ Nyquist rate. The theorem itself is called the **Nyquist–Shannon sampling theorem**, the **Shannon–Nyquist theorem** (slide 125), or just **the sampling theorem**.
 
@@ -701,7 +725,9 @@ f_s ≥ 2·f_max          (Nyquist–Shannon sampling theorem; slide 94)
 
 ### 8.2 Where an aliased frequency lands
 
-A frequency *f* sampled at rate *f_s* is indistinguishable from *f* − *m f_s* for every integer *m* (because *e*^{*j*2π(*f* − *m f_s*)·*nT*} = *e*^{*j*2π*f nT*}·*e*^{−*j*2π*mn*} and *e*^{−*j*2π*mn*} = 1 for whole numbers). The frequency you actually *see* is the one closest to zero:
+**The general rule.** A frequency *f* sampled at rate *f_s* produces the same samples as frequencies *f* − *m f_s* for every integer *m* (…, −2, −1, 0, 1, 2, …). That is because the sample values depend on *e*^{*j*2π*f nT*}, and adding any multiple of *f_s* to *f* only adds *e*^{−*j*2π*mn*} = 1, which does nothing. So the samples from frequency *f*, *f* − *f_s*, *f* + *f_s*, *f* − 2*f_s*, etc. are identical.
+
+Since you cannot tell them apart from samples alone, what do you *see*? The one closest to zero, because aliasing is defined as the **apparent frequency** — the one that lives inside the band [−*f_s*/2, *f_s*/2] that your sampler can represent:
 
 ```
 f_apparent = | f − f_s · round(f / f_s) |
@@ -802,7 +828,18 @@ x[n]  = (1/N) · Σ_{k=0}^{N−1} x̂[k] · e^{ j2πkn/N}      (inverse DFT, n =
 | *k*/*N* | the same frequency in cycles per sample (cycles per pixel for an image) | cycles/sample |
 | *x̂*[*k*] | the *k*-th Fourier coefficient (complex) | signal units |
 
-**Which index is which frequency.** Because the spectrum repeats every *N* (§9), index *k* and index *k* − *N* are the same frequency. So indices above *N*/2 are really **negative frequencies**: *k* = *N* − 1 is frequency −1/*N*. Libraries store them in that order, with zero frequency at index 0; `np.fft.fftshift` only reorders the array so zero frequency sits in the middle (Week 1 §19.4). Index *N*/2 is the Nyquist frequency, ½ cycle per sample, the fastest possible alternation (+, −, +, −).
+**Which index is which frequency.** The probe wave *e*^{−*j*2π*kn*/*N*} completes *k* cycles across all *N* samples, so frequency index *k* corresponds to *k*/*N* cycles per sample. But here is where it gets confusing: because the spectrum repeats every *N* (§9), index *k* and index *k* − *N* represent the same frequency. So the indices above *N*/2 are really **negative frequencies**:
+
+| Index *k* | Frequency *k*/*N* (cycles/sample) | What it means |
+|---|---|---|
+| 0 | 0 | the average (DC) |
+| 1 | 1/*N* | slow wave |
+| … | … | … |
+| *N*/2 | 1/2 | Nyquist frequency: +, −, +, − alternation |
+| *N*/2 + 1 | −(1/2 − 1/*N*) | same as −(*N*/*N* − 1)/*N*, a negative frequency (by wrapping) |
+| *N* − 1 | −1/*N* | same as (−1)/*N*, a slow negative frequency |
+
+Libraries store the spectrum with zero frequency at index 0, then positive frequencies, then negative frequencies (in order of increasing magnitude). `np.fft.fftshift` reorders it so zero sits in the middle and frequencies increase left to right (Week 1 §19.4), which is easier to visualize. Index *N*/2 is the Nyquist frequency, the fastest wave your sampler can represent without aliasing.
 
 ### 10.2 A worked 4-sample example
 
@@ -851,10 +888,13 @@ F  =  [ 1  −j  −1   j ]   F ·  [2]  =  [ −2 + 2j]
 
 ### 10.3 The wrap-around assumption and why it matters
 
-The DFT treats the *N* samples as one period of a repeating signal (§9). Two practical consequences:
+**The assumption.** §9 said the DFT treats the *N* samples as one period of an infinitely repeating signal. Why? Because the discrete Fourier transform is derived from the continuous transform by sampling. A sampled signal repeats in the frequency domain (§7), so by symmetry, a repeating signal must have a sampled spectrum — hence both must be finite, leading to a repeating image too.
 
-- **Convolution via the DFT is circular.** Multiplying two DFTs and inverting gives a convolution in which the kernel wraps around the ends: blur from the right edge leaks onto the left edge. To get an ordinary (non-wrapping) convolution, pad both signals with zeros to at least *N* + *K* − 1 samples first (*K* = kernel length).
-- **Edges look like jumps.** If the left and right edges of an image have different brightness, the repeated version has a sharp jump there, which adds energy along the spectrum's axes (the bright cross of §3.2).
+**What this means in practice — two consequences:**
+
+1. **Circular convolution.** When you multiply two DFTs and inverse-transform, convolution wraps around: blur from the right edge leaks back onto the left edge. To prevent this, zero-pad both the image and kernel to at least *N* + *K* − 1 samples (*K* = kernel size) before transforming. The zeros ensure the wrapped copy of the blurred signal does not reach back.
+
+2. **Edges look sharp in the frequency domain.** An image's left and right edges are the beginning and end of one period. If they differ in brightness, the repeated version has a jump from the right edge back to the left edge (like a step function). By §5.4's rule, a sharp step adds energy to all frequencies, especially visible as bright streaks along the axes of the spectrum (the cross of §3.2). This is not a real feature of the image — it is an artifact of the periodicity assumption.
 
 > **Summary**
 > - Rule to remember: **x̂[k] = Σ_n x[n] e^{−j2πkn/N}**, inverse with +*j* and a 1/*N*; index *k* is *k*/*N* cycles per sample, and indices above *N*/2 are negative frequencies.
@@ -1218,24 +1258,33 @@ From here on, "frequency" means **image frequency**, in cycles per pixel, becaus
 
 **The problem.** Remove fine detail (noise, texture) while keeping broad shapes. **In:** an image and a choice of how coarse to go. **Out:** a smoother image. **Analogy:** turning down the treble on a stereo.
 
-Slides 71–72 show the two equivalent routes:
+**Two ways to do it.** You can blur an image in two different places — one slow, one fast.
 
+**Route 1: Primal domain (slow for big blurs).** Convolve the image with a small blur kernel:
 ```
-primal domain:   b = x ∗ c                     (convolve with a small blur kernel c)
-Fourier domain:  F{b} = F{x} · F{c}            (multiply the spectrum by a big low-pass mask)
+b = x ∗ c                     (convolve image x with kernel c)
 ```
 
-By the convolution theorem (§5.2) these give the same result. The slides annotate the kernel as "**small**" and its spectrum as "**big**": by the scaling theorem (§6.6), a compact blur kernel has a wide transfer function, and a wider kernel (stronger blur) has a narrower transfer function (removes more).
+Each output pixel averages nearby input pixels, weighted by the kernel. Wider blur = bigger kernel = more work, proportional to kernel size squared (§16.3).
+
+**Route 2: Fourier domain (fast for big blurs).** Multiply the spectrum by a low-pass mask:
+```
+F{b} = F{x} · F{c}            (spectrum of output = spectrum of input × spectrum of kernel)
+```
+
+Transform the image to frequency space, multiply each frequency by the kernel's "gain" at that frequency, transform back. The kernel size never appears in the cost (§16.3).
+
+**They give the same result** by the convolution theorem (§5.2). The intuition: the kernel's frequency response tells you how much to keep or remove each frequency. Small kernel ↔ wide spectrum (affects many frequencies); big kernel ↔ narrow spectrum (removes more).
 
 ### 16.2 The hard cutoff and why it rings
 
-The most obvious Fourier-domain low-pass filter is a **hard cutoff** (slide 73): a disc mask that is 1 inside some radius and 0 outside. It keeps every frequency below the cutoff perfectly and removes every frequency above it.
+**The obvious but bad idea: hard cutoff.** In the Fourier domain, the simplest low-pass filter is a disc mask: 1 inside a radius (keep these frequencies), 0 outside (block the rest). It is a perfect low-pass filter in theory.
 
-**Its primal-domain kernel (slide 74).** The inverse Fourier transform of a disc is the 2D sinc, the **jinc**, *J*₁(2π*ρ*)/*ρ* (*ρ* = distance from the center, *J*₁ = a Bessel function of the first kind). Like the sinc, the jinc has a central peak surrounded by rings that alternate positive and negative.
+**The problem: ringing.** Transform that disc back to the primal domain and you get the **jinc** (a 2D version of the sinc, §6.2). The jinc has a bright central peak, then rings that alternate between positive and negative values. When you convolve an image with this kernel, each sharp edge gets copied as faint echoes — alternating light and dark bands running parallel to the edge. This is **ringing** (also called the **Gibbs phenomenon**).
 
-**Ringing (slide 75).** Convolving an image with a kernel that has negative rings copies each sharp edge as faint echoes: alternating light and dark bands running parallel to every edge. This is **ringing** (also called the **Gibbs phenomenon**): "hard frequency filters often introduce ringing." It is the price of an abrupt cutoff: an edge in the frequency domain becomes ripples in the primal domain.
+**Why it happens.** An abrupt cutoff in the frequency domain (go from 1 to 0 instantly) is unnatural. The sharp boundary produces a wave-like artifact in the primal domain. It is one of the fundamental trade-offs in signal processing: a crisp boundary in one domain becomes ringing in the other.
 
-**The fix: a smooth cutoff.** A Gaussian mask falls off gradually, and its primal-domain kernel is also a Gaussian (§6.4), which is positive everywhere. A positive kernel is a true weighted average, so it cannot create overshoots or echoes. This is why practical low-pass filters (PS4's `fspecial_gaussian_2d`) are Gaussian.
+**The fix: smooth cutoff.** Instead of 1 → 0, use a smooth falloff. A **Gaussian mask** (a smooth bell curve in frequency space) transforms back to a **Gaussian kernel** (§6.4), which is positive everywhere and has no rings. Convolving with a positive kernel cannot create overshoots or echoes — it is a genuine weighted average. This is why practical low-pass filters (PS4's `fspecial_gaussian_2d`) are Gaussian, not hard-cutoff discs.
 
 | Low-pass filter | Fourier-domain shape | Primal-domain kernel | Ringing? |
 |---|---|---|---|
