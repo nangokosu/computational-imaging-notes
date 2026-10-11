@@ -1,6 +1,7 @@
 #!/bin/bash
-# Weekly artifact backup script
-# Add to crontab with: 0 2 * * 0 /path/to/backup.sh
+# Frequent artifact backup script
+# Add to crontab with: 0 */4 * * * /path/to/backup.sh  (every 4 hours)
+# Or for more frequent: */30 * * * * /path/to/backup.sh (every 30 minutes)
 
 set -e
 
@@ -35,7 +36,16 @@ else
     exit 1
 fi
 
-# Clean up backups older than 28 days
-echo "[$(date)] Cleaning up old backups..."
-find "$BACKUP_DIR" -name "artifact-[0-9]*.html" -mtime +28 -exec rm {} \;
-echo "[$(date)] Done"
+# Retention policy: keep last 30 backups, delete anything older than 90 days
+echo "[$(date)] Cleaning up old backups (keep 30 most recent, delete >90 days)..."
+# Delete backups older than 90 days
+find "$BACKUP_DIR" -name "artifact-[0-9]*.html" -mtime +90 -delete
+
+# Keep only 30 most recent backups (in case cron runs very frequently)
+BACKUP_COUNT=$(find "$BACKUP_DIR" -name "artifact-[0-9]*.html" | wc -l)
+if [ "$BACKUP_COUNT" -gt 30 ]; then
+    EXCESS=$((BACKUP_COUNT - 30))
+    find "$BACKUP_DIR" -name "artifact-[0-9]*.html" -printf '%T@ %p\n' | sort -n | head -n "$EXCESS" | cut -d' ' -f2- | xargs rm
+    echo "[$(date)] Cleaned up $EXCESS old backups"
+fi
+echo "[$(date)] Done ($(find "$BACKUP_DIR" -name "artifact-[0-9]*.html" | wc -l) backups retained)"
