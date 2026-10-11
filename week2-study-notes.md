@@ -21,12 +21,6 @@ The result is not a flat gray field; it is an extremely blurred scene. Each sens
 
 Only the coarsest shapes (broad light/dark regions) survive this averaging; fine detail (high spatial frequency, Week 1 §16) washes out. The picture looks like maximal defocus blur.
 
-**Linear-algebra view (image formation as a matrix–vector product).** List the brightness of every scene point as one long vector **x** (basis: "one scene point lit, all others dark") and every sensor reading as a vector **y**. Each reading is a weighted sum of scene brightnesses, so the capture is one **linear map**, **y** = **A x**, where entry *A_ij* is the cosine-and-distance weight from scene point *j* to sensor location *i*.
-
-- For a bare sensor, neighboring rows of **A** are nearly identical, so **A** is **ill-conditioned**: some scene directions are shrunk almost to zero and cannot be recovered.
-- *Toy example:* 8 scene points, 8 sensor locations, weights = cos/distance². The **singular values** of **A** run from 6.41 down to 3.18 × 10⁻⁶, a **condition number** (largest ÷ smallest singular value: how much measurement error inverting **A** can amplify) of about 2.0 × 10⁶.
-- A good camera needs **A** close to a **permutation matrix** (each scene point sent to exactly one sensor location), whose condition number is exactly 1.
-
 Everything in this lecture is optics or sensing built to make **A** that well-behaved: a device between scene and sensor that sends *each scene point to (ideally) one sensor location*. Inverting **y** = **A x** is the inverse-problem framing of Weeks 5–6.
 
 **The model we use: ray optics.** **[Ray optics](https://en.wikipedia.org/wiki/Geometrical_optics)** (geometric optics) treats light as straight lines ("rays") that bend only at a lens surface or stop at an opaque barrier, ignoring that light is a wave. It is the assumption behind HW1's pinhole-box geometry and is excellent almost everywhere here. It fails only when an opening becomes tiny, where light's wave nature matters.
@@ -56,13 +50,6 @@ Of all the rays leaving one scene point, only the one heading straight at the pi
 
 **A pinhole never needs focusing.** Every scene point, at any distance, sends exactly one undeviated ray to one sensor point. This is the property a lens gives up in exchange for more light.
 
-**Linear-algebra view (perspective projection in homogeneous coordinates).** Put the pinhole at the origin, with axes sensor-horizontal *X*, sensor-vertical *Y* and depth *Z* along the optical axis, and append a 1 to each scene point to get **homogeneous coordinates** (X, Y, Z, 1).
-
-- The 3×4 **camera matrix** P = [[−f, 0, 0, 0], [0, −f, 0, 0], [0, 0, 1, 0]] maps that vector linearly to (−fX, −fY, Z). Dividing by the last entry (the depth) gives the sensor position (−fX/Z, −fY/Z). The factor *f*·X/Z is the similar-triangles ratio; the minus signs are the upside-down flip.
-- P has **rank** 3, so one input dimension is lost. Its **null space** is spanned by (0, 0, 0, 1), the pinhole itself.
-- Every point *t*·(X, Y, Z) on one ray gives a scaled copy of the same output vector, and the division collapses it to one pixel. Example: with *f* = 50 mm, (100, 200, 1000) mm and (200, 400, 2000) mm both land at (−5, −10) mm.
-- The collapsed dimension is depth. That is why one photo cannot tell how far away anything is, and why depth sensors such as LiDAR add a separate distance measurement along each ray.
-
 > **Summary**
 > - A pinhole sends each scene point through one ray to one sensor point: an inverted, scaled image with no focusing needed.
 > - Remember: image position = −*f*·(X/Z, Y/Z); *f* is the pinhole-to-sensor distance.
@@ -76,13 +63,6 @@ Of all the rays leaving one scene point, only the one heading straight at the pi
 An ideal pinhole would be a single point, which is impossible to build and would pass zero light. A real pinhole has some diameter *d*, and *d* affects image quality from two opposite directions.
 
 **Direction 1: geometric blur (ray optics still works).** A pinhole of nonzero size passes a small *cone* of rays per scene point. They land at slightly different sensor spots, so each scene point becomes a blur disc about as wide as the pinhole. **A larger pinhole means a blurrier image.** By this logic a smaller pinhole should sharpen the image forever; it does not.
-
-**Linear-algebra view (pinhole blur as a convolution matrix).** In §1's **y** = **A x** picture, a finite pinhole replaces the permutation matrix with one whose columns are small discs of nonzero weights instead of a single 1.
-
-- The same disc appears at every position, so each row is the previous row shifted by one: a **Toeplitz** (constant-along-diagonals) **convolution matrix**.
-- **Convolution** means "stamp a copy of the blur shape at every scene point and add them up"; the blur shape is the **kernel** or, in optics, the **point spread function (PSF)**: the image the system makes of a single point. Week 1 §20 builds convolution with worked numbers.
-- The Fourier basis **diagonalizes** such a matrix; the disc's Fourier transform gives the eigenvalues. A bigger disc pushes more eigenvalues toward zero, so more fine detail is lost.
-- Undoing the matrix is **deconvolution** (Week 1 §23 previews why it is hard; Weeks 5–6 treat it fully).
 
 **Direction 2: diffraction (a wave effect).** Once the pinhole is only a few wavelengths wide, **[diffraction](https://en.wikipedia.org/wiki/Diffraction)**, the spreading of a wave after passing a narrow opening, takes over, and ray optics (which says light does not spread) fails. *The smaller the gap, the more the light fans out.* Ripples fanning out through a narrow harbor gap are the analogy.
 
@@ -207,14 +187,6 @@ m = y'/y = (S' - f)/f
 ```
 
 Equivalently *m* = *S′*/*S* (Relation 1). Consistent with §2: for a fixed object distance, a shorter *f* forces a smaller *S′*, and *m* shrinks with it.
-
-**Linear-algebra view (ray-transfer matrices).** The thin lens model is secretly a **linear map** on a 2-entry vector per ray: (height above the axis, angle to the axis in radians, small-angle approximation).
-
-- Travelling a distance *L* is the matrix [[1, L], [0, 1]] (height grows by *L*·angle).
-- The thin lens is [[1, 0], [−1/f, 1]]: height unchanged (assumption 1), angle bent in proportion to height (assumption 2).
-- Multiplying object-to-lens, lens, lens-to-sensor gives the whole camera as one 2×2 matrix whose top-right entry is S + S′ − S·S′/f = S·S′·(1/S + 1/S′ − 1/f).
-- That entry is 0 exactly when the thin lens equation holds. Then output height no longer depends on input angle, which is *why* every ray from one object point meets at one image point. The top-left entry reduces to −S′/S, the magnification with its inversion sign.
-- *Example (illustrative numbers):* *f* = 50 mm, *S* = 150 mm gives *S′* = 75 mm and the matrix [[−1/2, 0], [−1/50, −2]] (determinant 1, as for every product of these matrices).
 
 ### 5.2 Intrinsic lens properties vs. setup properties
 
@@ -377,7 +349,7 @@ When *O = S*, that point's rays converge exactly on the sensor: a sharp point. W
 
 **Focus is local to one plane.** One fixed *S′* satisfies the thin lens equation for only one *S*, and real scenes have points at many distances *O*. So a range around *S* looks acceptably sharp and the rest is blurred; how wide that range is is the topic of depth of field.
 
-In the linear-algebra picture of §3, defocus is still a **linear map** (a sum of blur discs), but the disc width depends on each point's depth *O*. For a scene with many depths the matrix is no longer one shift-invariant convolution: different columns carry different-sized discs.
+Defocus is still a **linear map** (a sum of blur discs), but the disc width depends on each point's depth *O*. For a scene with many depths the matrix is no longer one shift-invariant convolution: different columns carry different-sized discs.
 
 ### 9.2 The circle-of-confusion formula, derived
 
@@ -639,13 +611,7 @@ d = λ / (2n·sinθ) = λ / (2·NA) ≈ λN
 | Circle with ripples from lens-surface machining (a rough or *aspheric*, non-spherical, element, §6) | concentric "onion rings" inside the disc | some lenses with moulded aspheric elements |
 | A deliberately cut-out shape (heart, star) in front of the lens | that shape | creative photography; Week 4 §19.2 does this on purpose to reshape the PSF |
 
-The general statement: the blur of a point is the **point spread function (PSF)** (§3). **Bokeh is the defocus PSF.** A photograph's blurred region is every point's PSF added together, a **convolution** of the sharp scene with the PSF (Week 1 §21 has the primer). That is a *single* convolution only if every blurred point has the same disc size; with real depth variation the size changes with distance (§9.1).
-
-**Linear-algebra view.** Defocus blur is a linear map: write the sharp image as a vector **x** (one entry per pixel) and the blurred image as **y**; then **y** = **B x**.
-
-- Each *column* of **B** holds the disc one scene pixel spreads into: nonzero entries form a small blob shaped like the aperture (circle, polygon, ring), with entries summing to 1.
-- If all depths are equal, every column is the same blob shifted, so **B** is a (Toeplitz or circulant, Week 1 §20.7 and §21) convolution matrix.
-- If depths differ, each column carries a *different-sized* blob and **B** is not shift-invariant. This is the matrix form of "bokeh size depends on distance".
+The general statement: the blur of a point is the **point spread function (PSF)**. **Bokeh is the defocus PSF.** A photograph's blurred region is every point's PSF added together, a **convolution** of the sharp scene with the PSF (Week 1 §21 has the primer). That is a *single* convolution only if every blurred point has the same disc size; with real depth variation the size changes with distance (§9.1).
 
 ### 13.2 How big is the bokeh disc?
 
@@ -687,7 +653,7 @@ Why the profile matters: a convolution sums neighboring points with weights from
 
 1. **Estimate a depth map**: a distance *O* for each pixel. Sources: two lenses (stereo, Week 1 §11); phase differences between the two halves of each pixel (*dual-pixel* sensors, which see the scene from two slightly different aperture positions); a trained neural network guessing depth from one image; and a depth sensor (below).
 2. **Pick the focus plane** *S* (usually the detected face) and compute each pixel's blur size from the same relation as §13.2, *c* ∝ |1/*S* − 1/*O*|, scaled to the artistic strength the maker wants.
-3. **Blur each pixel with a disc (or polygon) kernel of that size**: a depth-varying convolution, exactly the non-shift-invariant **B** of §13.1. A good implementation protects the subject's edge (hair!) with a segmentation mask and brightens saturated highlights before blurring so bokeh balls appear.
+3. **Blur each pixel with a disc (or polygon) kernel of that size**: a depth-varying convolution. A good implementation protects the subject's edge (hair!) with a segmentation mask and brightens saturated highlights before blurring so bokeh balls appear.
 
 **Depth sensors: LiDAR and time of flight (ToF).** Many phones add a sensor that measures depth *directly* with light instead of guessing it from the image.
 
@@ -719,12 +685,6 @@ A real pixel is more than a bare photodiode:
 - **[Quantum efficiency](https://en.wikipedia.org/wiki/Quantum_efficiency)** is the fraction of incoming photons actually converted into a counted electron (roughly 50% for a typical sensor); not every photon produces a usable signal.
 - **Fill factor** is the fraction of a pixel's area that is light-sensitive (the rest holds wiring and per-pixel circuitry). The microlens compensates for a fill factor below 100% by funneling light from the "dead" area to the live area.
 
-**Linear-algebra view (the Bayer mosaic as an underdetermined system).** As in Week 1 §7, stack the true color image as a vector with 3 unknowns (R, G, B) per pixel and the raw readout as a vector with 1 number per pixel.
-
-- The color filter array is a **selection matrix**: one row per pixel, with a single 1 in the column of the channel that pixel's filter passes.
-- For a 4×4 patch this is a 16×48 matrix of **rank** 16 (16 measurements of 48 unknowns: 4 red, 8 green, 4 blue), so its **null space** has dimension 32.
-- The system is **underdetermined**: infinitely many full-color images give the same raw data. Demosaicking (Week 3) must add assumptions such as "neighboring pixels have similar colors" to pick one.
-
 > **Summary**
 > - A pixel is a photodiode (photons → electrons by the photoelectric effect) plus a microlens and a color filter.
 > - Remember: quantum efficiency = fraction of photons counted; fill factor = fraction of pixel area that is light-sensitive.
@@ -744,12 +704,6 @@ Two sensor architectures differ in *how* accumulated pixel charge is converted t
 | Typical trade-off | Higher sensitivity, lower noise (fewer, better-matched amplifiers) | Faster readout, lower manufacturing cost (parallel per-pixel amplification, standard chip fabrication) |
 
 Both deliver a per-pixel voltage proportional to accumulated charge. They differ in the electrical path and cost/performance, not in the photoelectric principle of §14.
-
-**Linear-algebra view (a linear sensor).** "Voltage proportional to accumulated charge", with charge proportional to photons collected (scaled by quantum efficiency), makes the raw reading a **linear function** of light: double the photons, double the value; two light sources together read as the sum of their separate readings.
-
-- This holds until a pixel saturates (cannot hold more charge) and up to the rounding of the **ADC** (analog-to-digital converter, the circuit that turns the voltage into an integer).
-- It is what lets the whole optics-plus-sensor chain be written as one matrix, **y** = **A x** (§1, §3, §14).
-- It is also why the first deliberately nonlinear step, gamma correction, happens only later in Week 3's pipeline.
 
 > **Summary**
 > - CCD shifts charge to a few shared amplifiers (sensitive, low noise); CMOS has an amplifier per pixel (fast, cheap).
@@ -890,12 +844,6 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 - *Nr* — read noise (RMS electrons from the readout electronics, once per readout); fixed by the sensor.
 
 **Why it has this shape.** The numerator *P·Qe·t* is the mean photo-electron count, the *signal*. Inside the square root, that same term reappears as the *shot-noise variance* (§18.4's √*N*, squared back into a variance), next to the other two variances *D·t* and *Nr*². The formula covers only the random sources: quantization noise (negligible when the signal spans many DN) and fixed-pattern noise (not random) are left out.
-
-**Linear-algebra view (noise as an additive vector, and why variances add).** The full measurement model is **y** = **A x** + **n**: the ideal linear measurement (§15) plus a noise vector **n** with one random entry per pixel.
-
-- Independent noise sources are **uncorrelated**, and uncorrelated random variables behave like **orthogonal** vectors: the cross terms in Var(n₁ + n₂) vanish, so variances add the way squared lengths add in Pythagoras's theorem. That is why the SNR denominator is the square root of a *sum* of variances (shot + dark + read), not a sum of standard deviations.
-- Each pixel's noise is independent of its neighbors', so the noise **covariance matrix** is **diagonal**. For shot noise the diagonal entries equal the mean signal itself (Poisson), which is what "signal-dependent" means in matrix terms.
-- Denoising (Week 3) and inverting **y** = **A x** + **n** (Weeks 5–6) both start from this model.
 
 **Scientific sensors** (e.g. cooled to around −100°C for astronomy or microscopy) minimize *D* and *Nr* by aggressive cooling and low-noise electronics, leaving nearly only the shot-noise floor set by *P·Qe·t* itself, the one term no engineering can remove, since it comes from the quantum randomness of photon arrival.
 

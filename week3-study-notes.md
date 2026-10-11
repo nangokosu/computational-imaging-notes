@@ -5,7 +5,6 @@
 **Scope:** Announcements skipped. The lecture's own "Review" slides (sensors-as-buckets, Bayer color filter arrays, per-pixel perspective) are skipped here since Week 1 §7 and Week 2 §14 already cover this ground — notes start from "Color is an artifact of human perception." Historical/biographical detail in the source slides (early color-photography techniques and the people behind them) is omitted per this project's no-history policy — a technique is described only by what it does; a paper is cited only by author/year, the way the course itself cites it.
 **Order differs from the slides, on purpose.** Each topic comes after the ideas it needs: gamma, image frequency, smoothing filters and MSE/PSNR are taught first as short primers (they are used by demosaicking, denoising and JPEG); "other ways to capture color" follows demosaicking; denoising and sharpening follow the filters; gamut mapping follows denoising; the walkthrough of opening a real RAW file comes last because it uses every stage. The pipeline stage order itself (RAW → demosaicking → denoising → gamut mapping → gamma → JPEG) is unchanged and is shown in §9. Every numbered section ends with a Summary box.
 **Exam note:** this week reuses some single-letter symbols from earlier weeks with different meanings — most importantly, the capital letter **D** meant "aperture diameter" in Week 2 (§8) but means a **gradient/difference term** in this week's demosaicking formulas (§14.5). Keep track of which week's formula you're in.
-**Symbol note for the "Linear-algebra view" asides:** the identity matrix is written **Id** (never I, which is the image in §13 and §17). A bare **M** used as a matrix always means the Y′CbCr matrix of §14.3 (in Part 1, M is still the medium-wavelength cone); color-space conversion matrices always carry subscripts, e.g. M_sRGB→XYZ. **G_σ** is a Gaussian-blur matrix, unrelated to the green channel G.
 
 ---
 
@@ -51,16 +50,9 @@ R = ∫ Φ(λ) · f(λ) dλ
 
 **Why this is a general fact, not a geometric one.** This is a dot-product-style weighted integral — it describes a *relationship between two functions*, not a shape in space, so there is nothing to draw. It applies identically whether the sensor is a retinal cone or a camera pixel, and it is the single mechanism underlying everything else in Part 1: three cone SSFs (or three camera-filter SSFs) applied to the same Φ(λ) is exactly how a spectrum becomes three numbers.
 
-**Linear-algebra view: the SSF integral is an inner product.**
-- Sample the spectrum at N evenly spaced wavelengths λ₁ … λ_N, a step Δλ apart. For example, 400–700 nm every 10 nm gives N = 31. The light becomes a vector φ ∈ ℝ^N (one power value per wavelength), and the sensor's SSF becomes a vector **f** ∈ ℝ^N.
-- The integral becomes a sum: R ≈ Σ_k Φ(λ_k)·f(λ_k)·Δλ = Δλ · (**f** · φ). That is the **inner product** (dot product) of the two vectors, times the constant step Δλ.
-- An inner product measures "how much of φ points along **f**," which is exactly the weighted-combination intuition above.
-- It is **linear** in φ: doubling the light doubles R, and the response to two lights shown together is the sum of their separate responses. Everything in Part 1 builds on this property.
-
 > **Summary**
 > - A sensor reports one number: R = ∫ Φ(λ)·f(λ) dλ, the light spectrum weighted by the sensor's sensitivity at each wavelength.
 > - Φ(λ) comes from the scene; f(λ) comes from the sensor. Three different f give three numbers from the same light.
-> - Linear-algebra view: the integral is an inner product, so it is linear in the light (double the light, double R).
 > - *Next (optional):* §3 applies this three times, once per cone.
 
 ---
@@ -88,18 +80,10 @@ This also **formalizes Week 1 §6's metamerism**. The map from a full spectrum t
 
 This geometric picture **formalizes Week 1 §6's metamerism**: since the map from a full spectrum Φ(λ) down to a single 3D point (S, M, L) is many-to-one (an entire continuous function collapsed to three numbers), many different spectra — potentially infinitely many — land on the exact same interior point of the cone. Any two of those spectra are **metamers**: physically different light, identical retinal color, because the eye never measures the spectrum directly, only this one 3D projection of it.
 
-**Linear-algebra view: a 3×N matrix, its null space, and a cone.**
-- Stack the three cone SSF vectors from §2 as the rows of a 3×N matrix **A**. Then (S, M, L) = Δλ · **A**φ: all three inner products at once. **A** maps spectrum space ℝ^N down to ℝ³ (31 numbers down to 3 in the 10 nm example). "Projection" here means this many-to-one map to fewer dimensions, not the stricter linear-algebra sense of a square matrix P with P² = P.
-- The three rows are linearly independent, so **A** has rank 3. The **rank–nullity theorem** (rank + null-space dimension = number of columns) then gives a **null space** of dimension N − 3 = 28: every spectral "direction" **n** with **A n** = 0 is invisible to the eye.
-- **Metamerism, exactly:** φ₁ and φ₂ are metamers precisely when **A**(φ₁ − φ₂) = 0, i.e. they differ by a null-space vector. Adding such a vector changes the light but not the color (as long as every power value stays non-negative, so it is still real light).
-- **The cone is a conic hull.** Column k of **A** is the response to a unit spike at λ_k, i.e. one point of the lasso curve. The achievable cone is the set of all **non-negative combinations** Σ c_k·(column k), with every c_k ≥ 0: the **conic hull** of the lasso vectors.
-- A **convex combination** is the special case whose weights are non-negative *and* sum to 1: formally, a weighted average. The paragraph above's "convex combination" is exact once total power is normalized to 1. Dropping the sum-to-1 condition is what lets brightness scale freely and turns the curve into a cone.
-
 > **Summary**
 > - Three cone readings (S, M, L) make a point in 3D; all real light lands in the positive octant.
 > - Scaling a light's brightness slides its point along a ray from the origin, so the reachable colors form a convex cone whose cross-section is the "horseshoe."
 > - Many spectra map to one point (a many-to-one map with a 28-dimensional null space), which is exactly metamerism.
-> - Linear-algebra view: a 3×N matrix, its null space, and a conic hull.
 > - *Next (optional):* §4 measures this space using only what a person can report.
 
 ---
@@ -121,12 +105,6 @@ The fix is to add some of one primary to the *test* side instead. Adding light t
 
 Repeat this for pure test beams across the visible spectrum, recording each primary's coefficient at each wavelength (positive if added to the primary side, negative if added to the test side). The result is the **color matching functions** for that choice of primaries.
 
-**Linear-algebra view: a match solves for coordinates in a basis.**
-- Let **p**₁, **p**₂, **p**₃ ∈ ℝ³ be the (S, M, L) responses of the three primaries at unit strength (each primary's spectrum pushed through §3's matrix **A**). They are linearly independent, so they form a **basis** of the 3D color space.
-- A match is the equation c₁**p**₁ + c₂**p**₂ + c₃**p**₃ = **t**, where **t** is the test light's response. With the primaries as the columns of a 3×3 matrix **P**, that is **P c** = **t**, so **c** = **P**⁻¹**t**: the test color's **coordinates** in the primary basis. Turning the knobs is physically solving this 3×3 linear system.
-- **A negative coefficient** means **t** lies outside the cone spanned non-negatively by **p**₁, **p**₂, **p**₃ (their conic hull, §3). That three-edged cone sits strictly inside §3's rounded cone, so some real colors fall outside it.
-- The color matching functions are **P**⁻¹**A**: every wavelength's lasso vector (column of **A**) re-expressed in primary coordinates.
-
 **Whose eyes? The standard observer.** People's cones differ slightly, so one person's matches do not exactly fit another's. The 1931 CIE data pooled matches from a small panel of observers (the lecture slide says 12; the standard references describe two experiments, with 10 and 7 observers) and averaged them into one "typical" viewer, the **standard observer**.
 
 Analogy: a clothing size chart built from measuring a group. Nobody is exactly "size M," but everyone agrees what M means. Formally, the standard observer *is* its three color matching functions, so every CIE number below means "what this averaged viewer would report," not what any single person sees.
@@ -135,7 +113,6 @@ Analogy: a clothing size chart built from measuring a group. Nobody is exactly "
 > - A color-matching experiment finds the primary strengths that make a mixture look identical to a test light.
 > - A negative strength means "add that primary to the test side instead."
 > - The standard observer is an averaged viewer, defined by three color matching functions.
-> - Linear-algebra view: a match solves P c = t, i.e. finds the test color's coordinates in the primaries' basis.
 > - *Next (optional):* §5 compares the two standard CIE coordinate systems.
 
 ---
@@ -153,17 +130,6 @@ These are the same underlying fact seen from two directions: a set of color matc
 
 **CIE XYZ.** The CIE also defines a second, purely mathematical set of three "primaries" — not any real, physically producible lights, but linear combinations of the CIE RGB primaries chosen specifically so that **every** real color's coordinates in this new basis come out non-negative. This is **CIE XYZ**. The price: XYZ's own "primaries" are not physically realizable light sources — they are mathematical constructs (in effect requiring negative light to actually produce), useful only as a coordinate system, never as an actual set of projector bulbs.
 
-**Linear-algebra view: CIE RGB → XYZ is a change of basis.**
-- CIE RGB and CIE XYZ are two coordinate systems (two bases) for the same 3D color space. Switching between them is a **change of basis**: multiply by one fixed 3×3 matrix, v_XYZ = M_CIERGB→XYZ · v_CIERGB. The standard's matrix is
-  ```
-  M_CIERGB→XYZ = (1/0.17697) · [0.49000  0.31000  0.20000]   = [2.7688  1.7517  1.1301]
-                               [0.17697  0.81240  0.01063]     [1.0000  4.5906  0.0601]
-                               [0.00000  0.01000  0.99000]     [0.0000  0.0565  5.5942]
-  ```
-- Its determinant is 61.36, not 0, so it is **invertible**: the conversion can be undone exactly, and no color information is lost either way.
-- The same matrix converts the matching functions: (x̄, ȳ, z̄) = M_CIERGB→XYZ · (r̄, ḡ, b̄), wavelength by wavelength. Its middle row says Y = 1.0000·R + 4.5906·G + 0.0601·B: luminance as a fixed linear functional of CIE RGB.
-- "Analytic = synthetic" is this algebra too. §4's matching functions **P**⁻¹**A** have rows that are fixed linear combinations of the cone-SSF rows of **A**, so they act as sensitivity functions themselves.
-
 **Why Y is special: the link to human brightness.** The XYZ basis was not picked arbitrarily. Y's matching function was chosen to equal the eye's **luminous efficiency function V(λ)**.
 
 Analogy: V(λ) is a "brightness exchange rate" per wavelength, how much perceived brightness one watt of light at that wavelength buys. Formally, V(λ) is the standard observer's relative brightness sensitivity (dimensionless, peak 1 in the green, falling toward 0 at the violet and deep-red ends).
@@ -174,13 +140,10 @@ Because Y's matching function *is* V(λ), plugging a spectrum into §2's formula
 
 This is a geometric fact about the color cone of §3, not a flaw of either choice: no three-sided coordinate frame can both contain the whole rounded cone and have its corner primaries lie on the cone's physically achievable boundary.
 
-**Linear-algebra view of the fundamental problem.** Real primaries are real light, so their vectors, and their conic hull (all non-negative combinations), lie inside the achievable cone. For every real color to get non-negative coordinates, that hull would have to contain the *whole* achievable cone. But a three-edged cone has a triangular cross-section, while the achievable cone's is the curved horseshoe, so the hull always misses part of it. XYZ escapes by putting its three basis vectors *outside* the achievable cone, which is why its primaries are imaginary.
-
 > **Summary**
 > - CIE RGB uses real primaries but needs negative coordinates for some colors; CIE XYZ has non-negative coordinates but imaginary primaries.
 > - You cannot have both, because a three-edged cone cannot contain the curved color cone while staying inside it.
 > - Y of XYZ equals luminance, because its matching function is the eye's brightness curve V(λ).
-> - Linear-algebra view: RGB → XYZ is a change of basis by an invertible 3×3 matrix.
 > - *Next (optional):* §6 drops brightness to compare colors by hue and saturation.
 
 ---
@@ -206,18 +169,11 @@ y = Y / (X + Y + Z)
 - *x, y* — the two chromaticity coordinates, each a dimensionless ratio (values roughly between 0 and 1 for real colors).
 - The denominator *X+Y+Z* is exactly the "distance out along the ray" (in this coordinate system) being divided out.
 
-**Linear-algebra view: projective, not linear.** The map v ↦ v / (X+Y+Z) normalizes every vector onto the plane X+Y+Z = 1, so every vector on the same ray lands on one point. Example: sRGB's red primary and three times it both give xy = (0.6400, 0.3300). The map is **not linear**, because it doesn't preserve sums:
-- Full-strength sRGB red plus full-strength sRGB green gives xy = (0.4193, 0.5053).
-- That is *not* the midpoint of their chromaticities, (0.4700, 0.4650).
-
-It is **projective**: straight lines map to straight lines, so the sum still lands on the segment joining the two chromaticity points. Its position along that segment is weighted by each color's X+Y+Z, not by ½. Red's X+Y+Z is 0.6444 and green's is 1.1919, so red's share is 0.6444 / (0.6444 + 1.1919) = 0.3509. That preserved straightness is why gamut regions turn out to be straight-edged triangles.
-
 *(This is genuinely a geometric construction — a diagram showing the 3D cone from §3 being collapsed onto the X+Y+Z=1 plane by rays from the origin would make the projection immediately intuitive. That diagram belongs in the artifact, not here.)*
 
 > **Summary**
 > - x = X/(X+Y+Z), y = Y/(X+Y+Z) divide out brightness, so every color along one ray from the origin gives one (x, y) point.
 > - The map is a projection onto the plane X+Y+Z = 1: straight lines stay straight, but sums are not preserved (it is not linear).
-> - Linear-algebra view: projective, not linear; a mix lands on the segment between the two chromaticities, weighted by each color's X+Y+Z.
 > - *Next (optional):* §7 uses this diagram to describe what a device can show.
 
 ---
@@ -229,11 +185,6 @@ A device's **gamut** is the set of colors it can actually produce (a display) or
 
 **Why three real primaries always give a triangle.** A real display or printer builds every color from non-negative amounts of a few fixed primaries, usually three (red, green, blue). In chromaticity coordinates each primary is one fixed point. A non-negative mix of three points, normalized to sum to one (a convex combination), sweeps out exactly the **triangle** whose corners are those points: everything inside is reachable, nothing outside is. It is the same convex-combination logic §3 used for mixed beams, carried through the chromaticity projection.
 
-**Linear-algebra view: a gamut triangle is a convex hull.** The **convex hull** of the three primary chromaticity points **q**_R, **q**_G, **q**_B is every point w_R**q**_R + w_G**q**_G + w_B**q**_B with all w ≥ 0 and w_R + w_G + w_B = 1. The weights are the point's **barycentric coordinates**, found by solving a 3×3 linear system (the two xy equations plus the sum-to-1 equation):
-- **D65 white** in the sRGB triangle: w = (0.2120, 0.3922, 0.3959). All positive, so it is inside.
-- These are not RGB = (1, 1, 1). They equal each primary's X+Y+Z (0.6444, 1.1919, 1.2032) divided by their total: §6's projective weighting again.
-- **Display P3's green** (0.265, 0.690): w = (−0.1446, 1.2390, −0.0944). Negative weights mean it is outside the hull, i.e. out of sRGB's gamut.
-
 **sRGB gamut.** **sRGB** is the standard RGB color space targeted by most consumer displays, cameras and image files (including JPEG). Its gamut is such a triangle: corners at its three standard primaries, interior is every non-negative mix of them, and the exterior is every color that would need a **negative** coordinate. "Outside the triangle" is therefore the precise form of §5's fundamental problem: that color cannot be built from these three real primaries.
 
 **Other RGB spaces.** Other devices and standards (camera-native spaces, wider-gamut displays) use different primaries and so trace different triangles in the same diagram: some larger than sRGB's, some smaller, some only partly overlapping. The lecture's comparison of "gamuts of common industrial RGB spaces" is exactly this. All of them sit inside the horseshoe-shaped boundary of all visible chromaticities, which is the 2D projection of §3's lasso curve.
@@ -241,7 +192,6 @@ A device's **gamut** is the set of colors it can actually produce (a display) or
 > **Summary**
 > - A gamut is the set of colors a device can produce; three real primaries make a triangle in the xy diagram.
 > - A point inside the triangle has all-positive barycentric weights; outside means at least one negative weight, i.e. an impossible color for that device.
-> - Linear-algebra view: the triangle is the convex hull of the three primary points.
 > - *Next (optional):* §8 shows why the same RGB numbers mean different colors on different devices.
 
 ---
@@ -268,29 +218,11 @@ This is why **consumer devices disagree on color without calibration**: differen
 >
 > The first row is the obvious case: "full red, nothing else" simply *is* each standard's red primary, and the two reds are different points on the chromaticity diagram. P3's red is deeper, further out toward the horseshoe edge. The second row shows it isn't only the corners: an ordinary mixed color also lands somewhere different. Same three numbers, two different physical colors. The numbers only mean something once you say which primaries they refer to.
 
-**Linear-algebra view: sRGB and Display P3 are two bases for the same space.**
-- An RGB triplet is a **coordinate vector**, and coordinates mean nothing without a basis: the pair (1, 0) points to different arrows in different bases. Each standard's RGB → XYZ matrix is its change-of-basis matrix, whose columns are its primaries' XYZ vectors. For sRGB (primaries at full strength, white D65) it is
-  ```
-  M_sRGB→XYZ = [0.4124  0.3576  0.1805]
-               [0.2126  0.7152  0.0722]
-               [0.0193  0.1192  0.9505]
-  ```
-- Converting P3 coordinates to sRGB coordinates composes two changes of basis, P3 → XYZ and then XYZ → sRGB:
-  ```
-  M_P3→sRGB = M_XYZ→sRGB · M_P3→XYZ = [ 1.2249  −0.2249   0.0000]
-                                      [−0.0421   1.0421   0.0000]
-                                      [−0.0196  −0.0786   1.0983]
-  ```
-- Its middle column is P3 green in sRGB coordinates, (−0.2249, 1.0421, −0.0786). The negative entries restate that this green is outside sRGB's gamut.
-- The two zeros in the last column appear because both standards use the same blue chromaticity. P3's blue is just sRGB's blue scaled by 1.0983.
-- The inverse, M_sRGB→P3, has only non-negative entries: rows (0.8225, 0.1775, 0), (0.0332, 0.9668, 0), (0.0171, 0.0724, 0.9105). Every sRGB primary is a non-negative mix of P3 primaries, so sRGB's whole gamut sits inside P3's.
-
 **Caveat (slide 50): the 2D diagram can mislead.** The xy diagram divides out overall brightness (§6), so a gamut drawn as a flat triangle hides how bright each chromaticity can get. Two gamuts whose triangles look one way in xy can compare quite differently once the missing brightness dimension is restored, i.e. as 3D volumes in the full tristimulus space of §3. Treat triangle comparisons as a first look, not the whole story.
 
 > **Summary**
 > - No RGB space has both real primaries and non-negative coordinates for every color, so any device triangle misses some visible colors.
 > - RGB numbers mean nothing until you know the primaries: (1, 0, 0) is a different color in sRGB and Display P3.
-> - Linear-algebra view: each standard is a basis; converting between them is a product of 3×3 change-of-basis matrices.
 > - The 2D xy triangle hides brightness, so gamut comparisons in 2D are only a first look.
 > - *Next (optional):* Part 2 follows a RAW image through the pipeline that must turn these numbers into a displayable photo.
 
@@ -368,17 +300,10 @@ C_sRGB = (1 + α) · C_linear^(1/2.4) − α            if C_linear > 0.0031308,
 
 **The round trip.** The encoding exponent 1/2.2 mirrors the eye's roughly-2.2 perceptual response, so code values are spread evenly in *perceived* brightness. The display then applies the inverse, decoding curve (raising to the power ≈ 2.2, or the exact inverse of the sRGB formula) before emitting light. Encode then decode is the identity, so the light leaving the screen is again proportional to the light the sensor recorded: the overall chain is linear. Gamma encoding is a storage trick, not a change in the picture.
 
-**Linear-algebra view: gamma is not linear, so the matrices come first.** A linear map must satisfy g(a·v) = a·g(v). Gamma fails that test:
-- The sRGB curve maps 0.18 to 0.4614, but twice the light, 0.36, maps to 0.6343, not 2 × 0.4614 = 0.9227.
-- The simple power law fails the same way: 0.6285 instead of 0.9173.
-
-Every color-space matrix in Part 1 (§5, §8) describes mixing *amounts of light*, so it is only valid on linear values. Multiplying gamma-encoded numbers by M_XYZ→sRGB would mix the wrong quantities. That is why the pipeline (§9) does its linear color conversion *before* gamma correction. (Y′CbCr, used later for chroma filtering and JPEG, is the deliberate exception: it is defined on gamma-encoded R′G′B′ as a coding convenience, not as a statement about mixing light. The prime marks that.)
-
 > **Summary**
 > - Sensors record light linearly; storing 8 bits linearly wastes most codes on bright tones, so images are gamma-encoded to space codes evenly in perceived brightness.
 > - Two versions: the simple power law I^(1/2.2), and the exact piecewise sRGB curve (linear piece near 0, power 1/2.4 above).
 > - The display undoes the encoding, so gamma is a storage trick, not a change to the picture.
-> - Linear-algebra view: gamma is not linear, so color matrices apply only to linear values.
 > - *Next (optional):* §11 pins down "frequency," "edges," and "sharpness" for image processing.
 
 ---
@@ -462,8 +387,6 @@ w(x, x') = exp( −|x − x'|² / (2σ²) )
 
 Nearby pixels get high weight, distant pixels get vanishingly small weight, and *nothing* about the pixels' actual intensity values enters the weight at all — this is exactly the low-pass filtering idea already introduced in Week 1 §22.1 (blurring by averaging neighbors), which Week 1 §20 formalizes as **convolution** with a **kernel** (a small grid of weights slid over the image). Here the Gaussian is one specific, spatially-weighted instance of §12.1's general framework, and its weights *are* the kernel. Because the weights don't depend on the noisy image's own values, this is both **linear** (the output is a fixed linear combination of inputs, regardless of what those inputs are) and purely **local** (weight decays with distance alone). (Slide 86 calls it a "Gaussian low-pass filter": low-pass in image frequency, cycles per pixel, per §11.)
 
-**Linear-algebra view: Gaussian filtering is a fixed matrix.** Stack the image into a vector **i**. The filtered image is G_σ**i**, where G_σ is a square matrix whose row for pixel x holds the normalized weights w(x, x′)/normalizer. For example, with σ = 1 px over a 5-pixel neighborhood, the middle pixel's row is (0.0545, 0.2442, 0.4026, 0.2442, 0.0545). Every row has the same pattern shifted over by one pixel, which makes G_σ a **convolution matrix** (Week 1 §20.7: a matrix built by repeating one kernel, shifted one position per row): convolving *is* multiplying by it, although code never builds it explicitly. G_σ doesn't depend on **i**, so the filter is linear: G_σ(a**i**₁ + b**i**₂) = aG_σ**i**₁ + bG_σ**i**₂.
-
 **Term-by-term:** *x* and *x′* are pixel positions; |x − x′| is their distance in pixels; **σ** (sigma) is the spatial standard deviation of the Gaussian, in pixels, and is **the knob you control**. The factor 2σ² sets the scale: a neighbor exactly σ pixels away gets weight exp(−1/2) ≈ 0.61 of the center's.
 
 **What σ does.** Analogy: σ is the radius of a "neighborhood vote." Small σ means only immediate neighbors get a say, so noise is averaged over few pixels and only slightly reduced, but edges stay fairly crisp. Large σ means pixels farther away also vote. More noise is averaged away, but more genuine detail is averaged away too. In short, a **larger σ → wider kernel → more smoothing → lower cutoff frequency** (finer detail is removed).
@@ -502,7 +425,6 @@ where *W(i_noisy, x)* denotes the small window of the noisy image centered at *x
 > - Most smoothing filters are one recipe: a weighted average with weights w(x, x′) and a normalizer; methods differ only in how they pick w.
 > - The Gaussian filter weights by distance only; σ is the neighborhood radius, and a larger σ is a lower cutoff frequency (H(f) is a Gaussian with σ_f = 1/(2πσ)).
 > - The median filter is nonlinear and ignores outliers.
-> - Linear-algebra view: a Gaussian filter is one fixed convolution matrix.
 > - *Next (optional):* §13 gives us a number to judge how good a reconstruction is.
 
 ---
@@ -574,14 +496,6 @@ The simplest approach: estimate each missing channel value at a pixel by averagi
 
 Naive interpolation like this tends to introduce visible color fringing/artifacts near edges — each channel is interpolated *independently*, ignoring the fact that a real edge should show up consistently across all three channels at once. The next methods address this in increasingly sophisticated ways.
 
-**Linear-algebra view: mosaicking is a selection matrix; naive demosaicking is a fixed matrix.**
-- Stack the true full-color image into one long vector **x** (every pixel's R, G, B). For a tiny 4×4 image that is 48 numbers, but the sensor records only 16.
-- The RAW image is **y** = **P**_Bayer **x**, where **P**_Bayer is a 16×48 **selection matrix**. Each row holds a single 1, picking out the one channel that pixel's color filter passes, and zeros everywhere else.
-- **P**_Bayer has rank 16, so by rank–nullity (§3) its null space has dimension 48 − 16 = 32. There are 32 independent ways to change the true image that the sensor cannot see at all.
-- So demosaicking is an **underdetermined inverse problem**: infinitely many images **x** give the same **y**. Every method below picks one by assuming something about what images look like (a **prior**): smooth channels (this subsection), smooth chroma, or edges shared across channels in the later subsections. Week 6 makes priors explicit, as regularized inverse problems.
-- Naive interpolation is itself **linear**: **x̂** = **E y** for a fixed 48×16 matrix **E**. For example, the green row for a non-green pixel has four entries of 1/4 on its neighbors. The same weights repeat at every pixel with the same Bayer position, so multiplying by **E** is implemented as convolution (the `np.roll` trick above), never by building the matrix.
-- The script's check on the green part: **E**(2**a** + 3**b**) equals 2**E a** + 3**E b** to within 4.4 × 10⁻¹⁶ (floating-point round-off) for random RAW vectors **a**, **b**.
-
 ### 14.2 Aside: The Optical Low-Pass Filter (OLPF)
 
 Each Bayer color channel is sampled more sparsely than the full pixel grid (green at half density, red and blue at a quarter). Fine scene detail beyond what that sparse sampling can represent causes **aliasing**: after demosaicking it shows up as false color patterns (moiré) that were never in the scene. The intuition needed here is just that under-sampling fine periodic detail folds it into spurious low-frequency patterns (Week 5 formalizes this with the sampling theorem).
@@ -652,13 +566,6 @@ and the inverse, exactly as the lecture states it structurally:
 - Cb and Cr: the blue-difference and red-difference chrominance channels.
 - Offsets (16, 128, 128): shift the channels into their conventional 0–255 digital ranges, so mid-gray chrominance sits at 128 and Cb/Cr can represent negative color differences with non-negative stored values.
 - *M*: the fixed 3×3 coefficient matrix above; *M⁻¹* is its inverse, used to undo the transform after Cb and Cr have been smoothed.
-
-**Linear-algebra view: an affine map, with three linear functionals as rows.**
-- With **v** = (R, G, B), **u** = (Y′, Cb, Cr) and offset **o** = (16, 128, 128), the conversion is **u** = M**v** + **o**. A linear map plus a constant shift is an **affine** map, not a linear one: black, **v** = (0, 0, 0), goes to (16, 128, 128), not to zero.
-- To undo it, remove the shift first, then undo the matrix: **v** = M⁻¹(**u** − **o**). This works because det M = 2.596 × 10⁶ ≠ 0, so M is invertible. Round trip for the red pixel below: (81.481, 90.203, 240.000) → (1, 0, 0).
-- Each row of M is a **linear functional**: a fixed vector you take the dot product with, just like §2's SSF. Row 1 reads off luma; rows 2 and 3 read off the two color differences.
-- Rows 2 and 3 each sum to 0, so any gray (R = G = B) gets 0 from them, which leaves Cb = Cr = 128.
-- The first column of M⁻¹ is (0.004566, 0.004566, 0.004566), i.e. 1/219 in every channel. Changing Y′ alone therefore moves R, G and B by equal amounts, straight along the gray axis. Conversely, Y′ is its own coordinate, so changing Cb or Cr leaves it untouched. That is why smoothing only Cb and Cr can't disturb luma detail.
 
 > **Optional deeper dive: library note, skimage's `rgb2ycbcr` uses this 8-bit-style scale.** HW2 suggests `skimage.color.rgb2ycbcr`, which applies exactly the formula above. Even with float R, G, B in [0, 1], the output is *not* in [0, 1]: Y′ runs from **16** (black) to **235** (white), and Cb and Cr from **16** to **240**, with **128** meaning "no color." (Checked on scikit-image 0.26: black gives Y′ = 16, white gives 235, and `ycbcr2rgb` returns the original values to floating-point round-off.)
 >
@@ -735,8 +642,6 @@ D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (�
 **Why this works.** Naive interpolation (§14.1) uses only same-channel neighbors, so it is blind to what the other channels say about where edges are. A sharp edge (an abrupt jump, i.e. high image-frequency content, §11) tends to appear in R, G and B together (here "channel" means R, G or B, not a light frequency).
 
 The curvature in the channel actually measured at a pixel is therefore a cheap proxy for the curvature the missing channels would show. Adding a scaled copy of it nudges the naive average toward the true edge-aware value, and the whole thing is still a fixed weighted sum of RAW pixels, i.e. an ordinary linear convolution.
-
-**Linear-algebra view.** Malvar–He–Cutler is still **x̂** = **E**_MHC **y** for one fixed matrix, exactly like §14.1's **E**. The correction α·D_R is itself a fixed weighted sum of RAW values, so adding it only changes the matrix's entries. PS2's "4 unique filter shapes" are its 4 distinct row patterns. The problem stays just as underdetermined, since **P**_Bayer's null space hasn't changed. What changes is the prior built into the matrix: "channels share curvature" instead of "each channel is smooth on its own."
 
 **PS2's practical framing.** There are several cases above, but by symmetry only **4 unique filter shapes** are needed (several cases are the same filter rotated or with colors swapped).
 
@@ -822,12 +727,6 @@ The filter therefore averages only same-side pixels: noise on each side is smoot
 **Why this makes the bilateral filter nonlinear, even though it is "just" a weighted average.** For the Gaussian the normalizer (2.4837) is the same at every pixel, because weights depend only on distance. For the bilateral filter the weights depend on pixel values, so the normalizer changes from pixel to pixel: 1.6074 here, but 2.0100 when centered one pixel to the left (using the samples available).
 
 A fixed weighted sum is linear; one whose weights are recomputed from the input is not. Script check: doubling the input doubles the Gaussian output (0.6750 = 2 × 0.3375), but the bilateral output for the doubled input is 0.2127, not 2 × 0.0977 = 0.1954, because doubling the input doubled every intensity difference and so changed the weights.
-
-**Linear-algebra view: a matrix that depends on its input.** The bilateral output is W(**i**)·**i**, where the weight matrix W(**i**) is rebuilt from the input each time. (This W is unrelated to §12.3's window W.) For the middle pixel above:
-- Row of W(**i**): (0.0825, 0.2953, 0.6221, 0.0000, 0.0000), output 0.0977.
-- Row of W(2**i**) for the doubled input: (0.0924, 0.1683, 0.7393, 0.0000, 0.0000), a *different* row. Its output W(2**i**)·2**i** = 0.2127 ≠ 2 × 0.0977.
-
-A matrix that changes with the vector it multiplies is not a linear map. Freeze W and you get a linear weighted average, but the bilateral filter never freezes it. That is how it can be "just a weighted average" and still nonlinear, unlike §12.2's fixed G_σ.
 
 **The parameter space (slide 98).** The lecture sweeps σ_s (its name for the spatial σ) over 2, 6, 18 and σ_r (its name for σ_i, "r" for range, meaning intensity) over 0.1, 0.25, ∞:
 - **Growing σ_s** lets the smoothing reach farther, averaging over wider areas of each flat region.
@@ -925,16 +824,6 @@ sharpened  = I + k · (I − blur(I))
 - I − blur(I) — the detail layer, in the same units as I; positive where a pixel is brighter than its neighborhood, negative where darker.
 - *k* — the sharpening strength, a dimensionless number you control. k = 0 leaves the image unchanged; larger k exaggerates detail more.
 
-**Linear-algebra view: sharpening is one fixed matrix.** Flatten the image I into a vector **i**, use a Gaussian blur G_σ (§12.2), and write **Id** for the identity matrix (the matrix that leaves every vector unchanged; not the image I). Then
-```
-sharpened = i + k·(i − G_σ i) = (Id + k·(Id − G_σ))·i = ((1+k)·Id − k·G_σ)·i
-```
-- Id − G_σ is the **high-pass** (detail-layer) matrix.
-- The whole operation is one fixed matrix, so Gaussian unsharp masking is linear: one convolution with one kernel.
-- For the worked example below (σ = 1 px with taps out to ±3 px, k = 1), the kernel is (−0.0044, −0.0540, −0.2420, 1.6009, −0.2420, −0.0540, −0.0044). It sums to 1, so flat regions pass unchanged. Applying it reproduces the table's 0.0197 and 0.9803.
-- Its negative side lobes are the undershoot and overshoot.
-- With a bilateral blur, G_σ becomes §16.2's input-dependent W(**i**), so bilateral sharpening is nonlinear.
-
 > **Worked example: Gaussian unsharp masking overshoots at an edge.** 1D step from 0.2 to 0.8, Gaussian blur with σ = 1 px, k = 1 (illustrative values). The eight pixels around the edge:
 >
 > | Pixel position | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
@@ -955,7 +844,6 @@ sharpened = i + k·(i − G_σ i) = (Id + k·(Id − G_σ))·i = ((1+k)·Id − 
 > **Summary**
 > - Unsharp masking: sharpened = I + k·(I − blur(I)); the blur gives the base, the difference is the detail layer, and k boosts it.
 > - With a Gaussian blur, edges land in the detail layer, causing overshoot/undershoot halos; with a bilateral blur, edges stay out of it and halos shrink.
-> - Linear-algebra view: Gaussian sharpening is one fixed matrix (1+k)·Id − k·G_σ; bilateral sharpening is nonlinear.
 > - *Next (optional):* §18 maps camera colors onto a standard color space.
 
 ---
@@ -979,7 +867,7 @@ It is done as two linear conversions: camera-native XYZ → standard CIE XYZ (§
 
 *C* is a 3×3 color matrix found by **calibration** (comparing readings against a **calibration target**, an object whose true values are known; Week 4 §9.1): photograph targets with known XYZ values (e.g. a color chart) and fit the matrix that best maps the camera's readings onto them. It is **camera-specific** (different sensors have different filters), fixed by the manufacturer or calibration, not something the photographer sets. Because the camera's SSFs are generally not exact linear combinations of the standard observer's matching functions, a 3×3 matrix is a best fit, not an exact conversion.
 
-**Step 2: CIE XYZ → linear sRGB.** This matrix is standardized (IEC 61966-2-1) and doesn't need to be looked up. It follows from sRGB's primaries and D65 white by the same construction as §8's worked example: build the sRGB → XYZ matrix column by column, then invert it. Shown below are the left matrix as computed and, on the right, the inverse as the standard publishes it (rounded to 4 decimals; the exact inverse differs in the fourth decimal, see the linear-algebra view below):
+**Step 2: CIE XYZ → linear sRGB.** This matrix is standardized (IEC 61966-2-1) and doesn't need to be looked up. It follows from sRGB's primaries and D65 white by the same construction as §8's worked example: build the sRGB → XYZ matrix column by column, then invert it. Shown below are the left matrix as computed and, on the right, the inverse as the standard publishes it (rounded to 4 decimals; the exact inverse differs in the fourth decimal):
 
 ```
 sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
@@ -993,17 +881,6 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 - The right matrix undoes the left. Its **negative entries** are the key feature: an XYZ color outside the sRGB triangle yields a negative (or above-1) channel, which is §7's "outside the gamut" statement made numeric.
 - Sanity check from the script: D65 white's XYZ maps to exactly (1, 1, 1).
 - Inputs are XYZ with white scaled to Y = 1; outputs are linear sRGB values, valid (displayable) only when all three lie in [0, 1]. Gamma encoding (§10) comes *after* this.
-
-**Linear-algebra view: composing and inverting changes of basis.**
-- **Columns are the new basis vectors.** The columns of a change-of-basis matrix are the new basis vectors written in the old coordinates. M_sRGB→XYZ's columns are sRGB's red, green and blue primaries written in XYZ: (0.4124, 0.2126, 0.0193), (0.3576, 0.7152, 0.1192), (0.1805, 0.0722, 0.9505). Projecting each onto xy (§6) gives back exactly (0.640, 0.330), (0.300, 0.600), (0.150, 0.060), sRGB's corners.
-- **Composition.** The two steps are v_sRGB = M_XYZ→sRGB · (C · v_cam) = (M_XYZ→sRGB · C) · v_cam. The ISP can multiply the two matrices once and apply the single combined 3×3 matrix to every pixel. Order matters (matrix products don't commute): the rightmost matrix is applied first.
-- **The inverse undoes a conversion.** M_XYZ→sRGB = (M_sRGB→XYZ)⁻¹. Multiplying the two 4-decimal matrices printed above gives the identity Id to within 3.5 × 10⁻⁵:
-  ```
-  [ 0.999999   0.000023   0.000006]
-  [ 0.000016   1.000035  −0.000006]
-  [−0.000006   0.000025   1.000002]
-  ```
-  The leftover comes from rounding: the standard's published 4-decimal inverse differs slightly from the exact inverse of the left matrix, (3.2410, −1.5374, −0.4986 / −0.9692, 1.8760, 0.0416 / 0.0556, −0.2040, 1.0570).
 
 > **Worked example: a color sRGB can't show.** Take Display P3's green primary (§8), a real color that P3 screens display. Its XYZ is (0.2657, 0.6917, 0.0451), chromaticity xy = (0.2650, 0.6900). Through the exact XYZ → sRGB inverse (the published 4-decimal matrix gives (−0.2247, 1.0419, −0.0786), the same to rounding):
 >
@@ -1022,7 +899,6 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 > **Summary**
 > - Gamut mapping converts camera RGB → CIE XYZ (calibrated 3×3 matrix) → linear sRGB (standard matrix), both in linear light.
 > - Negative or >1 sRGB values mean the color is outside the sRGB gamut; clipping is cheap but shifts hue and merges detail, compression moves colors in smoothly.
-> - Linear-algebra view: the two steps compose into one 3×3 matrix; the inverse undoes a conversion.
 > - *Next (optional):* §19 shrinks the finished image for storage.
 
 ---
@@ -1041,18 +917,11 @@ JPEG compression is lecture content, not one of HW2's tasks, so this is covered 
 5. **Quantize the resulting DCT coefficients** — divide each coefficient by a (typically image-frequency-dependent) step size and round, discarding fine distinctions in coefficients human vision is least likely to notice (typically the higher image-frequency ones, where §11's fine detail and noise live).
 6. **Entropy/run-length code the quantized coefficients** — a lossless compression step (no further information is thrown away here) that exploits the fact that quantization tends to leave long runs of zero-valued coefficients, especially at high image frequencies (cycles per pixel) within a block.
 
-**Linear-algebra view: the DCT is a change to an orthonormal cosine basis.**
-- One 8×8 block of one channel is 64 numbers: a vector **b** in the 64-dimensional space ℝ⁶⁴.
-- The 2D DCT chooses 64 basis vectors, each an 8×8 cosine pattern (one horizontal image frequency times one vertical). The block's DCT coefficients are its **coordinates** in that basis: **c** = T**b**, where T is the 64×64 matrix whose rows are those patterns.
-- The basis is **orthonormal**: every pattern has length 1 and every two are perpendicular. So T⁻¹ = Tᵀ, and the inverse is just the transpose, with no system to solve. Script check: the largest entry of T·Tᵀ − Id is 1.4 × 10⁻¹⁵. A random block's vector length is also unchanged by T to 15 digits.
-- Step 4 therefore loses nothing. **Quantization** (step 5) is where information goes: rounding coordinates coarsely, and zeroing many, discards the block's components along mostly high-frequency basis vectors. The decoder rebuilds Tᵀ·(kept coordinates).
-
 No full DCT derivation is needed here — the conceptual shape (transform → subsample what's least noticeable → quantize what's least noticeable → losslessly pack what's left) is what matters for this level of treatment.
 
 > **Summary**
 > - JPEG converts to Y′CbCr, subsamples chroma (4:4:4, 4:2:2, 4:2:0), splits into 8×8 blocks, DCTs each, quantizes, then entropy-codes losslessly.
 > - The loss happens only at chroma subsampling and quantization, both aimed at detail the eye barely notices.
-> - Linear-algebra view: the DCT is a lossless change to an orthonormal cosine basis.
 > - *Next (optional):* §20 puts the whole pipeline together on a real camera file.
 
 ---
@@ -1076,10 +945,8 @@ The formats differ between manufacturers, so you need a decoder to get at the nu
 2. **Subtract the black level.** A pixel that received no light doesn't read 0: the electronics add a fixed offset (a "pedestal") so noise below it isn't clipped off. Subtract that **black level** from every pixel first. This is the same idea as the dark frame of §9, using a per-camera constant instead of a measured frame.
 3. **Normalize by the white level.** Divide by (white level − black level), so a saturated pixel (full-well capacity, Week 4 §2.4) maps to 1 and the image is on a [0, 1] linear scale.
 4. **White balance.** Multiply each color channel by its own gain so that an object that's neutral gray in the scene comes out with R = G = B. Without it, images take on the color cast of the light source (orange under indoor bulbs, blue in shade). The camera's "as shot" gains are stored in the file.
-   - *Linear-algebra view:* white balance is multiplication by a **diagonal matrix** diag(*g_R*, *g_G*, *g_B*). Each color basis vector is scaled by its own gain; no channel is mixed into another.
 5. **Demosaic** (§14), and optionally **denoise** (§16). These are the steps HW2 asks you to implement.
 6. **Convert camera RGB to a standard color space.** The sensor's own R, G, B filters don't match sRGB's primaries (§7). A 3×3 matrix stored in or derived from the file's metadata converts them.
-   - *Linear-algebra view:* a **change of basis** from the camera's color basis to sRGB's, exactly like §5's RGB → XYZ conversions.
 7. **Gamma-encode** (§10) and quantize to 8 bits for display.
 
 **Useful `dcraw` options** for building a fair comparison:

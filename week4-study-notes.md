@@ -125,13 +125,6 @@ Every row delivers (within ~13%, under 0.2 stop) the *same* exposure. The wobble
 
 Exposure fixes only the *brightness*. The *path* along the ladder decides what kind of image you get.
 
-**Linear-algebra view (equivalent exposures as a null space).**
-
-- Take logarithms: log₂*H* = log₂*L* + log₂*t* − 2·log₂*N* (+ a constant). The multiplicative formula becomes linear.
-- Collect your two settings into **s** = (log₂*t*, log₂*N*). A change Δ**s** changes log-exposure by the row vector **r** = [1, −2] applied to it: Δlog₂*H* = **r**·Δ**s**.
-- The setting changes that leave exposure *unchanged* form the **null space** of **r**: every multiple of (2, 1). "One stop wider aperture (log₂*N* down by ½), one stop shorter time (log₂*t* down by 1)" is (−1, −½), on that line.
-- So the ladder is literally a walk along the null space of a 1×2 matrix. Moving *off* the line changes brightness; moving *along* it trades depth of field against motion blur.
-
 ### 2.4 Getting it wrong: underexposure, overexposure, saturation
 
 Each pixel's bucket has a finite size: the **full-well capacity**, the maximum number of electrons a photodiode can hold.
@@ -221,14 +214,6 @@ Averaging keeps the signal and shrinks the noise *variance* by *K* (the standard
 
 How the averaged SNR scales with *K* depends on what σ² is made of; that is the exercise HW3 Task 2 poses for its two noise models, and it is left to the assignment.
 
-**Linear-algebra view.**
-
-- Averaging *K* frames is a dot product with the weight vector **a** = (1/*K*, ..., 1/*K*).
-- If the *K* noise values are independent with equal variance σ², their covariance matrix is σ²**I** (diagonal, by independence). The output variance of any linear combination **a**ᵀ**n** is **a**ᵀ(σ²**I**)**a** = σ²‖**a**‖².
-- Here ‖**a**‖² = *K*·(1/*K*)² = 1/*K*, reproducing σ²/*K*. The *K* is the number of entries; the (1/*K*)² is the squared weight.
-- This is the "uncorrelated noise behaves like orthogonal vectors" fact of Week 2 §19: squared length of the output = sum of squared lengths of its parts.
-- If the noises were *correlated*, the covariance matrix would have non-zero off-diagonal entries and the answer would exceed σ²/*K*. Fixed-pattern noise is the extreme case, every entry 1, where nothing is gained.
-
 > **Worked example (a mixed-noise case, deliberately not either of HW3's cases).** Per frame: mean 20 photons, Poisson shot noise (variance 20) plus Gaussian read noise σ = 4 (variance 16), *K* = 4 frames.
 > - One frame: variance 20 + 16 = 36, σ_total = 6, SNR = 20/6 ≈ **3.33**.
 > - Average of 4: mean 20; variance 36/4 = 9, σ_total = 3; SNR = 20/3 ≈ **6.67**, a factor 2 = √4 better.
@@ -298,7 +283,7 @@ Illustrative numbers: a subject crossing a 4000-pixel-wide frame in 2 s moves at
 
 The streak grows *linearly* with exposure time. "Freezing motion" just means making *t* small enough that the streak is shorter than about one pixel.
 
-*For uniform motion along one direction, each recorded pixel is a time average of the scene points that slid past it, which is a convolution with a flat "box" kernel (Week 1 §20, §21). §23 builds the matrix and Fourier view of this and shows how to make it invertible.*
+*For uniform motion along one direction, each recorded pixel is a time average of the scene points that slid past it, which is a convolution with a flat "box" kernel (Week 1 §20, §21). §23 builds the Fourier view of this and shows how to make it invertible.*
 
 ### 4.4 Worked example: why long exposures are cleaner
 
@@ -701,13 +686,6 @@ X̂ = exp( [ Σᵢ wᵢ·(log(I_lin,i) − log(tᵢ)) ] / [ Σᵢ wᵢ ] )
 - The outer exp() undoes the log.
 - No diagram is needed: like Week 3 §1's spectral-sensitivity integral, this relates numbers computed *per pixel*, not a shape in space.
 
-**Linear-algebra view (the simplest possible weighted least-squares problem).**
-
-- Treat *yᵢ* = log(*I_lin,i*) − log(*tᵢ*) as *N* noisy observations of one unknown constant *μ* = log *X*.
-- Minimizing Σᵢ *wᵢ*(*yᵢ* − *μ*)² is ordinary weighted linear regression whose "design matrix" is a column of *N* ones (the model has no other free parameter).
-- The weighted normal equations **Aᵀ W A** *μ* = **Aᵀ W y** then collapse, for this all-ones **A**, to exactly the weighted-average formula above.
-- Every pixel runs this identical 1-parameter regression independently; nothing here is more exotic than fitting a mean.
-
 ### 10.4 Debevec's triangle weight, and displaying the weights (supports HW3 Task 1.1)
 
 *(Beyond the lecture's slides, which print §10.2's Gaussian bump.)*
@@ -759,12 +737,6 @@ w(z) = 2(1 − z)     if z > 0.5        (equivalently  w(z) = 1 − |2z − 1| =
 
 - Unknowns: the 256 values of *g* plus one ln *E_j* per sampled pixel.
 - Equations: one per (pixel, exposure) pair.
-
-**Linear-algebra view.**
-
-- Stacking the equations gives one big overdetermined linear system **A** *u* = **b**: *u* holds the 256 *g* values and the ln *E_j* values; each row of **A** has just two nonzero entries (one selecting *g*(*Z_ij*), one selecting ln *E_j*); **b** holds the known ln *t_i*.
-- It is solved by **linear least squares**, weighted by §10.2's confidence weights, with an extra row-block penalizing the second difference of *g* so the curve is smooth.
-- One extra row pins *g* at mid-gray to 0, because the system only determines *g* up to an additive constant (the null space of **A** contains "add the same constant to every *g* and subtract it from every ln *E*").
 
 **In practice (bonus only).** OpenCV packages this as a calibrate-then-merge pair: a Debevec calibrate object (`cv2.createCalibrateDebevec`) estimates the curve from the stack and times; a Debevec merge object (`cv2.createMergeDebevec`) applies it and fuses the stack into an HDR image, as in the OpenCV HDR tutorial the assignment links. The main HW3 task skips this, since the PNGs' curve is known (§9.5).
 
@@ -953,13 +925,6 @@ HW3's starter code calls one of **OpenCV**'s (the standard open-source computer-
 
 **Step 5, briefly.** Gradient-domain tonemapping computes the image's spatial gradients, attenuates the large gradients (the steep brightness jumps that overflow the display) while leaving small ones alone, then **re-integrates** the modified gradient field into an image by solving a **[Poisson equation](https://en.wikipedia.org/wiki/Poisson%27s_equation)**. It compresses range while preserving fine detail, with no explicit base/detail split.
 
-**Linear-algebra view (gradient-domain tonemapping is solving a linear system).**
-
-- Computing an image's gradient is a **linear operator**: a fixed finite-difference matrix **G** acting on the image vector (Week 1 §21's "convolution is a matrix" idea, with a difference kernel instead of a blur kernel).
-- Scaling the gradient field rescales **G**'s output entry by entry.
-- Recovering a displayable image from the *modified* gradients means finding **x̂** whose own gradient **Gx̂** best matches the target: a least-squares problem whose solution (the discrete Poisson solve) is the normal-equations inverse of **G**.
-- "Re-integrating a gradient field" is, underneath the graphics vocabulary, solving a linear system for the vector that a linear operator was applied to.
-
 > **Summary**
 > - A per-channel curve washes out color; tonemapping luminance only (xyY) keeps color but flattens detail; a base/detail split keeps detail but makes halos with a blur; an edge-preserving (bilateral) filter removes halos.
 > - Rule to remember: compress the *coarse* brightness, keep the *fine* detail and the chromaticity.
@@ -1056,13 +1021,6 @@ where *u*, *v* are image frequencies as built in Week 1 §19.2 (cycles per pixel
 
 **A word we will use a lot: broadband.** A PSF or OTF is **broadband** when its OTF has **no exact zeros**: every spatial frequency survives with *some* nonzero strength, even if weakly. Being broadband is what makes a blur, in principle, invertible.
 
-**Linear-algebra view (recapping Week 1 §20, §21 and Week 2 §3).**
-
-- Convolution by a fixed kernel is a **linear, shift-invariant operator**: a **Toeplitz/circulant matrix** acting on the flattened image vector (Week 2 §3 applied this to a finite pinhole's blur disc).
-- Every sinusoid is an eigenvector of that matrix, with eigenvalue equal to the kernel's Fourier transform. So the OTF *is* the convolution matrix's eigenvalues, one per spatial frequency.
-- A frequency where the OTF is exactly zero has a zero eigenvalue: the matching Fourier basis vector lies in the matrix's **null space**, a direction in "scene space" this optical system provably cannot see.
-- A **broadband** OTF means a trivial null space, so the convolution matrix is, in principle, invertible.
-
 ### 18.3 Filtering in the primal domain vs. the Fourier domain (PS4 Task 1)
 
 PS4 Task 1 has you implement the *same* filtering two ways, to see the OTF's practical payoff. A **low-pass filter** (Week 1 §22.1) can be applied by convolving with a low-pass PSF in the spatial ("primal") domain, or by multiplying by the corresponding low-pass OTF in the Fourier domain. A **high-pass filter** (recovering fine detail) is the complement of the low-pass version (Week 1 §21's complementary-projection idea and Week 1 §20.6's "blur-then-subtract is a convolution"), now in this week's vocabulary:
@@ -1123,7 +1081,6 @@ The lecture (Veeraraghavan et al., 2007) photographs the same out-of-focus point
 
 - The **circular aperture's OTF has visible dark rings**: frequencies where it drops to (near) zero.
 - The **coded aperture's OTF has no such rings**: it stays nonzero (if uneven) across the whole frequency range shown.
-- In §18.2's linear-algebra language: the circular PSF's convolution matrix has a genuine null space (those frequencies are unrecoverable by any algorithm); the coded PSF's matrix has a **trivial** null space, since every frequency survives with *some* nonzero strength.
 
 That is what the lecture calls **broadband**. A broadband PSF's blur is, in principle, invertible by deconvolution (Weeks 5–6), whereas a circular/Airy PSF has provably lost information at its zero-crossing frequencies, however good the algorithm. The lecture states two payoffs: coding the aperture (1) **preserves high frequencies** a circular aperture would destroy, giving (2) **more content available to help determine correct depth**, which is what makes coded-aperture depth estimation possible (§21).
 
@@ -1142,7 +1099,7 @@ That is what the lecture calls **broadband**. A broadband PSF's blur is, in prin
 Recall Week 2 §9: an object away from the focused distance *S* produces a circle of confusion of size *c* = *m*·*D*·|*O*−*S*|/*O* (Week 2 §9.2), depending on its own depth *O*. Trying to "deblur" an ordinary out-of-focus photo hits two problems:
 
 1. **The PSF's scale depends on unknown depth.** Since *c* varies with *O*, and *O* is generally unknown per scene point, no single deconvolution kernel undoes the blur everywhere; each depth needs its own.
-2. **The PSF usually isn't invertible.** Even at one known depth, an ordinary circular/Airy PSF has the null-space problem of §19.3: some frequencies are gone.
+2. **The PSF usually isn't invertible.** Even at one known depth, an ordinary circular/Airy PSF has the problem of §19.3: some frequencies are gone.
 
 ### 20.2 Two engineering fixes, one per problem
 
@@ -1242,13 +1199,6 @@ Two brief pointers to where coded apertures appear outside ordinary cameras:
 
 §4.3 built the core mechanism: an object moving during the exposure smears across the sensor by (image-plane speed × exposure time) pixels. With the PSF/OTF vocabulary of §18, we can now say this precisely. The lecture states the difficulty in two parts: **(1)** the motion PSF may be unknown and different for every differently-moving object in the frame; **(2)** the motion PSF is difficult to invert.
 
-**Linear-algebra view (motion blur is a linear filter).**
-
-- Each recorded pixel is the *time average* of the scene points that slid past it. For uniform motion along one direction, that is a **convolution** (Week 1 §20) of the sharp image with a **box kernel**: a flat line segment as long as the streak.
-- Stack the image into a vector **x**, and blur is one matrix–vector product **y** = **B x**, where **B** is a banded (Toeplitz) matrix with the box kernel repeated along its diagonals.
-- Undoing the blur means inverting **B**, and that is badly conditioned (§23.2): the box's Fourier transform has *exact zeros*, so detail at those frequencies is multiplied by zero and lands in **B**'s null space.
-- (This is exact for a periodic, wrap-around image. For a finite image with truncated edges, **B** has tiny but not necessarily exactly zero singular values there, which is just as bad in practice.)
-
 ### 23.2 The box shutter's sinc zeros vs. the coded shutter's broadband spectrum
 
 **What problem these kernels address.** A moving object smears, and we want to undo the smear. How well that is possible depends on the *blur kernel*, the pattern spreading each point's light along the motion direction, and the shutter's open/closed schedule sets it.
@@ -1261,7 +1211,7 @@ Two brief pointers to where coded apertures appear outside ordinary cameras:
 
 - An ordinary shutter is open continuously, so the kernel is a flat **box function** of width *W*, the streak length in pixels (§4.3: image-plane speed × exposure time).
 - The Fourier transform of a box is a **sinc function** (a decaying oscillation that crosses zero at regular spacing), and it has **exact zeros** at spatial frequencies *f* = *n*/*W* for every nonzero integer *n*.
-- At each, the OTF is exactly 0: whatever detail the scene had at that spatial frequency is destroyed, and no deconvolution can recover it. This is the null-space loss of §23.1.
+- At each, the OTF is exactly 0: whatever detail the scene had at that spatial frequency is destroyed, and no deconvolution can recover it.
 
 **Flutter shutter (Raskar et al., 2006): a coded filter.**
 
@@ -1277,13 +1227,6 @@ Two brief pointers to where coded apertures appear outside ordinary cameras:
 - The coded shutter's open/closed sequence is a designed, precomputed binary code (chosen by Raskar et al. to be broadband); the lecture gives no closed form for it, only the resulting Fourier-magnitude behavior.
 
 **Diagram.** (See Fig. — companion diagram: a box kernel and its sinc-shaped, zero-crossing Fourier magnitude on one side; a flickered/coded kernel and its zero-free, broadband magnitude on the other, reproducing the lecture's "traditional camera: box filter" vs. "flutter shutter: coded filter" comparison.)
-
-**Linear-algebra view (extending §23.1 with the OTF vocabulary).**
-
-- The box-shutter and flutter-shutter blurs are the *same kind* of matrix, a banded Toeplitz convolution matrix **B**, differing only in which kernel fills the bands.
-- The box kernel's **B** (periodic form, so eigenvalues are exactly the DFT) has eigenvalues, its OTF, that hit exactly zero at the sinc's zeros: a **nontrivial null space**, unrecoverable directions in image space, exactly as in §19.3's circular-PSF case.
-- The coded kernel's **B** has an OTF nonzero at every frequency: a **trivial null space**, so **B** is invertible in principle and deconvolution is *well-posed* rather than impossible.
-- As with any real inversion, frequencies where the OTF is merely *small* still amplify noise heavily, the trade-off Wiener deconvolution (Week 5) manages.
 
 **Application: license plate retrieval.** The lecture shows flutter shutter recovering legible license-plate text from a fast-moving car that a conventional long exposure rendered as an unreadable smear: a concrete payoff of trading the box's null-space frequencies for the coded kernel's invertible spectrum.
 
@@ -1311,7 +1254,7 @@ Each scheme's SNR is its mean divided by the square root of its total noise vari
 
 **Caveats the idealized homework model leaves out.**
 
-1. The SNR above is that of the *recorded* image. Deblurring a flutter-shutter image multiplies noise by an extra code-dependent amplification when **B** (§23.1) is inverted, a topic of Week 5's Wiener-deconvolution material.
+1. The SNR above is that of the *recorded* image. Deblurring a flutter-shutter image multiplies noise by an extra code-dependent amplification when the blur (§23.1) is inverted, a topic of Week 5's Wiener-deconvolution material.
 2. Burst frames of a *moving* object combine cleanly only after alignment (motion within a short frame is small but nonzero between frames).
 
 Both are modeling assumptions to state in a write-up, not numbers to compute.
@@ -1374,7 +1317,7 @@ The lecture's reference list closes Part 2 with the papers cited by name in §19
 Two formal topics are built properly starting next week, both previewed informally here and in earlier weeks:
 
 - **Week 5, "Sampling, Linear Systems, Deconvolution."** This is where **PS4's Task 2** (deconvolution and inverse filtering, and **Wiener deconvolution** specifically) belongs: the formal machinery for inverting a known PSF/OTF (§18), including the noise amplification §23.2 flagged for near-zero (rather than exactly-zero) OTF values. Week 5 also formalizes the sampling theorem and aliasing (used informally in Week 3 §14.2) and the exact discrete Fourier transform machinery Week 1 §19 built only partially.
-- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §21 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §14.1; the circular and box-kernel null spaces of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
+- **Week 6, "Regularized Inverse Problems with ADMM."** This is where **PS4's Task 3** (gradient descent and stochastic gradient descent, as a general method for problems of the form minimize ½‖**A**x − b‖²) belongs, together with the natural-image priors Week 1 §21 forward-pointed to: the framework for under-determined or ill-posed inverse problems (demosaicking's null space, Week 3 §14.1; the circular and box-kernel OTF zeros of §19.3 and §23.2) by adding assumptions about what a plausible image looks like.
 
 > **Summary**
 > - Week 4 left one question open: how to actually *invert* a known blur (PSF/OTF) in the presence of noise.

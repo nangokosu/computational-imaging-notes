@@ -144,14 +144,9 @@ Note the M and L curves overlap *heavily* — so the "green" and "red" cones res
 
 Two physically different spectra that produce the same 3 cone responses look *identical* to you — this phenomenon is called **metamerism**, and it's the whole reason RGB displays/cameras work at all (they don't need to reproduce the true spectrum, just match your 3 cone responses).
 
-**Linear-algebra view (cone responses as inner products):** sample a light's spectrum at N wavelengths and it becomes a vector **s** with N entries (the power at each wavelength). Each cone type's sensitivity curve, sampled at the same N wavelengths, is another N-entry vector, and that cone's response is the **inner product** (dot product) of the two: multiply wavelength by wavelength, then add up. Stack the three sensitivity vectors as the rows of a 3×N matrix **C**, and the whole eye's color measurement is one matrix–vector product, **c** = **C s**, giving a 3-entry vector (L, M, S). That is a **linear map from N dimensions down to 3**: a huge amount of spectral detail is squashed into three numbers.
-
-**Linear-algebra view (metamerism as a null space):** the **null space** of **C** is the set of spectrum-difference vectors **n** with **C n** = 0 — changes to the spectrum that no cone responds to. Any two spectra **s** and **s** + **n** give the same (L, M, S), so they are metamers; metamerism is exactly "differs by a null-space vector." The null space is big: with, say, samples every 10 nm across 400–700 nm (N = 31), a rank-3 matrix leaves a 31 − 3 = 28-dimensional null space, so most spectral detail is invisible. (Real spectra must also stay non-negative, which limits which null-space vectors you can actually add, but the dimension count shows why metamers are common.) Because (L, M, S) lives in a 3D vector space, any invertible 3×3 matrix gives an equally complete **change of basis** for color. That is what XYZ and RGB color spaces are, and Week 3 builds those 3×3 conversions explicitly.
-
 > **Summary**
 > - Three cone types (S, M, L) each report one weighted sum of the light spectrum, so the eye reports 3 numbers, not a wavelength.
 > - Different spectra with the same 3 numbers are **metamers**; this is why RGB displays and cameras work.
-> - Linear-algebra view to remember: **c** = **C s**, a 3×N matrix squashing N spectral samples to 3, with a large null space.
 > - *Next:* §7 compares the whole eye with a camera, including how a camera gets color.
 
 ---
@@ -174,8 +169,6 @@ A digital camera sensor is actually colorblind on its own — each individual li
 
 Because each pixel only ever records one channel, the full-color image you eventually see — where every pixel appears to have a red, green, *and* blue value — isn't what the sensor directly measured. It's a **reconstruction**: for each pixel, the two channels it didn't measure are estimated by looking at its neighboring pixels (which, thanks to the repeating tile, measured different colors) and interpolating between them. This estimation step is called *demosaicking* (Week 3) — it means two-thirds of every pixel's RGB value in a final photo is computed, not measured.
 
-**Linear-algebra view (the Bayer mosaic as a linear operator):** stack the "true" full-color image into one long vector with 3 entries per pixel (R, G, B), so 3·P entries for P pixels. The sensor records one number per pixel, so its raw output is a P-entry vector. The mosaic is a P×3P **linear operator**: each row has a single 1 that picks out whichever channel that pixel's filter lets through, and 0 everywhere else. This matrix has far fewer rows than columns, so like the cone matrix in §6 it has a large **null space** (any change to the channels a pixel did *not* measure is invisible to it). Demosaicking therefore cannot simply invert the matrix. It has to bring in extra assumptions, such as "neighboring pixels have similar colors," to choose one full-color image among all those consistent with the measurement (Week 3).
-
 Two important **disanalogies** to remember (both matter again for demosaicking in Week 3 and for adaptive sampling schemes later):
 1. The retina's cone mosaic is **irregular/random**, not a neat repeating grid like a camera's Bayer pattern.
 2. Sampling density is **non-uniform** (dense at the fovea, sparse at the periphery); a camera sensor samples uniformly across the whole frame.
@@ -183,7 +176,6 @@ Two important **disanalogies** to remember (both matter again for demosaicking i
 > **Summary**
 > - Eye to camera: cornea + lens = lens, pupil = aperture, retina = sensor, cones = color filters.
 > - Each camera pixel measures one color only (Bayer RGGB mosaic); full-color pixels are *estimated* from neighbors (**demosaicking**, Week 3), so two-thirds of each final pixel's RGB value is computed.
-> - Linear-algebra view to remember: the mosaic is a P×3P selection matrix with a large null space, so it cannot simply be inverted.
 > - The eye differs in two ways: its cone mosaic is irregular, and its sampling density is non-uniform (dense fovea, sparse periphery).
 > - *Next:* §8 turns the eye's angular resolution into numbers.
 
@@ -567,8 +559,6 @@ Stated more generally: essentially any signal — a sound wave over time, bright
 
 **Worked example:** let `s(t) = sin(2π·3t) + 0.5·sin(2π·7t)` — a signal built from exactly two pure tones: one oscillating 3 times per unit of *t* with amplitude 1, another oscillating 7 times per unit of *t* with amplitude 0.5. Its Fourier transform is *not* a smooth curve — it's zero almost everywhere except two sharp spikes: one at frequency 3 (reflecting amplitude 1), one at frequency 7 (reflecting amplitude 0.5). That's the core idea: the frequency-domain view tells you exactly which pure frequencies are "in" a signal and how strong each one is, and a signal built from only a few frequencies produces a spectrum that's mostly zero with a few spikes.
 
-**Linear-algebra view (the Fourier transform as a change of basis):** a signal of N samples is just a vector with N entries. Its usual description ("value at sample 0, value at sample 1, ...") is its coordinates in the **standard basis**, where each basis vector is a single spike at one position. The discrete Fourier transform (DFT) rewrites the *same* vector in a different basis made of N sampled sinusoids, one per frequency, which makes it a **change of basis**. These sinusoidal basis vectors are **orthogonal**: the inner product of any two different ones is 0. So each Fourier coefficient is simply the inner product of the signal with that frequency's basis vector ("how much does the signal look like this wave?"). The inverse transform is the inverse change of basis: add the basis vectors back up, each scaled by its coefficient. No information is lost, because N independent basis vectors describe N-dimensional space completely.
-
 **Worked example — a 4-point DFT basis (N = 4):** the four basis vectors, written as rows, are
 
 ```
@@ -610,8 +600,6 @@ This is the single most common point of confusion, worth stating bluntly: when y
 
 (A complex number's magnitude and phase are just two numbers packaged together — magnitude answers "how much," phase answers "shifted by how much." It's the same amplitude/phase pair from §19.1's sine waves, just stored compactly as one number.)
 
-**Linear-algebra view (why the output is the same shape):** flatten an *H*×*W* single-channel image into one vector of *H*·*W* numbers. The 2D gratings of §19.2, one for each integer pair `(k_u, k_v)`, are *H*·*W* orthogonal basis vectors for that same space. `fft2` is the change of basis from pixel coordinates to grating coordinates, the 2D version of §19.1's 4-point example. A change of basis never changes how many coordinates you need, so *H*·*W* numbers go in and *H*·*W* come out. But entry `[r, c]` means "pixel at (c, r)" in the input and "coefficient of grating `(k_u, k_v) = (c, r)`" in the output. That is why the two arrays can't be compared entry by entry.
-
 **Units, precisely — array index vs. cycles per pixel.** `k_u` and `k_v` are *not yet* the `u` and `v` from §19.2's grating formula. `k_u` is a plain integer (0 to *W*−1 before `fftshift`, roughly −*W*/2 to *W*/2 after) that counts how many complete stripe-cycles that grating fits across the image's *entire width* — cycles across the whole image, not cycles per pixel. To get the actual image frequency in cycles per pixel — the same `u`, `v` used everywhere else in this part — divide by the corresponding dimension:
 
 ```
@@ -647,7 +635,6 @@ Concretely, since rows index *v* and columns index *u*, each of the raw array's 
 > **Summary**
 > - The Fourier transform rewrites a signal or image as a sum of waves (amplitude + phase per frequency); in 2D the waves are gratings with horizontal frequency *u* and vertical frequency *v*, in cycles per pixel.
 > - `fft2` returns an array of the same shape but a different meaning: entry `[k_v, k_u]` is a *grating's* strength and shift, not a pixel; **u = k_u / W, v = k_v / H**.
-> - Linear-algebra view to remember: the DFT is a change from the pixel basis to an orthogonal basis of sinusoids, so no information is lost.
 > - `fftshift` only moves the zero-frequency (DC) entry from the corner to the center.
 > - *Next:* §20 builds convolution, the spatial-domain twin of multiplying spectra.
 
@@ -749,7 +736,7 @@ Top-left output: `(1 + 2 + 4 + 5)/4 = 3`; the other three follow the same way. "
 
 ### 20.7 The convolution theorem, motivated (not just stated)
 
-*Step 1: why a sinusoid is special.* Feed a pure wave (say a cosine at one frequency) into an LSI system. Shift-invariance says shifting the input wave shifts the output the same way. A shifted cosine is a mix of that same-frequency cosine and sine. So the output cannot contain any *new* frequency: a wave comes out as **the same-frequency wave, scaled in amplitude and shifted in phase**. In linear-algebra language, sinusoids are the **eigenvectors** of every convolution (an eigenvector is a vector that a matrix only rescales, never turns), and the scale-and-shift for each frequency is its **eigenvalue**, a complex number `H(f)`. The linear-algebra view below makes this concrete.
+*Step 1: why a sinusoid is special.* Feed a pure wave (say a cosine at one frequency) into an LSI system. Shift-invariance says shifting the input wave shifts the output the same way. A shifted cosine is a mix of that same-frequency cosine and sine. So the output cannot contain any *new* frequency: a wave comes out as **the same-frequency wave, scaled in amplitude and shifted in phase**. In linear-algebra language, sinusoids are the **eigenvectors** of every convolution (an eigenvector is a vector that a matrix only rescales, never turns), and the scale-and-shift for each frequency is its **eigenvalue**, a complex number `H(f)`.
 
 *Step 2: check on numbers.* Use the 4-sample setting of §19.1 with wrap-around (circular) edges: kernel `[½, ¼, 0, ¼]` and the slow cosine `[1, 0, −1, 0]` (k = 1). Convolving gives `[½, 0, −½, 0]`: the same wave, scaled by `½`. That `½` is exactly the kernel's DFT at `k = 1`. (Taking inner products of the kernel with the four basis rows of §19.1 gives the full list of scale factors, `[1, ½, 0, ½]`.)
 
@@ -764,20 +751,6 @@ DFT{ x * h } = DFT{ x } · DFT{ h }        (entry-by-entry multiplication, one f
 - *Why it is useful.* Spatial convolution costs about `N·K` multiplies; in the frequency domain it costs two FFTs plus one multiply per frequency, independent of `K` (compared in Week 4 §18.3). It is also what lets you *see* what a kernel does: look at where `|DFT{h}|` is near 1 (kept) or near 0 (removed).
 - *Numeric check (same 4-sample example).* Directly, `x = [3, 1, −1, 1]` convolved circularly with `[½, ¼, 0, ¼]` gives `[2, 1, 0, 1]`. Through the spectra: `[4, 4, 0, 4] × [1, ½, 0, ½] = [4, 2, 0, 2]`, and the inverse DFT of that is `[2, 1, 0, 1]`. The two routes match.
 
-**Linear-algebra view (convolution as a banded Toeplitz matrix).** Write the 5-sample signal as a vector **x** and the full convolution as `y = H x`, where **H** is a `7×5` matrix whose column `j` is the kernel placed starting at row `j` (that column is the stamp from `x[j]`):
-
-```
-[0.25   .    .    .    .  ]   [1]   [0.25]
-[0.5  0.25   .    .    .  ]   [3]   [1.25]
-[0.25 0.5  0.25   .    .  ]   [2]   [2.25]
-[ .   0.25 0.5  0.25   .  ] x [5] = [3.00]
-[ .    .   0.25 0.5  0.25 ]   [4]   [4.00]
-[ .    .    .   0.25 0.5  ]         [3.25]
-[ .    .    .    .   0.25 ]         [1.00]       ( . = 0 )
-```
-
-Same pattern in every column, shifted down one row each time: constant along diagonals, a **Toeplitz** matrix; with wrap-around edges it becomes a **circulant** matrix. The Fourier basis vectors (§19.1) are its eigenvectors; the eigenvalues are `DFT{h}`; so in the Fourier basis the whole matrix is a diagonal list of scale factors, and applying `H` costs one multiply per frequency. That diagonalization *is* the convolution theorem. Inverting `H` (deconvolution, next subsection) is therefore "divide by each eigenvalue," which fails exactly where an eigenvalue is 0.
-
 ### 20.8 Where this shows up, so you know why it is worth the detour
 
 - Blur from optics (finite pinhole, defocus, diffraction, lens aberrations) is a convolution with a PSF (Week 2 §3, §9; formalized in Week 4 §18).
@@ -790,7 +763,6 @@ Same pattern in every column, shifted down one row each time: constant along dia
 > - Convolution = stamp a copy of the kernel at every input sample (scaled by that sample's value) and add; equivalently, a sliding weighted average. **(x * h)[n] = Σ_m h[m] · x[n − m]**.
 > - Blur from optics and most smoothing filters are convolutions; a camera's blur kernel is its point spread function (PSF), and any linear shift-invariant system is a convolution with its impulse response.
 > - **Convolution theorem** to remember: DFT{x * h} = DFT{x} · DFT{h}, because sinusoids pass through a convolution unchanged except for scaling.
-> - Linear-algebra view: convolution is a banded Toeplitz matrix, diagonalized by the Fourier basis.
 > - *Next:* §21 uses the theorem to filter an image with a frequency mask.
 
 ---
@@ -802,10 +774,6 @@ Same pattern in every column, shifted down one row each time: constant along dia
 Once a spectrum is fftshift-ed (DC centered), building a filter becomes a simple masking operation: to keep only low image frequencies, zero out everything except a disc around the center — a **low-pass filter**. To keep only high image frequencies, do the opposite — zero out that disc and keep everything outside it — a **high-pass filter**, the complement of the low-pass mask.
 
 Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshift`, then `ifft2`) to the spatial domain, produces a filtered image — and this turns out to be the *exact same operation* as the spatial-domain description (blurring by averaging neighboring pixels, as in §20; edge-extraction by subtracting a blur from the original). This equivalence is the **convolution theorem** (motivated and checked on numbers in §20.7) — multiplying two spectra together in the frequency domain is mathematically identical to *convolving* (the sliding weighted sum of §20) the two corresponding signals in the spatial domain. The frequency-domain route (mask + `fft2`/`ifft2`) and the spatial-domain route (blur/subtract) are two views of *one* operation, not two different techniques — the frequency-domain view is usually easier to control precisely (e.g., choosing an exact cutoff frequency as a mask radius), and it's the route HW1's own code path actually uses.
-
-**Linear-algebra view (a mask is a projection):** in the Fourier basis, multiplying by a 0/1 mask is a **diagonal matrix** with 1s for the kept frequencies and 0s for the rest. Seen in pixel space, that operation is a **projection onto the subspace** spanned by the kept sinusoids. Applying it twice changes nothing more (P² = P). The high-pass mask is the complementary projection I − P onto the remaining sinusoids. Because the basis is orthogonal, the two pieces are orthogonal to each other and add back up to the original exactly.
-
-**Linear-algebra view (convolution is a matrix the Fourier basis diagonalizes):** convolution with a fixed kernel is a **linear operator** (blur(a·x + b·y) = a·blur(x) + b·blur(y)), so it is some matrix acting on the image vector. It is also **shift-invariant** (the same weights are used at every position), so each row of the matrix is the row above shifted by one. With the wrap-around edges the DFT assumes, that is a **circulant** matrix (a **Toeplitz** matrix, constant along each diagonal, if edges are not wrapped). Every sinusoid is an **eigenvector** of every circulant matrix: blurring a pure wave returns the same wave, only scaled. The scale factors (eigenvalues) are exactly the kernel's own DFT. So switching to the Fourier basis **diagonalizes** the convolution matrix, and a full matrix–vector product becomes one multiplication per frequency. The convolution theorem is precisely this diagonalization. Week 5 ("Sampling, Linear Systems, Deconvolution") builds on this same matrix view of convolution.
 
 **Worked example — continuing §19.1's 4-point signal x = [3, 1, −1, 1]:**
 - *Projection.* A low-pass mask that keeps only k = 0 gives [1, 1, 1, 1]. Its complement (k = 1, 2, 3) gives [2, 0, −2, 0]. Their inner product is 0 (orthogonal), they sum back to **x**, and re-applying the low-pass mask to [1, 1, 1, 1] returns it unchanged.
@@ -824,7 +792,6 @@ Multiplying a spectrum by such a mask, then inverse-transforming back (`ifftshif
 > **Summary**
 > - A frequency-domain filter is a 0/1 mask on the shifted spectrum: keep a disc around the center for **low-pass** (coarse content), keep everything outside it for **high-pass** (fine detail); then `ifftshift` and `ifft2`.
 > - Masking is the same operation as blurring (or blur-and-subtract) by convolution; the mask route just gives exact control of the cutoff.
-> - Linear-algebra views to remember: a mask is a projection (P² = P; high-pass = I − P, orthogonal to low-pass), and the Fourier basis diagonalizes the convolution (circulant) matrix.
 > - *Where this goes next (optional):* the same theorem underlies the PSF and Wiener filtering (Week 5) and prior-based deconvolution (Week 6).
 
 ---
@@ -860,8 +827,6 @@ In code, this isn't done by blurring and subtracting pixels directly — it's do
 
 By the convolution theorem (§20.7, applied in §21), this frequency-domain construction is mathematically equivalent to §22.1's blur-and-subtract description — the two are the same operation, viewed in two different domains; the frequency-domain route is just the one that gives precise control over the cutoff.
 
-**Linear-algebra view (a hybrid image is a sum of two projections):** writing each image channel as a vector (§19.3's aside), the whole recipe is **hybrid** = P_high **a** + P_low **b**. Here P_low is the low-pass projection onto the span of the low-frequency gratings, and P_high = I − P_low projects onto the rest (§21's aside). If the two masks are exact complements, as in §21, the two pieces live in **orthogonal subspaces**, so the sum mixes them without either overwriting the other. Your CSF at a given viewing distance acts like a third, perceptual filter that mostly lets through one of the two subspaces. Because `fft2`/`ifft2` are linear, adding in the frequency domain (step 3) gives the same result as adding the two filtered images pixel by pixel. That is another reason the frequency-domain and blur-and-subtract descriptions agree.
-
 The result is a single image containing *both* spatial-frequency bands at once, stacked on top of each other. Which band you consciously perceive depends entirely on **viewing distance**, because — per §18 — your CSF determines which spatial-frequency band is currently sitting in your visible range at that distance.
 
 ### 22.3 Why it works perceptually, walked through with §16.3's logic
@@ -877,7 +842,6 @@ So the same printed composite gives you Image A up close and Image B from across
 > **Summary**
 > - A hybrid image adds Image A's high-frequency content to Image B's low-frequency content: **F_hybrid(u,v) = H_A(u,v) + L_B(u,v)**, per color channel, then inverse-transforms.
 > - Up close, A's fine detail is visible; from far away its cpd passes the CSF cutoff and only B's coarse shapes remain.
-> - Linear-algebra view: hybrid = P_high a + P_low b, a sum of projections onto orthogonal subspaces.
 > - The specific cutoffs and print sizes for HW1 Task 3 are left to the assignment.
 > - *Next:* §23 steps back to the reverse of blurring; §24 collects the lecture's summary numbers.
 
@@ -889,7 +853,7 @@ So the same printed composite gives you Image A up close and Image B from across
 
 **Analogy.** Convolution is stirring a drop of dye into a glass of water; deconvolution is un-stirring it. If you know exactly how the water was stirred, and measured exactly, the motion can in principle be reversed. If your measurement is slightly off, or some detail was mixed beyond recovery, the "un-stirred" result will be garbage. Both halves of that sentence are the whole subject.
 
-**How it works in the simplest case: divide in the Fourier domain.** The theorem (§20.7) says blurring multiplies each frequency by `DFT{h}`. To undo it, divide each frequency of the blurred spectrum by `DFT{h}` and inverse-transform. This is the **inverse filter**. Linear-algebra view: it is applying `H⁻¹`, and in the Fourier basis `H⁻¹` is a diagonal matrix of `1/DFT{h}`.
+**How it works in the simplest case: divide in the Fourier domain.** The theorem (§20.7) says blurring multiplies each frequency by `DFT{h}`. To undo it, divide each frequency of the blurred spectrum by `DFT{h}` and inverse-transform. This is the **inverse filter**.
 
 **Why it is hard (an ill-posed problem).** A problem is **ill-posed** if it has no solution, many solutions, or a solution that changes wildly when the data change slightly. Deconvolution suffers from the last two:
 - *Exact zeros (information destroyed).* Where `DFT{h} = 0`, the blurred spectrum is 0 whatever the original was, so many different originals give the *same* blurred image (the null space, Week 4 §18.2). Division by 0 is undefined. (A box kernel, such as ordinary motion blur or a plain circular aperture, has such zeros, which is why Week 4 §19 and §23 engineer kernels without them.)

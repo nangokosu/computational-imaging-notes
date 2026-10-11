@@ -11,24 +11,6 @@ This covers formulas substantial enough to get the full "Equations" treatment (i
 ## Week 1 — Human Visual System
 *(full derivations and diagrams in [`week1-study-notes.md`](./week1-study-notes.md); this is the lookup-speed reference)*
 
-### Cone response as a linear map (§6)
-
-```
-c = C s
-C n = 0
-```
-
-**Computes:** Converts a full light spectrum into the eye's three cone responses, and defines exactly which spectral differences (metamers) the eye cannot tell apart.
-
-| Term | Meaning |
-|---|---|
-| c | 3-entry vector of cone responses (L, M, S); the eye's output measurement |
-| C | 3×N matrix whose rows are the three cone types' sensitivity curves sampled at N wavelengths; fixed by human physiology |
-| s | N-entry vector of the incoming light's spectral power sampled at N wavelengths; the input, set by the scene/light source |
-| n | a spectrum-difference vector in the null space of C; any two spectra s and s+n are metamers (look identical) |
-
----
-
 ### Visual angle → resolvable pixel size, and its dpi corollary (§9)
 
 ```
@@ -202,24 +184,6 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 
 ---
 
-### Hybrid image as a sum of projections (§22.2)
-
-```
-hybrid = P_high a + P_low b
-```
-
-**Computes:** Restates the hybrid-image construction as a sum of two orthogonal projections in the Fourier basis — the linear-algebra equivalent of the frequency-domain mask-and-add procedure above.
-
-| Term | Meaning |
-|---|---|
-| hybrid | resulting hybrid image, as a pixel-value vector; computed output |
-| a | Image A, as a pixel-value vector; input |
-| b | Image B, as a pixel-value vector; input |
-| P_high | high-pass projection matrix, keeps high-frequency sinusoid components; equals I − P_low |
-| P_low | low-pass projection matrix, keeps low-frequency sinusoid components |
-
----
-
 ---
 
 ## Week 2 — Digital Photography I (ray optics, aperture, sensor)
@@ -238,25 +202,6 @@ y = A x
 | y | vector of sensor readings, one entry per sensor location — what you actually measure |
 | A | matrix of cosine-and-distance weights from each scene point to each sensor location — fixed by the geometry/optics, not chosen |
 | x | vector of true scene-point brightnesses, one entry per scene point — unknown, what you want to recover |
-
----
-
-### Perspective projection (pinhole camera matrix) (§2)
-
-```
-P = [[−f, 0, 0, 0], [0, −f, 0, 0], [0, 0, 1, 0]]
-(X, Y, Z, 1) → P·(X,Y,Z,1) = (−fX, −fY, Z) → divide by Z → (−fX/Z, −fY/Z)
-```
-
-**Computes:** Gives the 2D sensor position where a 3D scene point projects through a pinhole, in one linear step followed by one division — and shows why depth is lost (every point along one ray lands on the same pixel).
-
-| Term | Meaning |
-|---|---|
-| P | 3×4 camera matrix built from the pinhole geometry — fixed once f is fixed |
-| X, Y, Z | scene point's coordinates: sensor-horizontal, sensor-vertical, depth along the optical axis — property of the scene |
-| f | focal length, pinhole-to-image-plane distance — intrinsic, fixed |
-| (−fX/Z, −fY/Z) | resulting 2D sensor position |
-| division by Z | the "perspective divide"; collapses every point on the same ray to one pixel, which is why one photo can't recover depth |
 
 ---
 
@@ -309,24 +254,6 @@ m = y'/y = (S' − f)/f = S'/S
 | y | object height above the lens's central axis |
 | y' | image height below the axis (image is inverted) |
 | S, S', f | as in the thin lens equation |
-
----
-
-### Ray-transfer (ABCD) matrices (§5.1, Linear-algebra view)
-
-```
-Translation by distance L:   [[1, L], [0, 1]]
-Thin lens of focal length f: [[1, 0], [−1/f, 1]]
-```
-
-**Computes:** Represents ray propagation and lens bending as 2×2 matrices acting on a ray's (height, angle) vector; multiplying object-to-lens, lens, and lens-to-sensor matrices reproduces the thin lens equation as the condition that the product's top-right entry equals zero.
-
-| Term | Meaning |
-|---|---|
-| L | distance travelled (object-to-lens or lens-to-sensor) — set by the setup |
-| f | focal length — intrinsic |
-| height | ray's height above the optical axis (top vector entry) |
-| angle | ray's angle to the axis, small-angle approximation (bottom vector entry) |
 
 ---
 
@@ -584,23 +511,6 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)
 
 ---
 
-### Noise as an additive vector (§19, Linear-algebra view)
-
-```
-y = A x + n
-```
-
-**Computes:** Extends the ideal linear image-formation model to include sensor noise — the starting model for denoising and the inverse-problem methods of later weeks.
-
-| Term | Meaning |
-|---|---|
-| y | actual noisy measurement vector |
-| A | linear imaging operator (optics + sensor) |
-| x | true scene vector |
-| n | noise vector, one random entry per pixel, independent/uncorrelated across pixels |
-
----
-
 ## Week 3 — Digital Photography II (color science & the camera processing pipeline)
 *(full derivations and diagrams in [`week3-study-notes.md`](./week3-study-notes.md); this is the lookup-speed reference)*
 
@@ -621,67 +531,6 @@ Discrete / inner-product form: R ≈ Δλ · Σ_k Φ(λ_k)·f(λ_k) = Δλ · (f
 | f(λ) | The sensor's spectral sensitivity function — a property of the sensor (fixed by design), not the scene |
 | λ | Wavelength; integral runs over the sensor's responsive range (~400–700 nm for visible-light sensors) |
 | Δλ, φ, f (bold) | Discretization step and vectors used in the sampled/inner-product form |
-
----
-
-### Tristimulus vector and the sensitivity matrix A (§3)
-
-```
-(S, M, L) = Δλ · A φ
-
-Metamer condition: A(φ₁ − φ₂) = 0
-```
-
-**Computes:** Stacks the three cone SSFs into one matrix so a full spectrum becomes the eye's 3-number (S,M,L) response in one step; two spectra are metamers exactly when they differ by a vector A cannot see.
-
-| Term | Meaning |
-|---|---|
-| A | 3×N matrix whose rows are the three cone SSFs sampled at N wavelengths — fixed by eye physiology |
-| φ | Sampled spectrum vector (N wavelength samples) — the incident light |
-| Δλ | Wavelength sampling step, a fixed constant of the discretization |
-| S, M, L | The three cone responses — what's measured |
-| φ₁, φ₂ | Two different light spectra being compared |
-| null space of A | Dimension N−3 (rank–nullity); any spectral component in it changes the light but not the perceived color |
-
----
-
-### Color matching as a linear system (§4)
-
-```
-c₁p₁ + c₂p₂ + c₃p₃ = t
-P c = t
-c = P⁻¹ t
-```
-
-**Computes:** Finds how much of each of three fixed primary lights an observer must mix to visually match a test light — turns "adjusting knobs until it looks right" into solving a 3×3 linear system.
-
-| Term | Meaning |
-|---|---|
-| p₁, p₂, p₃ | (S,M,L) responses of the three primaries at unit strength — fixed choice of primaries |
-| P | 3×3 matrix with p₁, p₂, p₃ as columns — the primary basis |
-| c₁, c₂, c₃ (= c) | Matching coefficients solved for; negative if a primary had to be added to the test side instead |
-| t | (S,M,L) response of the test light being matched |
-
----
-
-### CIE RGB → XYZ conversion matrix (§5)
-
-```
-M_CIERGB→XYZ = (1/0.17697) · [0.49000  0.31000  0.20000]   = [2.7688  1.7517  1.1301]
-                             [0.17697  0.81240  0.01063]     [1.0000  4.5906  0.0601]
-                             [0.00000  0.01000  0.99000]     [0.0000  0.0565  5.5942]
-
-v_XYZ = M_CIERGB→XYZ · v_CIERGB
-```
-
-**Computes:** Converts a color's coordinates from the CIE RGB basis (real primaries, sometimes-negative coordinates) to the CIE XYZ basis (non-negative coordinates for every real color, but imaginary primaries) — a pure change of basis.
-
-| Term | Meaning |
-|---|---|
-| M_CIERGB→XYZ | Fixed 3×3 change-of-basis matrix, standardized by the CIE — not user-chosen |
-| v_CIERGB | A color's coordinates in the CIE RGB basis |
-| v_XYZ | The same color's coordinates in the CIE XYZ basis |
-| middle row (1.0000, 4.5906, 0.0601) | Gives Y (luminance) as a fixed linear combination of R, G, B |
 
 ---
 
@@ -715,24 +564,6 @@ w_R·q_R + w_G·q_G + w_B·q_B = point,   w_R + w_G + w_B = 1,   w_R, w_G, w_B �
 | q_R, q_G, q_B | Chromaticity (xy) coordinates of the device's red, green, blue primaries — fixed by device/standard |
 | w_R, w_G, w_B | Barycentric coordinates / mixing weights, found by solving a 3×3 linear system |
 | point | The chromaticity (x,y) being tested or reconstructed |
-
----
-
-### Display P3 → sRGB conversion matrix (§8)
-
-```
-M_P3→sRGB = M_XYZ→sRGB · M_P3→XYZ = [ 1.2249  −0.2249   0.0000]
-                                    [−0.0421   1.0421   0.0000]
-                                    [−0.0196  −0.0786   1.0983]
-```
-
-**Computes:** Converts RGB coordinates from the Display P3 primary basis to the sRGB primary basis by composing two changes of basis into one matrix — reveals which P3 colors (e.g. its green primary) fall outside sRGB's gamut.
-
-| Term | Meaning |
-|---|---|
-| M_P3→sRGB | Combined 3×3 change-of-basis matrix, fixed by the two standards' primaries |
-| M_XYZ→sRGB, M_P3→XYZ | The two individual change-of-basis matrices being composed (rightmost applied first) |
-| middle column (−0.2249, 1.0421, −0.0786) | P3's green primary in sRGB coordinates — negative/>1 entries mean it's outside sRGB's gamut |
 
 ---
 
@@ -890,22 +721,6 @@ PSNR = 10 · log₁₀( max(I_groundtruth)² / MSE )
 
 ---
 
-### Bayer mosaicking as a selection matrix (§14.1)
-
-```
-y = P_Bayer · x
-```
-
-**Computes:** Models the Bayer sensor's raw capture as a matrix that keeps exactly one color channel per pixel from the full-color image, discarding the other two — formalizes demosaicking as an underdetermined inverse problem.
-
-| Term | Meaning |
-|---|---|
-| x | The true full-color image, flattened into one vector (every pixel's R,G,B) |
-| P_Bayer | Selection matrix — one row per sensor pixel, a single 1 picking out that pixel's filtered color |
-| y | The raw sensor mosaic actually measured (one number per pixel) |
-
----
-
 ### RGB ↔ Y′CbCr conversion (§14.3)
 
 ```
@@ -914,20 +729,17 @@ Cb  = 128 − 37.797·R − 74.203·G + 112.000·B
 Cr  = 128 + 112.000·R − 93.786·G − 18.214·B
 
 [R; G; B] = M⁻¹ · ([Y'; Cb; Cr] − [16; 128; 128])
-
-Linear-algebra (affine) form:  u = M v + o,   v = M⁻¹(u − o)
 ```
 
 **Computes:** Converts demosaicked RGB into one luma channel (Y′) plus two chrominance channels (Cb, Cr), and back, so only chrominance can be smoothed without touching perceptually important brightness detail.
 
 | Term | Meaning |
 |---|---|
-| R, G, B | Color channel values, [0,1]-scaled (= v) |
+| R, G, B | Color channel values, [0,1]-scaled |
 | Y' | Luma — the brightness-carrying channel |
 | Cb, Cr | Blue-difference and red-difference chrominance channels |
-| 16, 128, 128 | Fixed offsets (o) shifting channels into conventional digital ranges (128 = "no color") |
+| 16, 128, 128 | Fixed offsets shifting channels into conventional digital ranges (128 = "no color") |
 | M | Fixed 3×3 BT.601 coefficient matrix; M⁻¹ its inverse, used to undo the transform |
-| u, v, o | Vector shorthand: u=(Y′,Cb,Cr), v=(R,G,B), o=(16,128,128) |
 
 ---
 
@@ -1002,8 +814,6 @@ HW2 notation: w(i, j) = (1 / Z(i)) · exp( −‖v(N_i) − v(N_j)‖² / h² ),
 ```
 detail     = I − blur(I)
 sharpened  = I + k · (I − blur(I))
-
-Linear-algebra form: sharpened = ((1+k)·Id − k·G_σ) · i
 ```
 
 **Computes:** Sharpens an image by adding back an amplified copy of its own high-frequency ("detail") content, obtained by subtracting a blurred version of itself.
@@ -1014,9 +824,6 @@ Linear-algebra form: sharpened = ((1+k)·Id − k·G_σ) · i
 | blur(I) | A blurred (low-pass) copy — Gaussian or bilateral, with a chosen σ |
 | detail | I − blur(I): the high-frequency content the blur removed |
 | k | Sharpening strength, dimensionless, user-controlled; k=0 leaves the image unchanged |
-| Id | The identity matrix |
-| G_σ | The Gaussian-blur matrix (§12.2) |
-| i | The image, flattened into a vector |
 
 ---
 
@@ -1052,40 +859,6 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 | sRGB→XYZ matrix | Each column is one sRGB primary's XYZ value at full strength; standardized (IEC 61966-2-1) |
 | XYZ→linear sRGB matrix | Its inverse; negative entries flag out-of-gamut colors |
 | middle row of sRGB→XYZ (0.2126, 0.7152, 0.0722) | Each primary's luminance contribution (Y), summing to 1 |
-
----
-
-### DCT as a change of basis (§19)
-
-```
-c = T · b
-```
-
-**Computes:** Re-expresses an 8×8 image block's 64 pixel values as coordinates in a fixed orthonormal cosine (spatial-frequency) basis — the lossless transform step of JPEG compression.
-
-| Term | Meaning |
-|---|---|
-| b | One 8×8 block's pixel values, flattened into a 64-vector |
-| T | 64×64 orthonormal DCT matrix, whose rows are the fixed cosine basis patterns |
-| c | The block's DCT coefficients — its coordinates in the cosine basis |
-| T⁻¹ = Tᵀ | Inverse equals transpose because T is orthonormal, so no system needs solving to invert |
-
----
-
-### White balance as a diagonal matrix (§20)
-
-```
-v_wb = diag(g_R, g_G, g_B) · v_cam
-```
-
-**Computes:** Rescales each raw color channel independently so a neutral gray scene object reads R=G=B, removing the light source's color cast.
-
-| Term | Meaning |
-|---|---|
-| v_cam | Camera's raw (R,G,B) triplet before white balance |
-| g_R, g_G, g_B | Per-channel gain factors, stored as the camera's "as-shot" white balance — set by capture, not by this formula |
-| diag(g_R,g_G,g_B) | Diagonal gain matrix — scales each channel independently, mixes none into another |
-| v_wb | The white-balanced (R,G,B) triplet |
 
 ---
 
@@ -1989,7 +1762,7 @@ A = U Σ Vᵀ          condition number = s_max / s_min
 ```
 minimize_x  ½ ‖b − A x‖₂²          ‖r‖₂² = Σ_i r_i²,   r = b − A x
 ∇ₓ ½‖b − Ax‖₂² = AᵀA x − Aᵀb
-AᵀA x = Aᵀb          (residual ⟂ columns of A;  A x̂ = P b,  P = A(AᵀA)⁻¹Aᵀ)
+AᵀA x = Aᵀb          (residual ⟂ columns of A)
 ```
 
 **Computes:** The best-fitting solution of an over-determined linear system (the orthogonal projection of b onto the column space of A), and the gradient used by iterative solvers.
@@ -1999,7 +1772,6 @@ AᵀA x = Aᵀb          (residual ⟂ columns of A;  A x̂ = P b,  P = A(AᵀA)
 | r | Residual: measurement minus prediction |
 | ‖·‖₂ | ℓ₂ norm (length) |
 | Aᵀ | Transpose of A |
-| P | Projection matrix onto the column space of A |
 
 ---
 
