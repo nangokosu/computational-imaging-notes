@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Optics, Sensing, Computation</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -12946,7 +12946,7 @@ Fourier domain:  F{b} = F{x} &middot; F{c}            (multiply the spectrum by 
   <h3>16.4 Implementing both routes (supports HW4 / PS4 Task 1)</h3>
   <p>PS4 Task 1 asks you to filter an image in both domains and compare. PS4 names the helper functions; here is what each one does and why it is needed.</p>
   <ul>
-    <li><strong><code>fspecial_gaussian_2d(size, sigma)</code></strong> builds a Gaussian kernel: a small square array, peaked in the middle. Its width should cover the bell's tails (a common choice spans about &plusmn;3&sigma;), or the kernel is truncated and its spectrum ripples.</li>
+    <li><strong><code>fspecial_gaussian_2d(size, sigma)</code></strong> builds a Gaussian kernel: a small square array, peaked in the middle. Its width should cover the bell's tails, or the kernel is truncated (cut off abruptly at its border) and its spectrum ripples. HW4's starter code sets the side length to ceil(9&sigma;), i.e. the kernel spans about &plusmn;4.5&sigma; around its center. At 4.5&sigma; the Gaussian has fallen to <em>e</em><sup>&minus;4.5&sup2;/2</sup> &asymp; 4 &times; 10&#8315;&#8309; of its peak, so almost nothing is cut off. A consequence worth noticing: because the kernel's side grows in proportion to &sigma;, the primal route's cost, <em>P</em>&middot;<em>K</em>&sup2;, grows in proportion to &sigma;&sup2; (&sect;16.3); what that means for the measured timings is the assignment's question.</li>
     <li><strong>Normalize the kernel to sum to 1</strong> (PS4). Then the blur redistributes brightness without adding or removing any: flat regions keep their value, and the <a href="https://en.wikipedia.org/wiki/Optical_transfer_function">OTF</a> equals exactly 1 at zero frequency.</li>
     <li><strong><code>scipy.signal.convolve2d(image, kernel, mode='same')</code></strong>: the primal route. <code>mode='same'</code> returns an output the size of the input. Pixels near the border use zero-padding unless told otherwise, so borders darken.</li>
     <li><strong><code>pypher.psf2otf(kernel, image_shape)</code></strong>: turns the small kernel into a full-size OTF. Three steps happen inside:
@@ -13202,6 +13202,15 @@ Fourier domain:  F{b} = F{x} &middot; F{c}            (multiply the spectrum by 
     <figcaption>Fig. 146 &mdash; what psf2otf does, on a 3&times;3 Gaussian kernel and an 8&times;8 image grid (computed): the kernel is zero-padded to the image size with its center in the middle, circularly shifted so its center lands on index (0,0) (it wraps into four pieces in the corners), then 2D-FFT'd into the OTF, whose magnitude is exactly 1 at index (0,0) because the kernel sums to 1.</figcaption>
   </figure>
 
+  <p><strong>Timing an algorithm fairly (HW4 Tasks 1 and 3 both ask for timings).</strong> A timing is only meaningful if it measures the same work each time and nothing else.</p>
+  <ul>
+    <li><em>What a timer measures.</em> <code>time.time()</code> (named in HW4) or <code>time.perf_counter()</code> (finer resolution) returns the current clock reading. Read it immediately before and immediately after the operation; the difference is the <strong><a href="https://en.wikipedia.org/wiki/Elapsed_real_time">wall-clock time</a></strong> (real elapsed time, as a stopwatch would measure it), in seconds.</li>
+    <li><em>Decide what counts, and say so.</em> For the Fourier route, &ldquo;the operation&rdquo; could include <code>psf2otf</code> and both FFTs, or only the multiply-and-inverse step. Either is defensible; the comparison is only fair if both routes include everything they need to turn an image and a kernel into a filtered image, and your write-up states the choice.</li>
+    <li><em>Repeat, and take a typical value.</em> One run can be slowed by unrelated work on the computer, and the first call to a library function is often slower (code being loaded or memory being set up, sometimes called a <strong>warm-up</strong> effect). Time several runs and report the <a href="https://en.wikipedia.org/wiki/Median">median</a> or the minimum.</li>
+    <li><em>Use a log axis when timings span orders of magnitude.</em> PS4's bar chart uses one (a <a href="https://en.wikipedia.org/wiki/Logarithmic_scale">logarithmic scale</a>): on a linear axis the smallest bars would be invisible next to the largest.</li>
+  </ul>
+  <p><strong>Displaying a high-pass result (Task 1.2).</strong> A high-pass image (&sect;17.1) is the image <em>minus</em> its blur, so its values cluster around 0 and are as often negative as positive. Shown directly as an image (where 0 = black and negative values are clipped to black), it looks almost black. To see it, either add 0.5 to center it on mid-gray (for images on [0, 1]), or rescale its minimum to 0 and maximum to 1 before display. This changes only how it is shown, not the result.</p>
+
   <div class="summary-box">
     <div class="label">Summary</div>
     <ul>
@@ -13209,6 +13218,7 @@ Fourier domain:  F{b} = F{x} &middot; F{c}            (multiply the spectrum by 
       <li>A hard (disc) cutoff has a jinc kernel with negative rings, so it <strong>rings</strong> at edges; a Gaussian has an all-positive kernel and does not.</li>
       <li>Rule to remember: primal cost &asymp; <strong>P&middot;K&sup2;</strong>, Fourier cost &asymp; <strong>P log P</strong>, independent of kernel size.</li>
       <li>In code: normalize the kernel, use <code>psf2otf</code> (pad, center at (0,0), FFT), multiply, <code>ifft2</code>, take the real part; borders differ because the FFT wraps around.</li>
+      <li>Time only the operation, include the same work in both routes, repeat and report a typical value, and plot on a log axis; show high-pass results shifted or rescaled to mid-gray.</li>
       <li>Next: the other filters built from the same parts: high-pass, sharpening, band-pass (&sect;17).</li>
     </ul>
   </div>
@@ -13941,6 +13951,8 @@ i_est    = F&#8315;&#185;( F(b) / F(k) )                (then inverse-transform)
 </figure>
   <p><strong>What it looks like (slide 110).</strong> The lecture blurs the parrots with a ringed, <a href="https://en.wikipedia.org/wiki/Airy_disk">Airy</a>-like diffraction PSF and adds a small amount of <a href="https://en.wikipedia.org/wiki/Gaussian_noise">Gaussian noise</a> (&ldquo;example for Gaussian of &sigma; = 0.05&rdquo;, where &sigma; is the noise's standard deviation, not a blur width), then applies the inverse kernel <em>k</em>&#8315;&#185;: the result is pure noise, with no trace of the parrots. &ldquo;Even tiny noise can make the results awful.&rdquo;</p>
   <p>PS4's example (noise &sigma; = 0.001) reports a <a href="https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio">PSNR</a> (&sect;25) of about &minus;157 dB after inverse filtering, i.e. a result vastly worse than the blurred input, against about 26.6 dB after <a href="https://en.wikipedia.org/wiki/Wiener_deconvolution">Wiener deconvolution</a> (&sect;23).</p>
+  <p><strong>&ldquo;No added noise&rdquo; is not &ldquo;no noise.&rdquo;</strong> Even when you add zero noise on purpose, the computer stores every number with finite precision. Standard 64-bit <a href="https://en.wikipedia.org/wiki/Floating-point_arithmetic">floating-point</a> numbers carry a relative <a href="https://en.wikipedia.org/wiki/Round-off_error">rounding error</a> of about 10&#8315;&sup1;&#8310; (and an image saved as 8-bit integers carries a much larger rounding error, up to half a gray level). That rounding behaves like a tiny noise term <em>N</em>.</p>
+  <p>A Gaussian blur's OTF falls off extremely fast: for &sigma; = 3 pixels it is <em>e</em><sup>&minus;2&pi;&sup2;&middot;9&middot;0.25</sup> &asymp; 5 &times; 10&#8315;&sup2;&#8304; at the fastest image frequency, 0.5 cycles/pixel (&sect;6.4's formula). Dividing a rounding error of 10&#8315;&sup1;&#8310; by an OTF of 5 &times; 10&#8315;&sup2;&#8304; gives about 2000: an error two thousand times larger than the whole [0, 1] brightness range. So the &ldquo;two problems&rdquo; above apply even to a noise-free experiment; how badly they show up for HW4's own blur and noise levels is for the assignment to find.</p>
 
   <div class="callout">
     <div class="label">Worked example &mdash; 8 samples, a kernel with an exact zero and two near-zeros</div>
@@ -14317,7 +14329,7 @@ i_est    = F&#8315;&#185;( F(b) / F(k) )                (then inverse-transform)
     <div class="label">Summary</div>
     <ul>
       <li>Rule to remember: inverse filter <strong>i_est = F&#8315;&#185;(F(b)/F(k))</strong>; it divides each frequency by the OTF.</li>
-      <li>It fails because the OTF is (near) zero at high frequencies and <strong>b = k &#8727; i + n</strong> contains noise: the error term is <strong>N/K</strong>, huge where <em>K</em> is tiny.</li>
+      <li>It fails because the OTF is (near) zero at high frequencies and <strong>b = k &#8727; i + n</strong> contains noise (even rounding error counts): the error term is <strong>N/K</strong>, huge where <em>K</em> is tiny.</li>
       <li>Exact zeros destroy information (null space); near-zeros amplify noise (large condition number).</li>
       <li>Next: divide only where it is safe, the Wiener filter (&sect;23).</li>
     </ul>
@@ -15117,6 +15129,9 @@ i_est    = F&#8315;&#185;( F(b) / F(k) )                (then inverse-transform)
     <li><em>Why the &frac12;:</em> it cancels the 2 that appears when differentiating; it does not change where the minimum is.</li>
   </ul>
 
+  <div class="callout"><div class="label">Same word, two meanings: &ldquo;residual&rdquo;</div><p style="margin:0">The <strong>residual vector</strong> <strong>r</strong> = <strong>b</strong> &minus; <strong>A x</strong> (sometimes written <strong>A x</strong> &minus; <strong>b</strong>; the sign does not matter once squared) lists every measurement's miss. HW4, PS4 and its starter code (<code>residual_l2</code>) also use &ldquo;residual&rdquo; for the <strong>single number</strong> &frac12;&#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&#8322;&sup2;, the objective value. When the assignment says &ldquo;plot the residual vs. iteration,&rdquo; it means that number. These notes say &ldquo;residual vector&rdquo; for the first and &ldquo;objective&rdquo; or &ldquo;residual norm&rdquo; for the second.</p></div>
+  <div class="callout"><div class="label">Same concept, different names</div><p style="margin:0"><strong>Least squares</strong> = <strong>&#8467;&#8322; (L2) fitting</strong> = <strong>minimizing the sum of squared errors</strong>; the objective &frac12;&#8214;<strong>b</strong> &minus; <strong>A x</strong>&#8214;&#8322;&sup2; is also called the <strong><a href="https://en.wikipedia.org/wiki/Loss_function">loss</a></strong>, <strong>cost</strong> or <strong>data term</strong>. &#8214;&middot;&#8214;&#8322; is the <strong>&#8467;&#8322; norm</strong> = <strong><a href="https://en.wikipedia.org/wiki/Norm_(mathematics)#Euclidean_norm">Euclidean norm</a></strong> = a vector's length.</p></div>
+
   <h3>29.2 The gradient and the normal equations</h3>
   <p><strong>Gradient primer.</strong> The <strong><a href="https://en.wikipedia.org/wiki/Gradient">gradient</a></strong> &nabla;&#8339;<em>f</em> of a function of many variables is the vector of its <a href="https://en.wikipedia.org/wiki/Partial_derivative">partial derivatives</a>: it points in the direction in which <em>f</em> increases fastest, and is zero at a minimum of a smooth bowl.</p>
   <p><strong>Computing it (slide 136).</strong> Expand the square (&#8214;<strong>v</strong>&#8214;&sup2; = <strong>v</strong>&#7488;<strong>v</strong>):</p>
@@ -15225,12 +15240,25 @@ i_est    = F&#8315;&#185;( F(b) / F(k) )                (then inverse-transform)
 
   <p><strong>Why not solve the normal equations directly?</strong> <strong>A</strong>&#7488;<strong>A</strong> is <em>n</em>&times;<em>n</em>: still 10&#8310;&times;10&#8310; for a megapixel image, and squaring <strong>A</strong> squares its condition number (6.8 &rarr; 46 in the example), making the system more sensitive. Hence gradient descent (&sect;31).</p>
 
+  <p><strong>How a &ldquo;reference&rdquo; least-squares answer is computed for small problems (HW4 Task 3's starter code).</strong> When <strong>A</strong> is small enough to fit in memory, a library can solve least squares directly, and HW4 provides two such solutions for comparison. Both avoid forming (<strong>A</strong>&#7488;<strong>A</strong>)&#8315;&sup1; explicitly.</p>
+  <ul>
+    <li><em>Via the <a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">SVD</a> (&sect;27.3).</em> Write <strong>A</strong> = <strong>U &Sigma; V</strong>&#7488;. Then the least-squares solution is
+      <div class="formula" style="white-space:pre">x̂ = V Σ⁺ Uᵀ b</div>
+      Read right to left: <strong>U</strong>&#7488;<strong>b</strong> expresses the measurements in the output directions; <strong>&Sigma;</strong>&#8314; divides each component by its singular value (and sets it to 0 where the singular value is 0, which is what the &#8314; means); <strong>V</strong> maps the result back to the unknowns. The matrix <strong>V &Sigma;</strong>&#8314;<strong>U</strong>&#7488; is called the <strong><a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">pseudoinverse</a></strong> <strong>A</strong>&#8314; (also <strong>Moore&ndash;Penrose inverse</strong>): the best substitute for <strong>A</strong>&#8315;&sup1; when <strong>A</strong> is not square or not invertible.</li>
+    <li><em>Via a standard matrix factorization.</em> Library routines such as <code>np.linalg.lstsq</code> factor <strong>A</strong> (for example as <strong>Q R</strong>, an orthogonal matrix times a triangular one: a <a href="https://en.wikipedia.org/wiki/QR_decomposition">QR decomposition</a>) and solve by back-substitution, which is faster than an SVD and numerically safer than solving the normal equations.</li>
+  </ul>
+  <div class="callout">
+    <div class="label">Worked example &mdash; the line fit again</div>
+    <p style="margin:0"><strong>A</strong> = [[1, 1], [1, 2], [1, 3]] has singular values 4.079 and 0.600 (condition number 4.079/0.600 &asymp; 6.8, the number quoted above). Both <strong>V &Sigma;</strong>&#8314;<strong>U</strong>&#7488;<strong>b</strong> and <code>np.linalg.lstsq(A, b)</code> return <strong>x&#770;</strong> = [0.667, 0.5], the same line as the normal equations. HW4 asks gradient descent to reach &ldquo;roughly the same residual&rdquo; as this reference.</p>
+  </div>
+
   <div class="summary-box">
     <div class="label">Summary</div>
     <ul>
       <li>Least squares minimizes <strong>&frac12;&#8214;b &minus; Ax&#8214;&#8322;&sup2;</strong>, the sum of squared residuals.</li>
       <li>Rule to remember: gradient <strong>A&#7488;(Ax &minus; b)</strong>; setting it to zero gives the <strong>normal equations A&#7488;Ax = A&#7488;b</strong>.</li>
       <li>The residual is perpendicular to the columns of <strong>A</strong>: least squares is an orthogonal projection of <strong>b</strong> onto the column space.</li>
+      <li>&ldquo;Residual&rdquo; means the vector <strong>b</strong> &minus; <strong>A x</strong> <em>or</em> (in HW4's plots) the number &frac12;&#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&sup2;. Small problems are solved directly with the pseudoinverse <strong>x&#770; = V&Sigma;&#8314;U&#7488;b</strong> or <code>lstsq</code>, the reference GD should match.</li>
       <li>Next: the under-determined case, which needs one more ingredient (&sect;30).</li>
     </ul>
   </div>
@@ -15635,12 +15663,80 @@ i_est    = F&#8315;&#185;( F(b) / F(k) )                (then inverse-transform)
 <figcaption>Fig. 175 &mdash; the transpose of a convolution. The 5&times;3 full-convolution matrix A for the kernel [1, 2, 3] has the kernel running down each column; its 3&times;5 transpose has it running along each row. Applying A&#7488; to the impulse [0, 0, 1, 0, 0] picks out A&#7488;'s third column (outlined) and returns [3, 2, 1]: the kernel reversed, so A&#7488; is convolution with the flipped kernel.</figcaption>
 </figure>
 
+
+  <h3>31.3 Optional: the L1 objective and subgradients (supports the HW4 bonus)</h3>
+  <p><strong>The problem it solves.</strong> Least squares treats one wildly wrong measurement (an <strong><a href="https://en.wikipedia.org/wiki/Outlier">outlier</a></strong>: a dead pixel, a LiDAR echo from a raindrop) as a disaster to be avoided at almost any cost, because its miss is squared. An objective that grows only in proportion to the miss lets the other measurements outvote it.</p>
+  <p><strong>The L1 norm.</strong> &#8214;<strong>v</strong>&#8214;&#8321; = &Sigma;<sub>i</sub> |<em>v<sub>i</sub></em>|: add up the absolute values (the sizes of the misses, ignoring sign).</p>
+  <div class="callout"><div class="label">Same concept, different names</div><p style="margin:0"><strong>&#8467;&#8321; norm</strong> = <strong>L1 norm</strong> = <strong>Manhattan</strong> or <strong><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">taxicab norm</a></strong> (the distance a taxi drives on a city grid: blocks east plus blocks north). Minimizing &#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&#8321; is called <strong><a href="https://en.wikipedia.org/wiki/Least_absolute_deviations">least absolute deviations (LAD)</a></strong> or <strong>L1 regression</strong>.</p></div>
+  <div class="callout">
+    <div class="label">Worked example &mdash; why L1 resists outliers</div>
+    <p>Fit a single constant <em>c</em> to the measurements [1, 2, 3, 100], where 100 is an outlier.</p>
+    <ul style="margin-bottom:0">
+      <li><em>L2:</em> minimize &Sigma;(<em>c</em> &minus; <em>b<sub>i</sub></em>)&sup2;. The minimizer is the <strong><a href="https://en.wikipedia.org/wiki/Arithmetic_mean">mean</a></strong>, (1 + 2 + 3 + 100)/4 = <strong>26.5</strong>: dragged far from the three sensible values by one bad one. The outlier's squared miss (73.5&sup2; &asymp; 5400) dominates the sum.</li>
+      <li><em>L1:</em> minimize &Sigma;|<em>c</em> &minus; <em>b<sub>i</sub></em>|. The minimizer is any <strong><a href="https://en.wikipedia.org/wiki/Median">median</a></strong>, i.e. any <em>c</em> between 2 and 3 (the total is 100 everywhere on that stretch). The outlier pulls with a fixed strength no matter how far away it is, so it cannot drag the answer.</li>
+    </ul>
+  </div>
+  <p><strong>The difficulty: |t| has a corner.</strong> Gradient descent needs a derivative. The derivative of |<em>t</em>| is &minus;1 for <em>t</em> &lt; 0 and +1 for <em>t</em> &gt; 0 (the <a href="https://en.wikipedia.org/wiki/Sign_function">sign</a> of <em>t</em>), but at <em>t</em> = 0 the graph has a sharp corner, and there is no single slope.</p>
+  <p><strong><a href="https://en.wikipedia.org/wiki/Subderivative">Subderivatives</a>.</strong> At a corner, any line through the corner point that stays <strong>below</strong> the graph everywhere is a reasonable stand-in for the tangent. Its slope is called a <strong>subderivative</strong> (in several variables, a <strong>subgradient</strong>), and the set of all such slopes is the <strong>subdifferential</strong>. For |<em>t</em>| at <em>t</em> = 0, every slope from &minus;1 to +1 works: the lines <em>y</em> = <em>s</em>&middot;<em>t</em> with &minus;1 &le; <em>s</em> &le; 1 all touch the V at its tip and stay under it. Where the function is smooth, the only such slope is the ordinary derivative.</p>
+  <div class="tbl-wrap">
+  <table>
+  <thead><tr><th>Point</th><th>Ordinary derivative of |t|</th><th>Subdifferential</th></tr></thead>
+  <tbody>
+  <tr><td><em>t</em> &lt; 0</td><td>&minus;1</td><td>{&minus;1}</td></tr>
+  <tr><td><em>t</em> = 0</td><td>does not exist</td><td>every value in [&minus;1, 1]</td></tr>
+  <tr><td><em>t</em> &gt; 0</td><td>+1</td><td>{+1}</td></tr>
+  </tbody>
+  </table>
+  </div>
+<figure class="chart-fig">
+<svg viewBox="0 0 680 270" role="img" aria-label="Two panels. Left: the V-shaped graph of the absolute value of t, with several dashed straight lines through its corner at the origin, of slopes between minus 1 and plus 1, all staying below the V. Right: the subdifferential of the absolute value, equal to minus 1 for negative t, plus 1 for positive t, and the whole vertical segment from minus 1 to plus 1 at t equals 0.">
+<line x1="50.0" y1="173.3" x2="310.0" y2="173.3" stroke="var(--border)" stroke-width="1"/>
+<line x1="180.0" y1="40.0" x2="180.0" y2="240.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="50.0" y1="40.0" x2="310.0" y2="306.7" stroke="var(--accent-2)" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+<line x1="50.0" y1="106.7" x2="310.0" y2="240.0" stroke="var(--accent-2)" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+<line x1="50.0" y1="173.3" x2="310.0" y2="173.3" stroke="var(--accent-2)" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+<line x1="50.0" y1="240.0" x2="310.0" y2="106.7" stroke="var(--accent-2)" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+<line x1="50.0" y1="306.7" x2="310.0" y2="40.0" stroke="var(--accent-2)" stroke-width="1.2" stroke-dasharray="4 3" stroke-opacity="0.8"/>
+<polyline points="50.0,40.0 180.0,173.3 310.0,40.0" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+<circle cx="180.0" cy="173.3" r="3.5" fill="var(--accent)"/>
+<text x="50.0" y="187.3" text&minus;anchor="middle" class="chart&minus;label" fill="var(&minus;&minus;ink&minus;faint)">&minus;2</text>
+<text x="115.0" y="187.3" text&minus;anchor="middle" class="chart&minus;label" fill="var(&minus;&minus;ink&minus;faint)">&minus;1</text>
+<text x="245.0" y="187.3" text&minus;anchor="middle" class="chart&minus;label" fill="var(&minus;&minus;ink&minus;faint)">1</text>
+<text x="310.0" y="187.3" text&minus;anchor="middle" class="chart&minus;label" fill="var(&minus;&minus;ink&minus;faint)">2</text>
+<text x="254.8" y="46.7" class="chart-label" fill="var(--accent)">y = |t|</text>
+<text x="189.8" y="223.3" class="chart-label" fill="var(--accent-2)">y = s&middot;t, &minus;1 &le; s &le; 1</text>
+<text x="180.0" y="22" text-anchor="middle" class="chart-label" fill="var(--ink)">|t| and lines that stay below it at the corner</text>
+<text x="316.0" y="177.3" class="chart-label" fill="var(--ink-faint)">t</text>
+<line x1="390.0" y1="140.0" x2="650.0" y2="140.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="520.0" y1="40.0" x2="520.0" y2="240.0" stroke="var(--border)" stroke-width="1"/>
+<line x1="390.0" y1="206.7" x2="520.0" y2="206.7" stroke="var(--accent)" stroke-width="2.5"/>
+<line x1="520.0" y1="73.3" x2="650.0" y2="73.3" stroke="var(--accent)" stroke-width="2.5"/>
+<line x1="520.0" y1="206.7" x2="520.0" y2="73.3" stroke="var(--accent-3)" stroke-width="4"/>
+<text x="512.0" y="210.7" text-anchor="end" class="chart-label" fill="var(--ink-faint)">&minus;1</text>
+<text x="512.0" y="77.3" text-anchor="end" class="chart-label" fill="var(--ink-faint)">+1</text>
+<text x="396.5" y="223.3" class="chart-label" fill="var(--accent)">slope &minus;1 (t &lt; 0)</text>
+<text x="552.5" y="60.0" class="chart-label" fill="var(--accent)">slope +1 (t &gt; 0)</text>
+<text x="527.8" y="116.7" class="chart-label" fill="var(--accent-3)">at t = 0: any value in [&minus;1, 1]</text>
+<text x="520.0" y="22" text-anchor="middle" class="chart-label" fill="var(--ink)">subdifferential &part;|t|: the allowed slopes</text>
+<text x="656.0" y="144.0" class="chart-label" fill="var(--ink-faint)">t</text>
+</svg>
+<figcaption>Fig. 176 &mdash; the subderivative of |t|, drawn to scale on t &isin; [&minus;2, 2]. Left: at the corner t = 0 there is no single tangent, but every line y = s&middot;t with &minus;1 &le; s &le; 1 (dashed, five shown) touches the V at its tip and stays below it; each such slope s is a subderivative. Right: the subdifferential collects those slopes: just &minus;1 for t &lt; 0, just +1 for t &gt; 0, and the whole interval [&minus;1, 1] at t = 0 (teal), where an implementation must pick one value.</figcaption>
+</figure>
+
+  <p><strong><a href="https://en.wikipedia.org/wiki/Subgradient_method">Subgradient descent</a>.</strong> Run the gradient-descent update with any subgradient in place of the gradient. Two behaviors differ from &sect;31.1:</p>
+  <ul>
+    <li><em>It does not settle with a fixed step size.</em> Near the minimum the subgradient does not shrink toward zero (|<em>t</em>|'s slope is &plusmn;1 right up to the corner), so a fixed &alpha; keeps overshooting back and forth across the minimum. The objective plotted against iteration therefore jitters instead of flattening smoothly. Shrinking &alpha; over the iterations (for example &alpha;<sub><em>k</em></sub> &prop; 1/&radic;<em>k</em>) makes the jitter die down.</li>
+    <li><em>Which value to return at an exact zero is a choice.</em> Any value in [&minus;1, 1] is a valid subderivative there.</li>
+  </ul>
+  <p>Assembling the gradient of &#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&#8321; from these pieces (with the multivariable <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a>) and choosing what your function returns at zero entries are the bonus task's questions, left to the assignment.</p>
+
   <div class="summary-box">
     <div class="label">Summary</div>
     <ul>
       <li>Rule to remember: <strong>x^(k+1) = x^(k) &minus; &alpha; A&#7488;(Ax^(k) &minus; b)</strong>; each step needs only one product with <strong>A</strong> and one with <strong>A</strong>&#7488;.</li>
       <li>&alpha; must be below 2/&mu;_max (0.12 in the line fit) or it diverges; ill-conditioning makes convergence slow (200 iterations to approach the answer).</li>
       <li>For blur, <strong>A</strong>&#7488; = convolution with the <strong>flipped kernel</strong>, = multiplying by <strong>F{c}*</strong> in the Fourier domain.</li>
+      <li>Optional (HW4 bonus): the L1 objective &#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&#8321; resists outliers (median, not mean) but has corners; use a <strong>subgradient</strong> (any slope in [&minus;1, 1] at a corner of |<em>t</em>|), and expect jitter unless the step size shrinks.</li>
       <li>Next: when even one product with the full <strong>A</strong> is too expensive (&sect;32).</li>
     </ul>
   </div>
@@ -15674,6 +15770,8 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
     <li><strong>SGD</strong> is cheap per iteration and makes fast progress far from the minimum, but near the minimum the randomness keeps it jittering (&ldquo;struggles close to minima&rdquo;; slide 144's contour plot shows the blue GD path heading straight to the center and the red SGD path zig-zagging). Its randomness can help escape poor regions of <strong>non-convex</strong> objectives (bumpy landscapes with many valleys), which is why it dominates neural-network training.</li>
     <li><strong>Per iteration vs. per second.</strong> PS4's plots: against <em>iteration count</em>, full GD and large-batch SGD drop fastest, and small batches (<em>B</em> = 10) crawl; the flat &ldquo;SVD&rdquo; line is the exact least-squares answer, computed directly as a reference floor. Against <em>wall-clock time</em>, the cheap SGD iterations can win. &ldquo;Exact runtimes and order of convergence in wall clock time may vary!&rdquo;</li>
     <li><strong>Measuring progress fairly.</strong> PS4: &ldquo;Use full <strong>A</strong> matrix, not subsampled <strong>A</strong>, to compute residual.&rdquo; The objective reported each iteration must be the full &frac12;&#8214;<strong>A x</strong> &minus; <strong>b</strong>&#8214;&sup2;, or different batch sizes are not comparable.</li>
+    <li><strong>Plotting against time.</strong> For a residual-vs-time curve, record a running total of elapsed time after each iteration (&sect;16.4's timing advice) and plot the objective against that total. Time the update step itself; the full-residual evaluation is bookkeeping for the plot and is usually kept outside the timed part, so that it does not add the same cost to every method. State your choice in the write-up.</li>
+    <li><strong>The batch-size trade-off, in terms of what each step costs and how noisy it is.</strong> A batch of <em>B</em> rows costs about <em>B</em>/<em>m</em> of a full gradient step, and its gradient estimate becomes less noisy as <em>B</em> grows (averaging more rows). Small <em>B</em>: cheap, noisy steps. Large <em>B</em>: expensive, accurate steps; <em>B</em> = <em>m</em> is plain GD. How this plays out on HW4's problem, and with HW4's fixed step size, is the assignment's question.</li>
   </ul>
 
 <figure class="chart-fig">
@@ -15772,7 +15870,7 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
 <text x="419.6" y="210.0" text-anchor="start" class="chart-label" fill="var(--ink-faint)">same step &#945; = 0.6/&#956;_max = 0.0144</text>
 <text x="419.6" y="230.0" text-anchor="start" class="chart-label" fill="var(--ink-faint)">numpy seed 7, n = 2 unknowns</text>
 </svg>
-<figcaption>Fig. 176 &mdash; gradient descent vs. stochastic gradient descent on a small random least-squares problem (m = 50 rows, n = 2 unknowns, numpy seed 7), both paths computed with the same step size. Full GD (solid) slides smoothly into the minimum (+). SGD (thin) uses a random batch of B = 5 rows per step, scaled by m/B: each step is cheap and it gets close fast, but near the minimum the random batches keep it zig-zagging.</figcaption>
+<figcaption>Fig. 177 &mdash; gradient descent vs. stochastic gradient descent on a small random least-squares problem (m = 50 rows, n = 2 unknowns, numpy seed 7), both paths computed with the same step size. Full GD (solid) slides smoothly into the minimum (+). SGD (thin) uses a random batch of B = 5 rows per step, scaled by m/B: each step is cheap and it gets close fast, but near the minimum the random batches keep it zig-zagging.</figcaption>
 </figure>
 
   <div class="callout">
@@ -15906,7 +16004,7 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
 <text x="348.0" y="246.0" text-anchor="start" class="chart-label" fill="var(--ink-soft)">new random S at every iteration k</text>
 <text x="348.0" y="264.0" text-anchor="start" class="chart-label" fill="var(--accent-ink)">on average S&#7488;S = (B/m) I</text>
 </svg>
-<figcaption>Fig. 177 &mdash; SGD's batch as a matrix product: a random 3&times;10 selection matrix S (one 1 per row, here in columns 3, 7, 9) times the 10&times;n matrix A gives the 3&times;n batch &#195;, made of exactly rows 3, 7, 9 of A (matching colors). A fresh random S is drawn at each iteration; averaged over draws, S&#7488;S = (B/m)&nbsp;I.</figcaption>
+<figcaption>Fig. 178 &mdash; SGD's batch as a matrix product: a random 3&times;10 selection matrix S (one 1 per row, here in columns 3, 7, 9) times the 10&times;n matrix A gives the 3&times;n batch &#195;, made of exactly rows 3, 7, 9 of A (matching colors). A fresh random S is drawn at each iteration; averaged over draws, S&#7488;S = (B/m)&nbsp;I.</figcaption>
 </figure>
 
   <div class="summary-box">
@@ -16261,6 +16359,7 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Least_squares">Least squares</a> / residual / ℓ₂ norm</dt><dd>minimize ½‖b − Ax‖₂², the sum of squared prediction misses r = b − Ax; ‖r‖₂ = √(Σ r_i²) (&sect;29.1).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Gradient">Gradient</a></dt><dd>the vector of partial derivatives, pointing uphill; for least squares it is Aᵀ(Ax − b) (&sect;29.2).</dd></div>
           <div class="row"><dt>Normal equations</dt><dd>AᵀAx = Aᵀb: the residual is perpendicular to every column of A, so least squares is an orthogonal <a href="https://en.wikipedia.org/wiki/Projection_(linear_algebra)">projection</a> onto the column space (&sect;29.2).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">Pseudoinverse</a> A⁺</dt><dd>V Σ⁺ Uᵀ, where Σ⁺ divides by each nonzero singular value and puts 0 where a singular value is 0; x̂ = VΣ⁺Uᵀb is the least-squares solution, the best substitute for A⁻¹ when A is not square or not invertible (&sect;29.2). Same concept, different names: pseudoinverse = Moore–Penrose inverse.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Ridge_regression">Tikhonov regularization</a> (ridge)</dt><dd>x = (AᵀA + λI)⁻¹Aᵀb, adding λ to every eigenvalue so the system is always solvable; λ → 0 gives the least-norm solution (&sect;30).</dd></div>
           <div class="row"><dt>Least-norm solution</dt><dd>among all exact solutions of an underdetermined system, the shortest one (no null-space component) (&sect;30).</dd></div>
           <div class="row"><dt>Filter factors</dt><dd>the per-singular-value weights s²/(s² + λ) by which regularization multiplies the plain inverse's 1/s, giving s/(s² + λ) in place of 1/s (&sect;30).</dd></div>
@@ -16268,6 +16367,11 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
           <div class="row"><dt>Function handle</dt><dd>passing "multiply by A" and "multiply by Aᵀ" as functions instead of storing the matrix (&sect;26, &sect;31.1).</dd></div>
           <div class="row"><dt>Adjoint (of a convolution)</dt><dd>Aᵀ for a blur: convolution with the flipped kernel, or multiplication by F{c}* in the Fourier domain (&sect;31.2). See <a href="https://en.wikipedia.org/wiki/Hermitian_adjoint">Hermitian adjoint</a>.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">Stochastic gradient descent (SGD)</a> / batch size</dt><dd>gradient steps computed from a random subset of B rows; the estimate is unbiased (right on average) (&sect;32).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Elapsed_real_time">Wall-clock time</a> / warm-up</dt><dd>real elapsed time between two clock readings (time.time(), time.perf_counter()); the first call to a library function is often slower (warm-up), so time several runs and report the median or minimum, with both routes doing the same work (&sect;16.4, &sect;32).</dd></div>
+          <div class="row"><dt>L1 norm ‖v‖₁ = Σ|v_i|</dt><dd>the sum of absolute values (&sect;31.3). Same concept, different names: ℓ₁ norm = L1 norm = Manhattan norm = <a href="https://en.wikipedia.org/wiki/Taxicab_geometry">taxicab norm</a>.</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Least_absolute_deviations">Least absolute deviations</a> (LAD)</dt><dd>minimizing ‖Ax − b‖₁ (also L1 regression); resists outliers (fitting a constant gives a median, not a mean) (&sect;31.3).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Subderivative">Subderivative / subgradient / subdifferential</a></dt><dd>at a corner, the slope of any line through the corner that stays below the graph (subderivative; subgradient in several variables), and the set of all such slopes (subdifferential); for |t| at t = 0 it is every value in [−1, 1], elsewhere the sign of t (&sect;31.3).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Subgradient_method">Subgradient descent</a></dt><dd>gradient descent with a subgradient in place of the gradient; with a fixed step size it jitters near the minimum, so the step is often shrunk over iterations (e.g. α_k ∝ 1/√k) (&sect;31.3).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Bias_of_an_estimator">Bias of an estimator</a> (unbiased)</dt><dd>an estimate whose average equals the true value, here E[g(x)] = ∇f(x) (&sect;32).</dd></div>
         </div>
       </div>

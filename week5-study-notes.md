@@ -2173,7 +2173,7 @@ x^(k+1) = x^(k) − α · F⁻¹{ F{c}* · ( F{c} · F{x^(k)} − F{b} ) }
 - *It does not settle with a fixed step size.* Near the minimum the subgradient does not shrink toward zero (|*t*|'s slope is ±1 right up to the corner), so a fixed α keeps overshooting back and forth across the minimum. The objective plotted against iteration therefore jitters instead of flattening smoothly. Shrinking α over the iterations (for example α_k ∝ 1/√*k*) makes the jitter die down.
 - *Which value to return at an exact zero is a choice.* Any value in [−1, 1] is a valid subderivative there.
 
-Assembling the gradient of ‖**A x** − **b**‖₁ from these pieces (with the chain rule, the same way §29.2 assembled **A**ᵀ(**A x** − **b**) for the squared norm) and choosing what your function returns at zero entries are the bonus task's questions, left to the assignment.
+Assembling the gradient of ‖**A x** − **b**‖₁ from these pieces (with the multivariable chain rule) and choosing what your function returns at zero entries are the bonus task's questions, left to the assignment.
 
 > **Summary**
 > - Rule to remember: **x^(k+1) = x^(k) − α Aᵀ(Ax^(k) − b)**; each step needs only one product with **A** and one with **A**ᵀ.
