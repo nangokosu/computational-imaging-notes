@@ -3,7 +3,7 @@
 **Topic:** Review of Sampling, Deconvolution, Linear Systems — the Fourier transform, sampling and aliasing, the DFT/FFT, diffraction and the lens as a low-pass filter, image filtering, deconvolution (inverse and Wiener filtering), and linear inverse problems (least squares, gradient descent, stochastic gradient descent)
 **Source:** Lecture 5 slides (D. Lindell, CSC2529, Fall 2026); Problem Session 4 ("PS4," the HW4 problem session), all three tasks: Task 1 image filtering (primal vs. Fourier domain), Task 2 deconvolution (inverse filtering and Wiener deconvolution), Task 3 gradient descent and stochastic gradient descent.
 **HW4 supplements:** §16.4, §17.1, §22, §23, §25, §29–§32 go deeper than the slides because HW4 (as described in PS4 and the HW4 handout) depends on them: filtering in both domains and `psf2otf`, the kernel-size rule, timing code fairly, high-pass display, inverse filtering (including why zero added noise still fails), the Wiener filter and its SNR knob, MSE/PSNR, the least-squares gradient, the SVD/pseudoinverse reference solution, the two meanings of "residual," gradient descent, stochastic gradient descent, and (§31.3, optional) the L1 objective and subgradients for the bonus task. They explain each method and the quantities it needs, but never compute the assignment's own answers.
-**Lecture-notes check:** a later pass compared these notes with the student's own lecture notes and added: a notation primer for sums and integrals (§2.4), step-by-step derivations of the key transforms (§5.2, §6, §7.2, §29.2), the shift theorem (§4), the convolution theorem in both directions (§5.3), filter vocabulary including "attenuate" (§5.4), the full "sample" vocabulary and the two senses of "sample" (§7.1), the Nyquist frequency as the fold line (§8.1), aliasing types (§8.4), temporal anti-aliasing by the exposure time (§20.1), kernel vs. PSF (§12.3), why every PSF is low-pass (§14), inverse problems and ill-posedness (§22.1), LiDAR waveform deconvolution (§22.4), and "Same concept, different names" notes throughout.
+**Lecture-notes check:** a later pass compared these notes with the student's own lecture notes and added: a notation primer for sums and integrals (§2.4), step-by-step derivations of the key transforms (§5.2, §6, §7.2, §29.2), the shift theorem (§4), the convolution theorem in both directions (§5.3), filter vocabulary including "attenuate" (§5.4), the full "sample" vocabulary and the two senses of "sample" (§7.1), the Nyquist frequency as the fold line (§8.1), aliasing types (§8.4), temporal anti-aliasing by the exposure time (§20.1), kernel vs. PSF (§12.3), why every PSF is low-pass (§14), inverse problems and ill-posedness (§22.1), LiDAR waveform deconvolution (§22.4), and "Same concept, different names" notes throughout. A further clarification pass added §7.3 (what the spectrum plot's axis is, what a "copy" is, and why resampling does not stretch the spectrum), §19.2's step-by-step spectrum table, and §19.3 (upsampling in full, mirroring downsampling).
 **Ties to earlier weeks, covered again in full here.** Much of this lecture revisits ideas that earlier weeks introduced in a lighter, homework-driven form: the Fourier transform and convolution (Week 1 §19–§21), diffraction (Week 2 §3, §12), the optical low-pass filter and aliasing in demosaicking (Week 3 §14.2), unsharp masking (Week 3 §17), MSE/PSNR (Week 3 §13), and the PSF/OTF (Week 4 §18). This file re-explains each of them from scratch, at this week's greater depth, so it can be read on its own; earlier weeks are named only so you can see where an idea first appeared.
 **Order differs from the slides.** The lecture opens with the Fourier transform, then jumps to sampling, then to lenses and diffraction, then to filtering, and only near the end reviews linear algebra. These notes reorder it so each section uses only ideas already built: complex numbers, waves and the notation of sums and integrals → the Fourier transform → convolution, the convolution theorem in both directions, and filter vocabulary → a small set of standard functions (box, sinc, triangle, Gaussian, impulse train) → sampling and aliasing → the DFT and FFT → the lens and sensor as filters (diffraction, pixel integration) → filtering → aliasing in practice (downsampling, wagon wheels, LiDAR range ambiguity, the sensor's anti-aliasing filter) → deconvolution → linear systems and their solvers. The linear-algebra vocabulary each section needs (matrix–vector product, eigenvector, null space) is introduced where it is first used. Each section ends with a **Summary** box; forward pointers appear only there, as optional "where this goes next" lines.
 **Scope:** Announcements and the "next lecture" teaser slide are skipped. The lecture's video and textbook readings (a visual Fourier-transform introduction and a Fourier-transform book) are not summarized separately; everything they would add is built here.
@@ -31,6 +31,10 @@ This lecture is a review that makes precise several ideas earlier weeks used loo
 | **Optical frequency / wavelength of light** | the light wave itself | wavelength λ in nanometers (green ≈ 550 nm) | diffraction (§13) only |
 
 Image frequency is the precise, file-bound sub-flavor of spatial frequency: the same stripes have one fixed image frequency (cycles per pixel) but a spatial frequency that depends on the pixel size. Whenever this file says "frequency" inside an image-processing formula, it means image frequency; inside a lens or sensor formula, spatial frequency in cycles/mm; inside a time-signal formula, temporal frequency in Hz. The wavelength of light is never called a "frequency" here.
+
+**Which pixel?** "Cycles per pixel" changes meaning when an image is resized, because the pixels change size. When this file discusses resampling (§7.3, §19), it measures image frequency in cycles per **original** pixel, so the same stripes keep the same number. §7.3 shows what happens with the other choice.
+
+**Sampling rate is not a frequency axis.** A spectrum plot's horizontal axis is always the frequency of the *signal's own waves* (one of the three kinds above). The sampling rate *f_s* appears on that axis only as a *distance* between copies of the spectrum (§7.3).
 
 **Symbols this week (several letters are reused by the slides for different things).**
 
@@ -607,7 +611,7 @@ This single rule explains three facts later in the week: a **bigger aperture giv
 | **downsampling** | resampling to *fewer* samples (a lower rate) | shrinking a 4000-pixel-wide photo to 1000 pixels |
 | **subsampling** | the simplest downsampling: keep every *D*-th sample, discard the rest | `I[::4, ::4]` in Python, `I(1:4:end, 1:4:end)` in Matlab |
 | **decimation** | downsampling by a whole-number factor *D*; in signal-processing usage it normally *includes* a low-pass filter before discarding samples | §19's "anti-aliased downsampling" |
-| **upsampling** | resampling to *more* samples (a higher rate), by **interpolation**: estimating values between existing samples | enlarging a photo |
+| **upsampling** | resampling to *more* samples (a higher rate), by **interpolation**: estimating values between existing samples | enlarging a photo (§19.3) |
 | **oversampling / undersampling** | sampling faster / slower than the signal needs (the threshold is set in §8) | undersampling causes aliasing |
 
 > **Same concept, different names.** **Sampling interval** = **sampling period** = **sample spacing**; on a sensor it is the **pixel pitch** (§15). **Sampling rate** = **sampling frequency** = **sample rate**; in LiDAR and electronics it is quoted in **samples per second** (S/s, e.g. 1 GS/s = 10⁹ S/s); for displays and printers it is **dpi**/**ppi**. **Subsampling** and **downsampling** are often used interchangeably; when the difference matters, "subsampling" means discarding without filtering, and "downsampling" or "decimation" means filtering first.
@@ -640,7 +644,9 @@ F{ f · comb_T } = f̂ ∗ F{comb_T}                                  convolutio
                 = (1/T) Σ_m f̂(ξ − m·f_s)                         sifting: convolving with δ at m·f_s shifts f̂ there (§6.1)
 ```
 
-**In words:** each copy is shifted by *m·f_s*, where *m* = …, −1, 0, 1, … are all the integers. The central copy (*m* = 0) is your original spectrum, unchanged. The copies (*m* ≠ 0) are the "aliases" that will create trouble if they overlap with the central one (§8).
+**In words:** each copy is shifted by *m·f_s*, where *m* = …, −1, 0, 1, … are all the integers. The central copy (*m* = 0) is your original spectrum, unchanged. The copies (*m* ≠ 0) are impostors that will create trouble if they overlap with the central one (§8). §7.3 explains what a "copy" is and what the horizontal axis measures.
+
+> **Same concept, different names.** **Spectral copy** = **replica** = **spectral image** (the signal-processing term; it has nothing to do with a photograph) = **alias** (the name the copies earn once they overlap the central one, §8).
 
 | Symbol | Meaning | Units |
 |---|---|---|
@@ -650,10 +656,74 @@ F{ f · comb_T } = f̂ ∗ F{comb_T}                                  convolutio
 | *m* | which copy (…, −1, 0, 1, …) | integer |
 | *f̂*(ξ − *m f_s*) | the original spectrum shifted to sit around *m f_s* | |
 
+### 7.3 Reading a spectrum plot: the axis, the copies, and what sampling leaves alone
+
+Three questions trip up almost everyone here. What does the horizontal axis measure? What is a "copy of the spectrum"? And why does changing the sampling rate not squeeze or stretch the spectrum?
+
+**1. The axis is the frequency of the signal's own waves, never the sampling rate.**
+
+A spectrum plot answers one question: *how much of each wave frequency is inside this signal?* Horizontal position is the frequency ξ of a component wave; height is how much of it there is. Which frequency kind (§1) depends on the signal:
+
+- a stored image: **image frequency**, cycles per pixel;
+- light on a sensor: **spatial frequency**, cycles per mm;
+- a sound or a LiDAR waveform: **temporal frequency**, Hz.
+
+The sampling rate *f_s* is **not** an axis. It is a single number describing the sampler, and it shows up on the plot only as a *distance*: the gap between neighbouring copies.
+
+Why can a sampling rate be drawn as a distance on a frequency axis? The units match. *f_s* is "samples per mm" and ξ is "cycles per mm", both "how many per unit length". The meaning matches too. A wave with exactly *f_s* cycles per unit length completes one whole cycle between neighbouring samples, so every sample catches it at the same point of its cycle and it looks constant (the 20 Hz wave in §8.3). A wave at ξ + *f_s* therefore produces the same samples as a wave at ξ. The copies are a drawing of exactly that fact.
+
+| Quantity | Role on the spectrum plot |
+|---|---|
+| ξ, the signal's frequency | **the horizontal axis itself** |
+| *f_max* | where the signal's own spectrum ends (half the width of one copy) |
+| *f_s*, the sampling rate | the **distance between** neighbouring copies |
+| *f_s*/2, the Nyquist frequency | the edge of the central band, halfway to the next copy |
+
+**2. A "copy of the spectrum" is the whole curve, redrawn around a new centre.**
+
+*Analogy:* a 12-hour clock. 1:00 and 13:00 put the hour hand in the same place, so plotting the hand's position over many hours repeats the same face every 12 hours. Frequency wraps the same way after every *f_s*: the single spectrum curve is drawn again, unchanged, around each multiple of *f_s*.
+
+- Copy number *m* is the original curve slid along the axis by *m·f_s* (to the right for positive *m*, to the left for negative).
+- It is a copy of the **spectrum curve**, not of the image or of the signal.
+- All copies have the same shape. The samples cannot tell which one is "real", so we take the central one (*m* = 0) as the truth, and §8 shows when that assumption fails.
+
+**3. Why the spectrum is not squeezed or stretched when you sample.**
+
+The *f̂* in the §7.2 formula is the spectrum of the **continuous signal**. Sampling only *looks* at that signal at points; it does not change which waves the signal contains. A stripe pattern of 25 cycles/mm is still 25 cycles/mm whether you record it at 250 or at 62.5 samples/mm. Only two things depend on *f_s*:
+
+- how **far apart the copies** are (exactly *f_s*);
+- where the **Nyquist band edge** is (*f_s*/2).
+
+Sampling the same signal with a longer interval *D·T* is the §7.2 formula with *T* replaced by *D·T*:
+
+```
+F{ f · comb_{DT} } = (1/(D·T)) · Σ_m f̂(ξ − m·f_s/D)       (subsampling by D = sampling the same signal at rate f_s/D)
+```
+
+The curve *f̂* keeps its shape and width. Only the shifts *m·f_s/D* got smaller, so the copies moved *closer together by a factor D*. (The leading factor 1/(*D·T*) is overall height bookkeeping and plays no role in overlap.)
+
+**"But I have seen the spectrum stretched by D."** You have, and it is the same plot read with a different ruler. There are two:
+
+| Ruler | Unit | What it means | After downsampling by *D* |
+|---|---|---|---|
+| **Fixed ruler** (this file's choice) | cycles/mm, or cycles per **original** pixel | the frequency of the scene's stripes, independent of how they are sampled | spectrum keeps its width; copies are *f_s*/*D* apart; Nyquist is *f_s*/(2*D*) |
+| **Per-current-pixel ruler** | cycles per pixel of the image you currently hold | stripes per *current* pixel; the Nyquist frequency is always 0.5 and copies are always 1 apart | spectrum looks **D times wider** (and copies are still 1 apart) |
+
+Converting between rulers multiplies by *D*: each new pixel is *D* times as big, so a stripe cycle spans *D* times fewer new pixels. This is the scaling theorem (§6.6) with factor *D*: shrinking an image's sample count by *D* stretches its spectrum by *D* in per-pixel units. The fixed ruler is used throughout because it keeps "what is in the scene" (the spectrum) separate from "how we sample it" (the copy spacing).
+
+> **Worked example (two rulers, one picture).** Sensor at 250 samples/mm, so the original pixel pitch is 4 µm. A stripe pattern of 25 cycles/mm is 25/250 = **0.1 cycles per original pixel**. Keep every 4th pixel (*D* = 4): the new rate is 62.5 samples/mm and the new Nyquist frequency is 31.25 cycles/mm.
+> - *Fixed ruler:* the stripe is still at 25 cycles/mm, below 31.25, so it survives.
+> - *Per-current-pixel ruler:* the same stripe is 25/62.5 = **0.4 cycles per new pixel**, below the always-0.5 Nyquist limit. The stripe's number grew by *D* = 4 (0.1 → 0.4) while the limit stayed at 0.5, so the stripe moved from 20% to 80% of the way to the limit. On the fixed ruler the same move shows as the limit shrinking around a stationary stripe (25/125 → 25/31.25).
+> - A 50 cycles/mm stripe is 0.2 cycles per original pixel and 0.8 cycles per new pixel. On either ruler it is past the Nyquist frequency, and it folds (§8.2) to |50 − 62.5| = **12.5 cycles/mm** (= 0.2 cycles per new pixel).
+>
+> Both rulers agree on every verdict, because the quantity that decides overlap is the ratio *(width of the spectrum) ÷ (spacing between copies)*, which is ruler-independent and grows by *D* when you downsample.
+
 > **Summary**
 > - A sample is one measured value of a continuous signal; *T* = sampling interval, *f_s* = 1/*T* = sampling rate. Downsampling lowers the rate (subsampling = just discard; decimation = filter, then discard); upsampling raises it by interpolation.
 > - Sampling = multiplying by an impulse train of spacing *T*.
 > - Rule to remember: **sampling at rate f_s copies the spectrum to every multiple of f_s**.
+> - The spectrum plot's axis is the **signal's** frequency; *f_s* is only the **spacing** between copies. A copy is the whole spectrum curve redrawn around *m·f_s*.
+> - Resampling does not squeeze or stretch the spectrum on a fixed ruler (cycles/mm or per original pixel); it moves the copies and the Nyquist edge. Measured per current pixel, the same change looks like a stretch by *D*.
 > - Next: when the copies overlap, frequencies get confused: aliasing (§8).
 
 ---
@@ -1360,7 +1430,7 @@ The total length is 4*f*, hence the name. The mask performs, at the speed of lig
 
 **The problem.** Make an image smaller, say keep every 4th pixel in each direction. In Matlab that is `I(1:4:end, 1:4:end)` ("that's just resampling, right?", slide 82). The lecture demonstrates with a deliberately "high-frequency" image: a stock-trading chart dense with thin vertical lines. The naive result (slide 84) is wrong: some lines vanish, others merge into fake thick bars and moiré. "Something is wrong — aliasing!"
 
-**Why (slides 85–87).** Keeping every 4th pixel is sampling (§7) at one quarter of the original rate. The spectral copies, which sat a full sampling rate apart, now sit only one quarter as far apart. The image's spectrum is wider than the new spacing, so the copies **overlap**: "high frequencies alias into lower frequencies" (§8).
+**Why (slides 85–87).** Keeping every 4th pixel is sampling (§7) at one quarter of the original rate. On the fixed axis of §7.3 (cycles per *original* pixel), the image's spectrum does **not** shrink: the stripes in the scene are the same stripes. What changes is the spacing of the spectral copies, which sat a full sampling rate apart and now sit only one quarter as far apart. The spectrum is wider than the new spacing, so the copies **overlap**: "high frequencies alias into lower frequencies" (§8).
 
 ### 19.2 The fix: low-pass first, then sample
 
@@ -1371,19 +1441,118 @@ The total length is 4*f*, hence the name. The mask performs, at the speed of lig
 
 Filter-then-subsample is what §7.1 called **decimation** (= anti-aliased downsampling); subsampling alone is the naive version of §19.1.
 
+**What each step does to the spectrum.** "Keep every *D*-th pixel" is really two moves: *mask* (zero out the pixels you drop) and *repack* (delete the zeros so the image gets smaller). Only the mask touches the spectrum's copies; the repack just changes the ruler (§7.3).
+
+| Step | Fixed ruler (cycles per original pixel) | Per-current-pixel ruler |
+|---|---|---|
+| 1. low-pass filter | spectrum cut off at ±1/(2*D*); nothing else moves | same |
+| 2. mask: keep every *D*-th pixel, set the rest to 0 | copies appear every 1/*D*; the filtered spectrum is exactly 1/*D* wide, so neighbours just touch and do not overlap | same (the grid has not changed yet) |
+| 3. repack: delete the zeros | **nothing changes** | spectrum stretches by *D* to fill the new band ±0.5; copies now 1 apart |
+
+So the stretch by *D* that some textbooks draw is step 3 only: a change of units, not a change to the signal.
+
 **How much filtering** ("what determines the cutoff?", slide 88). Keeping every *D*-th pixel gives a new sampling rate of 1/*D* samples per original pixel, so by the Nyquist–Shannon theorem (*f_s* ≥ 2*f_max*) the image must contain no image frequency above **1/(2*D*) cycles per original pixel**. For *D* = 4: 1/8 = 0.125 cycles/pixel, i.e. nothing finer than one stripe cycle per 8 original pixels. In practice a Gaussian blur is used (no ringing, §16.2), which attenuates rather than removes the frequencies near the cutoff, so its width is a trade-off between leftover aliasing and extra softness.
 
 The comparison on slide 93: without anti-aliasing the chart's lines break up into a misleading pattern; with it, they become a smooth gray texture, which is the honest small-scale version of "many thin lines."
 
 **Library behavior (slide 95, Parmar et al. 2021).** Downsampling a 128×128 image of a thin circle to 16×16 with the default resize functions of common libraries gives different answers: PIL's resize (which low-pass filters first) keeps a faint, smooth circle, while the OpenCV, TensorFlow and PyTorch resizes tested (which by default interpolate without an adequate prefilter) produce scattered dots. The same "resize" call can silently alias, which matters when images are compared numerically (Parmar et al. found it changes a common image-quality score).
 
-**Upsampling.** The lecture's section title includes upsampling but shows no slides on it. In brief: enlarging an image by *D* inserts *D* − 1 new samples between existing ones. In the Fourier domain the original spectrum's copies are now all inside the new, wider band, so a low-pass filter must remove the extra copies; interpolation (nearest, bilinear, bicubic, Lanczos) is that low-pass filter in disguise. Upsampling never creates detail that was not sampled.
+### 19.3 Upsampling: filling in a bigger image
+
+**The problem.** Enlarge an image by a whole-number factor *D*: zoom in, display it on a finer screen, or rotate it. The new, finer grid needs *D* − 1 extra values between each pair of measured ones, and nobody measured them. So: what values should go there, and what does filling them in do to the spectrum? Downsampling (§19.1–§19.2) had to *prevent* overlapping copies; upsampling has to *remove* extra copies.
+
+*Analogy:* you have temperature readings at 8:00, 12:00 and 16:00 and want hourly values. Writing "0°" for the missing hours is absurd, but it is a clean place to start. The sensible step is then to smooth the chart so the gaps get filled with believable values. Upsampling is exactly those two moves.
+
+**Step 1: make room by inserting zeros (zero-stuffing).** Put each measured value in every *D*-th slot of the finer grid and write 0 in the *D* − 1 slots between. For *D* = 2:
+
+```
+measured:       [2, 6, 4]
+zero-stuffed:   [2, 0, 6, 0, 4, 0]
+```
+
+> **Same concept, different names.** **Zero-stuffing** = **zero insertion** = **zero-filling** = **expansion** (signal-processing term). In 2D, a stuffed image keeps one pixel in every *D* × *D* block and has zeros elsewhere.
+
+Zero-stuffing adds no information and makes no guesses; it only rearranges the data onto a finer grid. The zeros are wrong values, which is the point of step 2.
+
+**What zero-stuffing does to the spectrum (fixed ruler of §7.3).** Nothing about the scene's stripes changed, so the spectrum has the same shape, and its copies **still sit *f_s* apart**, because the data were still measured at the old rate. What changed is the grid: its pitch is now *T*/*D*, so it can represent frequencies up to *D·f_s*/2. The representable band is *D* times wider, and it now contains *D* copies' worth of spectrum instead of one.
+
+The extra copies are now *inside* the band, where they look like genuine content. The signal-processing name for them is **imaging** or **spectral images** (again unrelated to photographs).
+
+> **Worked example (a stripe appears from nowhere).** Sensor at 250 samples/mm; the strip contains one stripe pattern at **100 cycles/mm**. Zero-stuff by *D* = 2: the grid is now 500 samples/mm and its Nyquist frequency is 250 cycles/mm. The stuffed strip contains the real 100 cycles/mm component **and an equally strong impostor at 250 − 100 = 150 cycles/mm** (confirmed numerically with an FFT of a stuffed cosine).
+>
+> Why an impostor? A stuffed signal equals ½ × (the smooth, fully interpolated signal) + ½ × (that same signal multiplied by +1, −1, +1, −1, …). The alternating sign is a wave at the new Nyquist frequency (250 cycles/mm), which slides every frequency by 250: 100 becomes 350, and 350 folds back (§8.2) to 500 − 350 = 150.
+>
+> Two further consequences. The central copy is only **half** as tall as it should be, because half the values are zeros and the average brightness dropped by *D*. And in per-current-pixel units (§7.3) the same plot shows the spectrum **squeezed by *D*** into the middle of the band, with the extra copies filling the rest.
+
+**Step 2: remove the extra copies with a low-pass filter. This is interpolation.** Filter the stuffed signal with a low-pass filter that:
+
+- passes everything below the **old** Nyquist frequency *f_s*/2 (the real content), and
+- blocks everything above it (the impostors), and
+- has **gain *D*** in the passband, to restore the brightness lost to the zeros.
+
+By the convolution theorem (§5.3), this is the same as convolving the stuffed signal with a **kernel** *h* (a small row of weights): each output value is a weighted sum of nearby stuffed values. After filtering, only the central copy remains, and the next copy is *D·f_s* away, which is exactly what a signal sampled at the new rate should look like (the §7.2 rule).
+
+**Interpolation is the kernel.** The familiar resize options are different choices of *h*. For *D* = 2:
+
+| Method | Kernel *h* on the fine grid | In words | Frequency response |
+|---|---|---|---|
+| nearest neighbour | [1, 1] | copy each value into the empty slot | sinc: gentle roll-off, passes a lot of the impostor |
+| linear (bilinear in 2D) | [½, 1, ½] | each new value is the average of its two neighbours | sinc²: cleaner than nearest, still imperfect |
+| bicubic, Lanczos | wider kernels with small negative lobes | weighted sums over 4 or more neighbours | closer to the ideal box |
+| ideal (sinc kernel) | sinc, infinitely wide | the exact band-limited reconstruction | box: passes everything below *f_s*/2, blocks the rest |
+
+Every kernel's weights add up to *D* (here 2), which is the gain-*D* requirement. The ideal kernel is impractical for the reason in §16.2: a hard cutoff rings, and the sinc extends forever.
+
+> **Worked example (stuffing, then filtering, in numbers).** Stuffed strip [2, 0, 6, 0, 4, 0]. Each output value is *h*[0] × (stuffed value at that slot) + ½ × (each neighbour) for the linear kernel:
+> - slot 0: 2 (a measured value is kept);
+> - slot 1: ½·2 + 0 + ½·6 = **4** (the average of 2 and 6);
+> - slot 2: 6;
+> - slot 3: ½·6 + 0 + ½·4 = **5**;
+> - slot 4: 4. (The last slot depends on the image-edge rule, which libraries handle by padding.)
+>
+> Result: [2, 4, 6, 5, 4, …]. Nearest neighbour ([1, 1]) instead gives [2, 2, 6, 6, 4, 4], a staircase. In 2D, apply the kernel along rows, then along columns.
+
+> **Worked example (how much of the impostor survives).** Same sensor (250 samples/mm, *D* = 2). The impostor of a stripe at frequency *f* sits at 250 − *f*. After filtering, the ghost's strength relative to the real stripe is (filter gain at 250 − *f*) ÷ (filter gain at *f*):
+>
+> | Stripe | nearest neighbour | linear |
+> |---|---|---|
+> | 25 cycles/mm (smooth detail) | 0.16 | 0.025 |
+> | 100 cycles/mm (near Nyquist) | 0.73 | 0.53 |
+>
+> Smooth content is cleaned well, especially by linear. Fine stripes near the old Nyquist frequency leave a ghost half to three-quarters as strong as the real stripe, which shows up as blockiness or jagged edges. Linear also dulls the real stripe (its gain is 1.31 at 100 cycles/mm versus 2 at zero frequency), which is the blur you see. Wider kernels trade less ghost for more ringing.
+
+**What upsampling cannot do.** After step 2, the band between the old Nyquist frequency and the new one is **empty**. No new detail exists; the enlarged image is smoother, not sharper. Aliasing that happened when the image was first captured also stays (§8.4), because the filter cannot tell an alias from a real frequency.
+
+**Downsampling and upsampling side by side.** Same ruler, mirrored roles:
+
+| | Downsampling by *D* | Upsampling by *D* |
+|---|---|---|
+| Shape of the spectrum (fixed ruler) | unchanged | unchanged |
+| Spacing of the copies | shrinks from *f_s* to *f_s*/*D* | stays *f_s* after stuffing; after filtering the next copy is *D·f_s* away |
+| Representable band (Nyquist) | shrinks to *f_s*/(2*D*) | grows to *D·f_s*/2 |
+| The danger | copies **overlap** (aliasing) | extra copies **sit inside the band** (imaging) |
+| Order of operations | filter, then discard samples | insert zeros, then filter |
+| Filter cutoff | 1/(2*D*) cycles per original pixel (the *new* Nyquist) | 1/2 cycles per original pixel (the *old* Nyquist) |
+| Per-current-pixel ruler | spectrum stretched by *D* | spectrum squeezed by *D* |
+| What it costs | detail above the new Nyquist, on purpose | nothing, but no detail is created |
+
+**The rule for both:** low-pass at the *smaller* of the two Nyquist frequencies, at the *right time* (before discarding, after inserting).
+
+> **LiDAR: upsampling a return waveform and a depth map.** A full-waveform LiDAR digitizer at 1 GS/s has a sample interval of 1 ns, a range bin of *c*·Δ*t*/2 = 3 × 10⁸ × 10⁻⁹ / 2 = **0.15 m** (§20.2c). Upsampling by 8 gives a 0.125 ns grid, which is 3 × 10⁸ × 0.125 × 10⁻⁹ / 2 ≈ **1.9 cm** per slot.
+>
+> *Why this is legitimate for a waveform.* A Gaussian pulse of 4 ns full width at half maximum has σ ≈ 1.7 ns, so its spectrum has width 1/(2πσ) ≈ 94 MHz, far below the 500 MHz Nyquist frequency of a 1 GS/s digitizer. The copies do not overlap, so the samples determine the in-between values; interpolating them does not invent anything.
+>
+> *What it buys.* Suppose the true echo peaks at 10.37 ns but the digitizer samples at whole nanoseconds, so the largest raw sample is at 10 ns (range 1.50 m). Interpolating the samples (here, a parabola through the logarithm of the three largest, which is exact for a Gaussian) puts the peak at 10.37 ns, i.e. 1.556 m: **5.5 cm** more precise than the raw range bin. This is **sub-sample peak localisation**.
+>
+> *The spatial counterpart is different.* A LiDAR's depth *map* is often sampled sparsely in space (beams or points far apart). If the scene has edges and detail above that sparse grid's Nyquist frequency, the copies already overlap at capture time, and by §8.4 no interpolation can undo that. Depth upsampling then produces blurred or jagged edges unless it borrows edge locations from a registered colour image, which is why depth-completion methods use one.
 
 > **Summary**
-> - Keeping every *D*-th pixel samples at 1/*D* the rate, so spectral copies overlap and fine detail aliases.
-> - Rule to remember: **low-pass to below 1/(2D) cycles/pixel, then subsample**; never the other way round.
+> - Keeping every *D*-th pixel samples at 1/*D* the rate. On the fixed ruler the spectrum keeps its width but the copies move *D* times closer, so they overlap and fine detail aliases. The apparent stretch by *D* is only a change of units (repacking the pixels).
+> - Downsampling rule: **low-pass to below 1/(2*D*) cycles per original pixel, then subsample**; never the other way round.
+> - Upsampling by *D* = **insert *D* − 1 zeros between samples, then low-pass filter**. Zero-stuffing leaves the spectrum alone but widens the representable band by *D*, so *D* − 1 extra copies sit inside it; the filter (the interpolation kernel: nearest, linear, bicubic, Lanczos, ideal sinc; gain *D*) removes them.
+> - Upsampling rule: **filter after inserting zeros**, at the old Nyquist frequency. It never adds detail above that frequency, and non-ideal kernels leave faint ghosts of fine stripes.
 > - Library resize functions differ in whether they prefilter; some alias by default.
-> - Next: the same failure in time instead of space (§20).
+> - Next: the same folding in time instead of space (§20).
 
 ---
 

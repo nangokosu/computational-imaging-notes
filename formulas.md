@@ -1372,6 +1372,25 @@ f_sampled(x) = f(x) · comb_T(x)          F{f · comb_T} = (1/T) · Σ_m f̂(ξ 
 
 ---
 
+### Subsampling by D: the copies move closer, the spectrum does not change (§7.3)
+
+```
+F{ f · comb_{DT} } = (1/(D·T)) · Σ_m f̂(ξ − m·f_s/D)          f_s = 1/T
+```
+
+**Computes:** The spectrum of a signal sampled with the longer interval D·T (equivalently, subsampled by D): the same continuous-signal spectrum f̂, copied at multiples of f_s/D instead of f_s. Only the copy spacing (and the Nyquist edge f_s/(2D)) change; measured per current pixel the same picture looks stretched by D.
+
+| Term | Meaning |
+|---|---|
+| f̂(ξ) | Spectrum of the continuous signal — fixed by the scene, unchanged by sampling |
+| T, f_s = 1/T | Original sampling interval and rate — fixed by the sensor |
+| D | Subsampling factor — you choose it |
+| m | Index of the spectral copy |
+| f_s/D | Spacing between neighbouring copies on the fixed axis (cycles/mm or cycles per original pixel) — you set it through D |
+| 1/(D·T) | Overall height factor; plays no role in whether copies overlap |
+
+---
+
 ### Nyquist–Shannon criterion and the aliased frequency (§8)
 
 ```
@@ -1589,6 +1608,28 @@ keep every D-th pixel  ⇒  remove image frequencies above 1 / (2D) cycles per o
 |---|---|
 | D | Downsampling factor — you choose it |
 | 1/(2D) | New Nyquist frequency, in cycles per original pixel |
+
+---
+
+### Upsampling by D: zero-stuffing, then an interpolation filter (§19.3)
+
+```
+(x↑D)[n] = x[n/D]  if D divides n, else 0          y = (x↑D) ∗ h
+band after stuffing:  |ξ| < D·f_s/2          copies still at m·f_s
+ideal h:  Ĥ(ξ) = D for |ξ| < f_s/2,  0 for  f_s/2 < |ξ| < D·f_s/2          Σ h[n] = D
+```
+
+**Computes:** The image or signal on a D-times finer grid. Stuffing zeros leaves the spectrum unchanged on the fixed axis but widens the representable band to ±D·f_s/2, so D − 1 extra copies sit inside it; the kernel h (nearest [1,1], linear [½,1,½] for D = 2, bicubic, Lanczos, ideal sinc) is a low-pass filter that removes them and, with gain D, restores brightness.
+
+| Term | Meaning |
+|---|---|
+| x[n] | The measured samples — fixed by the sensor |
+| D | Upsampling factor — you choose it |
+| x↑D | The zero-stuffed signal on the fine grid (D − 1 zeros between neighbours) |
+| h | Interpolation kernel — you choose it (nearest, linear, bicubic, Lanczos, sinc) |
+| Ĥ(ξ) | Frequency response of h, i.e. how much of each frequency it passes |
+| f_s | The original sampling rate; f_s/2 is the old Nyquist frequency where the cutoff sits |
+| Σ h[n] = D | Gain at zero frequency; compensates for the zeros lowering the mean by D |
 
 ---
 
