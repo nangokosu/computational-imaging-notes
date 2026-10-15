@@ -1919,3 +1919,477 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )          E[ g(x) ]
 | B | Batch size — you choose it |
 | a_iᵀ, b_i | Row i of A and entry i of b |
 | g(x) | Random gradient estimate |
+
+---
+
+## Week 6 — Regularized Inverse Problems with ADMM
+*(full derivations and diagrams in [`week6-study-notes.md`](./week6-study-notes.md); this is the lookup-speed reference)*
+
+### Gaussian (normal) density (§3)
+
+```
+p(t) = 1/√(2πσ²) · exp( −(t − μ)² / (2σ²) )          written t ∼ 𝒩(μ, σ²)
+```
+
+**Computes:** How likely values near t are for a bell-shaped random quantity such as per-pixel noise; its exponent is a squared distance, which is where every squared-error data term comes from.
+
+| Term | Meaning |
+|---|---|
+| t | The value being scored; same units as the quantity (e.g. pixel intensity) |
+| μ | Mean: where the peak sits — fixed by the noise model (0 for zero-mean noise) |
+| σ | Standard deviation: the width; σ² is the variance — fixed by the sensor/noise |
+| (t − μ)² / (2σ²) | How many "widths" t is from the peak, squared and halved; unitless |
+| exp(−…) | Turns "far from the peak" into "small probability" |
+| 1/√(2πσ²) | Constant making the total area 1 |
+| ∼ | "is distributed as" |
+
+---
+
+### Likelihood under Gaussian noise (§4)
+
+```
+η_i ∼ 𝒩(0, σ²)          so          b_i ∼ 𝒩( (A x)_i , σ² )
+p(b_i | x, σ) = 1/√(2πσ²) · exp( −(b_i − (A x)_i)² / (2σ²) )
+p(b | x, σ) = Π_{i=1}^{M} p(b_i | x, σ)  ∝  exp( −Σ_i (b_i − (A x)_i)² / (2σ²) )  =  exp( −‖b − A x‖₂² / (2σ²) )
+```
+
+**Computes:** A score of how well a candidate image x explains the measured data b, assuming independent Gaussian noise on each measurement.
+
+| Term | Meaning |
+|---|---|
+| b ∈ ℝ^M | The M measurements — measured |
+| x ∈ ℝ^N | The unknown image, flattened to N pixel values — what is being estimated |
+| A ∈ ℝ^(M×N) | Image formation matrix — fixed by the imaging setup |
+| (A x)_i | Noise-free prediction of measurement i if the image were x |
+| η_i, σ | Noise in measurement i and its standard deviation — fixed by the sensor |
+| Π | Product over i = 1 … M (independent noise → multiply) |
+| ‖·‖₂² | Squared ℓ₂ norm, Σ v_i² |
+
+---
+
+### Bayes' rule and the MAP objective (§5)
+
+```
+p(x | b, σ) = p(b | x, σ) · p(x) / p(b)   ∝   p(b | x, σ) · p(x)
+               posterior     likelihood   prior
+
+x_MAP = argmin_x  −log p(x | b, σ)
+      = argmin_x  −log p(b | x, σ) − log p(x)
+      = argmin_x  (1/(2σ²)) ‖b − A x‖₂²  +  Ψ(x)          with  Ψ(x) = −log p(x)
+
+argmin_x  ½ ‖b − A x‖₂²  +  σ² Ψ(x)
+minimize_x   ½ ‖b − A x‖₂²  +  λ Ψ(x)
+```
+
+**Computes:** The single most probable image after seeing the data: a data-fidelity term (from the Gaussian noise) plus a weighted regularizer (from the prior), the one objective every problem this week minimizes.
+
+| Term | Meaning |
+|---|---|
+| p(x \| b, σ) | Posterior: how plausible image x is after seeing the data |
+| p(b \| x, σ) | Likelihood (§4) |
+| p(x) | Prior: how plausible x is as an image before any data — chosen by you |
+| p(b) | Evidence: same for every x, so dropped (∝) |
+| argmin_x | The x that makes the expression smallest |
+| ½‖b − A x‖₂² | Data fidelity term |
+| Ψ(x) | Regularizer = −log p(x); small for plausible images — chosen by you (TV, ‖x‖₁, a denoiser, …) |
+| λ | Regularization weight, playing the role of σ² × the prior's strength — you choose it (more noise → larger λ) |
+
+---
+
+### Norms ℓ₂, ℓ₁, "ℓ₀" (§6)
+
+```
+‖v‖₂ = √(Σ v_i²)          ‖v‖₁ = Σ |v_i|          "ℓ₀" = number of nonzero entries
+```
+
+**Computes:** The size of a vector three ways — straight-line length, sum of absolute values (Manhattan; see also Week 5 §31.3's entry), and count of nonzeros — where minimizing ℓ₁ yields sparse answers and ℓ₂ spreads values out.
+
+| Term | Meaning |
+|---|---|
+| v | Any vector (pixel values, image gradients, a residual) |
+| v_i | Its i-th entry |
+| ‖·‖₂ | Euclidean length; its square ↔ a Gaussian prior |
+| ‖·‖₁ | Manhattan / taxicab norm; ↔ a Laplace prior p(t) ∝ exp(−\|t\|/β) |
+| "ℓ₀" | Counting "norm" (not a true norm); what sparsity really asks for, but impractical to optimize |
+
+---
+
+### Finite differences, their Fourier form, Dᵀ and |F{d_x}|² (§8)
+
+```
+(D_x x)[r, s] = x[r, s+1] − x[r, s]          (D_y x)[r, s] = x[r+1, s] − x[r, s]
+D_x x  =  F⁻¹{ F{d_x} · F{x} }          D_y x  =  F⁻¹{ F{d_y} · F{x} }
+D = [ D_x ; D_y ]          D ∈ ℝ^(2N × N)
+(Dᵀ w)[i] = w[i−1] − w[i]          (minus the backward difference)
+|F{d_x}|² = 4 sin²(πk/N)
+```
+
+**Computes:** The horizontal and vertical image gradients ("next pixel minus this pixel") as convolutions computed by FFT, their transpose (adjoint), and the high-pass frequency response of DᵀD.
+
+| Term | Meaning |
+|---|---|
+| x[r, s] | Pixel at row r, column s |
+| D_x, D_y | Horizontal / vertical forward-difference operators — fixed |
+| d_x, d_y | Their 2-tap kernels (HW5: `dx = [[-1, 1]]`, `dy = [[-1], [1]]`) |
+| F{d_x} | The kernel's OTF, from `psf2otf`; the FFT wraps around (circular boundary) |
+| D | Both stacked: N pixels in, 2N numbers out (HW5 shape [2, M, N]) |
+| Dᵀ | Transpose / adjoint (`opDtx`); in Fourier, F{d_x}* (complex conjugate) |
+| w | Any vector of differences fed to Dᵀ |
+| k, N | Image-frequency index and row length; \|F{d_x}\|² is 0 at k = 0 and 4 at k = N/2 (the Nyquist frequency) |
+
+---
+
+### Total variation, anisotropic and isotropic (§9)
+
+```
+TV_anisotropic(x) = ‖D_x x‖₁ + ‖D_y x‖₁ = Σ_{i=1}^{N} ( |(D_x x)_i| + |(D_y x)_i| )
+
+TV_isotropic(x)   = ‖D x‖₂,₁           = Σ_{i=1}^{N} √( (D_x x)_i² + (D_y x)_i² )
+```
+
+**Computes:** One number measuring an image's total "climb": small for flat regions separated by sharp edges, large for noise; the isotropic version charges edges equally in every direction, the anisotropic one overcharges diagonals by up to √2.
+
+| Term | Meaning |
+|---|---|
+| (D_x x)_i, (D_y x)_i | Horizontal and vertical brightness change at pixel i; intensity units |
+| \|·\| | Absolute value (size of a change, ignoring direction) |
+| √(a² + b²) | Length of the 2D gradient arrow (Pythagoras) |
+| Σ over i | Sum over all N pixels — an ℓ₁-type sum that drives most gradients to exactly zero |
+| ‖·‖₂,₁ | "ℓ₂ inside, ℓ₁ outside": length of each pixel's 2-vector, then sum of lengths |
+
+---
+
+### Adam update (§11)
+
+```
+g_k = ∇f(x^(k−1))                               1. objective gradient now
+m_k = β₁ m_{k−1} + (1 − β₁) g_k                  2. running average of gradients (momentum)
+v_k = β₂ v_{k−1} + (1 − β₂) g_k²                 3. running average of squared gradients
+m̂_k = m_k / (1 − β₁^k)    v̂_k = v_k / (1 − β₂^k)  4. bias correction
+x^(k) = x^(k−1) − α · m̂_k / ( √v̂_k + ε )         5. step
+```
+
+**Computes:** One per-pixel optimization step whose size is about α regardless of the problem's scale, because the averaged gradient is divided by its own typical size.
+
+| Term | Meaning |
+|---|---|
+| g_k | Objective gradient at the current estimate — computed by `.backward()` |
+| m_k | First moment: exponential moving average of gradients — computed |
+| v_k | Second moment: running average of squared gradients — computed |
+| β₁, β₂ | Memory lengths, defaults 0.9 (~10 steps) and 0.999 (~1000 steps) — PyTorch defaults |
+| 1 − β^k | Bias correction for starting m and v at 0 — computed |
+| α | Learning rate (HW5 Task 1: 5 × 10⁻²) — you choose it |
+| ε | Tiny constant (10⁻⁸) preventing division by zero — PyTorch default |
+| k | Iteration number |
+
+---
+
+### Lagrangian (§14)
+
+```
+∇f = −y · ∇(x₁ + x₂ − 1)   for some number y
+L(x, y) = f(x) + y · (constraint)
+L(x, z, y) = f(x) + g(z) + yᵀ(K x − z)
+```
+
+**Computes:** A single function whose zero partial derivatives give both the tangency condition (objective gradient parallel to the constraint's gradient) and the constraint itself, locating a constrained minimum.
+
+| Term | Meaning |
+|---|---|
+| f(x) | Data fidelity term (or any objective) |
+| g(z) | Regularizer on the split variable z |
+| K x − z = 0 | The constraint; K = D for TV, K = I for a denoiser prior — fixed by your choice of prior |
+| y | Lagrange multiplier = dual variable = shadow price: how much the optimum would improve if the constraint were loosened — computed |
+
+---
+
+### Augmented Lagrangian (§15)
+
+```
+L_ρ(x, z, y) = f(x) + g(z) + yᵀ(K x − z) + (ρ/2) ‖K x − z‖₂²
+```
+
+**Computes:** The Lagrangian plus a quadratic penalty on constraint violation, making each sub-problem a well-behaved bowl while the multiplier keeps the answer exact at moderate ρ.
+
+| Term | Meaning |
+|---|---|
+| f(x), g(z) | Data term and regularizer |
+| yᵀ(K x − z) | Price × violation (Lagrangian term) |
+| (ρ/2)‖K x − z‖₂² | Quadratic penalty on violation |
+| ρ > 0 | Penalty parameter — you choose it |
+| y | Multiplier, updated as y ← y + ρ(K x − z) (method of multipliers) — computed |
+
+---
+
+### Scaled form and u = y/ρ (§16)
+
+```
+yᵀr + (ρ/2) ‖r‖²  =  (ρ/2) ‖r + y/ρ‖²  −  (1/(2ρ)) ‖y‖²
+L_ρ(x, z, u) = f(x) + g(z) + (ρ/2) ‖K x − z + u‖₂² − (ρ/2) ‖u‖₂²
+```
+
+**Computes:** The same augmented Lagrangian with its linear and quadratic constraint terms merged into one square by completing the square, the form every ADMM step is derived from.
+
+| Term | Meaning |
+|---|---|
+| r = K x − z | Constraint residual: how far from satisfied |
+| u = y/ρ | Scaled dual variable: the price in the same units as K x — computed |
+| (ρ/2)‖K x − z + u‖² | Merged constraint terms: "make K x equal z − u" |
+| −(ρ/2)‖u‖² | Leftover independent of x and z; never affects the x- or z-steps |
+| ρ | Penalty parameter — you choose it |
+
+---
+
+### ADMM updates (§17)
+
+```
+x ← argmin_x  f(x) + (ρ/2) ‖K x − v‖₂²,          v = z − u
+z ← argmin_z  g(z) + (ρ/2) ‖v − z‖₂²,             v = K x + u
+u ← u + K x − z
+```
+
+**Computes:** One ADMM iteration: a data step, a prior step, and a price update that accumulates past disagreements until K x = z.
+
+| Term | Meaning |
+|---|---|
+| x | Image being estimated (N values) |
+| z | Split variable: e.g. the image gradients the prior may choose (2N values for TV) |
+| u | Scaled dual variable: running sum of mismatches K x − z (2N values for TV) |
+| v | The target handed to each step (differs between the x- and z-steps) |
+| ρ | Penalty parameter — you choose it |
+| f, g | Data term, regularizer |
+
+---
+
+### Proximal operator (§18)
+
+```
+prox_{λf}(v) = argmin_x  f(x) + (1/(2λ)) ‖x − v‖₂²
+```
+
+**Computes:** The point near v that does best on f ("a dog on a leash"); both ADMM steps are proxes with leash weight ρ/2, i.e. λ_prox = 1/ρ.
+
+| Term | Meaning |
+|---|---|
+| v | Starting point handed in by ADMM |
+| f | Function to make small |
+| (1/(2λ))‖x − v‖² | Leash: cost of wandering from v |
+| λ (here only) | Proximal step size / leash length, not the regularization weight; in ADMM it equals 1/ρ |
+
+---
+
+### Soft thresholding and block soft thresholding (§19)
+
+```
+z ← argmin_z  λ ‖z‖₁ + (ρ/2) ‖v − z‖₂²,          v = D x + u
+
+S_κ(v) = v − κ     if v > κ
+       = 0         if |v| ≤ κ
+       = v + κ     if v < −κ
+       = (v − κ)₊ − (−v − κ)₊          with (t)₊ = max(t, 0)
+       = max(1 − κ/|v|, 0) · v          the form HW5's starter code uses
+
+z_i = max(1 − κ / ‖v_i‖₂, 0) · v_i
+```
+
+**Computes:** The exact z-update for TV: shrink each gradient entry toward zero by κ, stopping at zero (anisotropic), or shrink each pixel's gradient arrow's length by κ keeping its direction (isotropic, block soft thresholding).
+
+| Term | Meaning |
+|---|---|
+| v | Entry handed in: an image-gradient value D x plus its price u — computed |
+| κ = λ/ρ | Threshold: regularization weight ÷ penalty parameter — from your λ, ρ |
+| S_κ(v) | New z entry — computed |
+| (t)₊ | max(t, 0) |
+| v_i | Pixel i's 2-vector ((D_x x + u)_i, (D_y x + u)_i) (isotropic case) |
+| ‖v_i‖₂ | Its length |
+
+---
+
+### TV deconvolution x-update, matrix and Fourier forms (§20)
+
+```
+x ← argmin_x  ½ ‖C x − b‖₂²  +  (ρ/2) ‖D x − v‖₂²,          v = z − u
+(CᵀC + ρ DᵀD) x = Cᵀb + ρ Dᵀv          ⇒          x ← (CᵀC + ρ DᵀD)⁻¹ (Cᵀb + ρ Dᵀv)
+
+x = F⁻¹{  [ F{c}*·F{b} + ρ ( F{d_x}*·F{v₁} + F{d_y}*·F{v₂} ) ]
+         / [ F{c}*·F{c} + ρ ( F{d_x}*·F{d_x} + F{d_y}*·F{d_y} ) ]  }
+```
+
+**Computes:** The closed-form ADMM data step for deconvolution with a TV prior: a Wiener-like filter whose regularizer is ρ times a high-pass curve, evaluated by element-wise division at each image frequency.
+
+| Term | Meaning |
+|---|---|
+| C, c | Blur matrix and its kernel (PSF) — known, fixed |
+| b | Blurry, noisy photo — measured |
+| D, d_x, d_y | Gradient operator and its kernels — fixed |
+| v = z − u | Prior step's preferred gradients minus price; v₁, v₂ = horizontal and vertical halves (HW5 slots 0 and 1) — changes every iteration |
+| ρ | Penalty parameter — you choose it |
+| F{·}* | Complex conjugate = transpose in the Fourier domain |
+| Denominator | Never changes during ADMM — compute once before the loop |
+| Numerator | Contains v — recompute every iteration |
+
+---
+
+### Denoiser-prior (plug-and-play) x- and z-updates (§21)
+
+```
+x ← (CᵀC + ρ I)⁻¹ (Cᵀb + ρ v)  =  F⁻¹{ ( F{c}*·F{b} + ρ F{v} ) / ( F{c}*·F{c} + ρ ) },          v = z − u
+
+z ← argmin_z  λ Ψ(z) + (ρ/2) ‖v − z‖₂²
+  = argmin_z  Ψ(z) + (ρ/(2λ)) ‖v − z‖₂²          divide by λ
+  = argmin_z  Ψ(z) + (1/(2σ²)) ‖v − z‖₂²          with  σ² = λ/ρ
+
+z ← 𝒟(v, σ² = λ/ρ)
+```
+
+**Computes:** With K = I, a Wiener-type data step (constant regularizer ρ at every frequency) and a prior step that is exactly MAP denoising of v at noise variance λ/ρ, so any denoiser can be plugged in.
+
+| Term | Meaning |
+|---|---|
+| v | x-step: z − u; z-step: x + u (one value per pixel) |
+| I | Identity ("no matrix D") |
+| Ψ | Regularizer, implicit when a network is used |
+| σ² = λ/ρ | Noise variance the denoiser is asked to remove — set by your λ, ρ (match the denoiser's training level, e.g. DnCNN's 25/255 ≈ 0.098) |
+| 𝒟 | Denoiser (DnCNN, non-local means) — chosen by you |
+
+---
+
+### Half-quadratic splitting (§22)
+
+```
+L_ρ(x, z) = f(x) + g(z) + (ρ/2) ‖D x − z‖₂²
+
+x ← argmin_x  f(x) + (ρ/2) ‖D x − z‖₂²
+z ← argmin_z  g(z) + (ρ/2) ‖D x − z‖₂²
+```
+
+**Computes:** ADMM's alternating data and prior steps without the price u; exact only as ρ → ∞, so it is very sensitive to ρ and usually run with a growing ρ schedule.
+
+| Term | Meaning |
+|---|---|
+| f, g | Data term, regularizer |
+| D x − z | Coupling between image gradients and split variable |
+| ρ | Penalty parameter — you choose it (or a growing schedule; learned per iteration when unrolled) |
+
+---
+
+### Single-pixel measurement (§23)
+
+```
+b_m = Σ_p a_m[p] · x[p]  =  a_mᵀ x          ⇒          b = A x + η,   A ∈ ℝ^(M×N)
+```
+
+**Computes:** Each photodiode reading as the pattern-weighted sum of the scene's pixels; stacking M readings gives a linear system, compressive when M < N (compression factor N/M).
+
+| Term | Meaning |
+|---|---|
+| a_m | Pattern m, one weight per pixel p (1 = on, 0 = off, or between) — designer (HW5: random) |
+| A | Measurement matrix, one pattern per row — designer |
+| b_m | Measurement m: the photodiode's reading — measured |
+| x[p] | Scene brightness at pixel p — unknown |
+| M, N | Number of measurements and of pixels (HW5: 1024 and 4096) — designer |
+| η | Measurement noise (HW5: σ = 0.001) |
+
+---
+
+### Least-norm solution (§24)
+
+```
+minimize_x  ‖x‖₂          subject to   A x = b          ⇒          x̃_ln = Aᵀ (A Aᵀ)⁻¹ b
+
+L(x, w) = ½ xᵀx + wᵀ(A x − b)
+∂L/∂x = x + Aᵀw = 0           ⇒   x = −Aᵀw
+∂L/∂w = A x − b = 0           ⇒   −A Aᵀ w = b   ⇒   w = −(A Aᵀ)⁻¹ b
+```
+
+**Computes:** The shortest image that reproduces the measurements exactly — a weighted sum of the patterns with no null-space part — computed in practice by solving (AAᵀ)w = b with CG, then x = Aᵀw.
+
+| Term | Meaning |
+|---|---|
+| A, b | Measurement matrix (wide, M < N) and measurements |
+| A Aᵀ | M×M overlaps between pairs of patterns |
+| (A Aᵀ)⁻¹ b | Weights saying how much of each pattern to use (size M) |
+| Aᵀ(…) | Sum of patterns with those weights: an N-pixel image |
+| w | Lagrange multipliers, one per measurement — computed |
+
+---
+
+### Conjugate gradient iteration (§25)
+
+```
+r₀ = b̃ − Ã w₀,   p₀ = r₀
+repeat for k = 0, 1, 2, …
+    α_k   = r_kᵀ r_k / (p_kᵀ Ã p_k)
+    w_{k+1} = w_k + α_k p_k
+    r_{k+1} = r_k − α_k Ã p_k
+    β_k   = r_{k+1}ᵀ r_{k+1} / (r_kᵀ r_k)
+    p_{k+1} = r_{k+1} + β_k p_k
+```
+
+**Computes:** The solution of Ã w = b̃ for symmetric positive definite Ã (equivalently, the bottom of the bowl ½wᵀÃw − b̃ᵀw) using one matrix-vector product per step, exact in at most N steps.
+
+| Term | Meaning |
+|---|---|
+| Ã, b̃ | System matrix (SPD, applied only via a function) and right side — fixed by the problem |
+| w_k | Current estimate — computed |
+| r_k | Residual b̃ − Ã w_k (minus the bowl's gradient) |
+| p_k | Search direction, conjugate to the previous ones |
+| α_k | Step length (not the learning rate) |
+| β_k | Mixing weight that makes the new direction conjugate |
+| Ã p_k | The one matrix-vector product per iteration |
+
+---
+
+### Single-pixel ADMM x-update systems (§26)
+
+```
+TV prior (K = D):      x ← (AᵀA + ρ DᵀD)⁻¹ (Aᵀb + ρ Dᵀv),        v = z − u
+DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z − u
+```
+
+**Computes:** The ADMM data step for a single-pixel camera; with random patterns there is no Fourier shortcut, so each is solved as Ã x = b̃ with CG every ADMM iteration.
+
+| Term | Meaning |
+|---|---|
+| Ã | AᵀA + ρDᵀD (TV) or AᵀA + ρI (DnCNN); applied via `Afun`, `Atfun` (and `opDx`, `opDtx`); fixed across iterations |
+| b̃ | Aᵀb + ρDᵀv (TV) or Aᵀb + ρv (DnCNN); rebuilt every iteration |
+| v = z − u | Changes every iteration |
+| ρ | Penalty parameter — you choose it |
+
+---
+
+### Compressive LiDAR: bin depth and B = AX (§27.2)
+
+```
+Δd = c Δt / 2
+b[m, t] = Σ_p a_m[p] · x[p, t]          ⇒          B = A X
+```
+
+**Computes:** The depth thickness of one time bin, and the compressive LiDAR forward model in which every time bin is its own single-pixel imaging problem sharing the same patterns.
+
+| Term | Meaning |
+|---|---|
+| Δt | Time-bin width, s (1 ns → Δd ≈ 0.15 m) — set by the detector electronics |
+| c | Speed of light, ≈ 3 × 10⁸ m/s — fixed |
+| Δd | Depth slice per bin, m (the /2 accounts for the round trip) |
+| a_m[p] | Pattern m's weight at pixel p — designer |
+| x[p, t] | Light pixel p returns in time bin t — unknown |
+| A | Pattern matrix (M × N) — designer |
+| X | Scene cube: column t = image at depth bin t (N × bins) — unknown |
+| B | Data: row m = histogram through pattern m (M × bins) — measured |
+
+---
+
+### Poisson negative log-likelihood (§27.3)
+
+```
+−log p(b | x) = Σ_i [ (A x)_i − b_i log (A x)_i ] + (terms without x)
+```
+
+**Computes:** The data term to use in place of ½‖b − A x‖²/σ² when measurements are low photon counts, which follow a Poisson rather than a Gaussian distribution.
+
+| Term | Meaning |
+|---|---|
+| (A x)_i | Expected photon count in measurement i if the scene were x (plus a known background level, in practice) |
+| b_i | Photons actually counted — measured |
+| terms without x | log(b_i!) and other constants; dropped since they do not move the minimum |
