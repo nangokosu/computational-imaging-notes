@@ -302,7 +302,7 @@ A vector is **sparse** ("thinly scattered") if most of its entries are exactly z
 
 Slides 33–38 match three kinds of images to three regularizers.
 
-**1. "Blurry stuff" → promote smoothness: Ψ(**x**) = ‖Δ**x**‖₂².** The **Laplace operator** Δ (the **Laplacian**) measures how much a pixel differs from the average of its neighbors, i.e. local **curvature**: how much the brightness surface *bends* there. A flat floor or a straight ramp does not bend (curvature 0); the top of a bump or the lip of a step bends sharply. In discrete form it is a convolution with the kernel
+**1. "Blurry stuff" → promote smoothness: Ψ(**x**) = ‖Δ**x**‖₂** (slide 38's form; in practice it is usually squared, ‖Δ**x**‖₂², which favors the same smooth images and is easier to minimize; the rest of this section uses the squared form). The **Laplace operator** Δ (the **Laplacian**) measures how much a pixel differs from the average of its neighbors, i.e. local **curvature**: how much the brightness surface *bends* there. A flat floor or a straight ramp does not bend (curvature 0); the top of a bump or the lip of a step bends sharply. In discrete form it is a convolution with the kernel
 
 ```
  0   1   0
@@ -1051,7 +1051,7 @@ while not converged:
     z ← argmin_z  g(z) + (ρ/2) ‖D x − z‖₂²
 ```
 
-The name: "half-quadratic" because the coupling term added is quadratic in the split variables. Each step is the same prox as in ADMM with **u** = 0. The weakness is §15's: without **u** the constraint holds exactly only as ρ → ∞, so HQS is "very sensitive to the penalty parameter" and usually needs a schedule of growing ρ. "Steps not tied together with dual variable" (slide 127).
+The name: "half-quadratic" because, once **z** is held fixed, the new objective is quadratic in the image **x** (one "half" of the variables), so the x-step has a closed-form answer. Each step is the same prox as in ADMM with **u** = 0. The weakness is §15's: without **u** the constraint holds exactly only as ρ → ∞, so HQS is "very sensitive to the penalty parameter" and usually needs a schedule of growing ρ. "Steps not tied together with dual variable" (slide 127).
 
 **Unrolled optimization (slides 101–102).** Run ADMM or HQS for a fixed small number *K* of iterations and draw them as a chain: **b** → (x-step, z-step) → (x-step, z-step) → … → **x̃**. That chain is a **feedforward network**: a pipeline of layers where data flows one way, each layer feeding the next, with no loops back. Then **train** it like one:
 
@@ -1258,7 +1258,7 @@ These are §20's and §21's formulas with **C** → **A**, derived the same way 
 
 **A practical tip: warm starts.** Consecutive ADMM iterations produce similar **x**, so starting CG from the previous **x** (SciPy's `x0` argument) instead of from zero usually reaches the tolerance in fewer iterations. Optional; the HW does not require it.
 
-**What the lecture's results show (slide 121).** At every compression factor, least norm is far worse than ADMM with a prior, and the prior-based methods degrade much more gracefully as compression grows from 2× to 8×. ADMM beat HQS for the same prior, and the learned DnCNN prior generally beat TV. The values on HW5's image are for you to measure.
+**What the lecture's results show (slide 121).** At every compression factor, least norm is far worse than any method with a prior. As compression grows from 2× to 8×, ADMM + DnCNN degrades most gracefully, while both TV-based methods already drop sharply at 4×. ADMM beat HQS with the same prior in every case except TV at 8×, where the two are about tied (HQS slightly ahead). The learned DnCNN prior beat TV at 4× and 8×; at 2×, TV was slightly ahead. The values on HW5's image are for you to measure.
 
 **"If you can solve this, you can solve anything" (slide 114).** CT, MRI, hyperspectral imaging and many more (§28) are all "minimize ½‖**b** − **A x**‖² + λΨ(**x**)" with a different **A**. Swap in the right `Afun` and `Atfun`, and every line of this ADMM code stays the same.
 
@@ -1266,7 +1266,7 @@ These are §20's and §21's formulas with **C** → **A**, derived the same way 
 > - Single-pixel ADMM: same z- and u-updates; the x-update solves **(AᵀA + ρDᵀD)x = Aᵀb + ρDᵀv** (TV) or **(AᵀA + ρI)x = Aᵀb + ρv** (DnCNN).
 > - Rule to remember: no Fourier shortcut for random patterns, so **solve the x-update with CG** using a matvec built from `Afun`, `Atfun` (and `opDx`, `opDtx`).
 > - **Ã** is fixed; **b̃** changes every iteration. Warm-starting CG from the previous **x** is an optional speedup.
-> - Priors dramatically beat least norm, more so at higher compression.
+> - Priors dramatically beat least norm at every compression factor; the DnCNN prior with ADMM holds up best as compression grows.
 > - Next: the same machinery for LiDAR (§27).
 
 ---
@@ -1348,7 +1348,7 @@ This replaces ½‖**b** − **A x**‖²/σ² as the data term. The MAP objecti
 
 **Why TV fits depth even better than brightness.** A depth map has no texture: a printed poster on a wall has a busy brightness image but a perfectly flat depth image. Depth maps are mostly flat or smoothly varying patches separated by sharp jumps at object boundaries: exactly what TV favors (§9).
 
-**Flying pixels.** Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to *no* surface: points floating in mid-air between a foreground object and the background. LiDAR users call these **flying pixels** (or **mixed pixels**). TV's edge-preserving behavior avoids them.
+**Flying pixels.** Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to *no* surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call **flying pixels** (or **mixed pixels**); a sensor also creates them on its own when one pixel's light comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.
 
 > **Worked example (a scan line across a box edge).** Measured depths, in meters, with noise: [10.0, 10.1, 9.9, 10.0, 15.1, 14.9, 15.0, 15.0] (a wall at 10 m, then a box surface at 15 m). Two clean-ups:
 >

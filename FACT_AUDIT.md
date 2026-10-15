@@ -1059,3 +1059,155 @@ Fixed: artifact's stale section references (item 17). The artifact's glossary ca
 ## Markdown / artifact drift
 
 The markdown and the artifact carried the same errors for items 1–7 (no drift between them); glossary.md and the artifact's glossary card both had the same filter-factor definition. Drift inside the artifact only: Fig. 145's aria label (25×) vs its prose and in-figure label (23×), and Fig. 173's caption/aria (3.03) vs its own cells (3.00); both fixed. Out of scope, noted for the diagram auditor: duplicate SVG marker id `w5-circ-arrow` in Figs. 118 and 166.
+
+---
+---
+
+# Week 6 Audit — 2026-10-15
+
+**Last audited:** 2026-10-15
+
+**Scope:** `week6-study-notes.md` (full file), the `## Week 6` section of `glossary.md`, the `## Week 6` section of `formulas.md`, and the `<section class="week-block" id="week-6">` block plus the `#glossary-week-6` `.week-card` of the live artifact (https://claude.ai/artifact/4pG6rjMnLYwEzVmncvNH1r, the URL in `README.md`). Ground truth for slide-referenced claims and diagrams: the CSC2529 Lecture 6 deck (`slides/lecture6.pdf`, all 140 pages rendered and read) and Problem Session 5 (`slides/PS5.pdf`, all 16 pages). HW5's handout and starter code are on Quercus, not the public course site, so starter-code-only details could not be checked. No other week was opened.
+
+**Summary: 112 items audited (83 claims + 29 diagrams) — 98 confirmed / 7 corrected / 7 unverifiable.**
+
+Corrected (one line each):
+1. §7 smoothness prior: "Ψ(x) = ‖Δx‖₂²" attributed to slides 33–38 → the slide writes **‖Δx‖₂**; the squared form is now labeled as the usual practical variant (md, glossary.md, artifact, artifact card).
+2. §22 HQS name: "quadratic in the split variables" → **quadratic in the image x once z is fixed** (md + artifact).
+3. §26 slide 121 results: "prior methods degrade much more gracefully", "ADMM beat HQS for the same prior", and the summary's "more so at higher compression" → TV methods drop sharply by 4×; HQS+TV slightly ahead of ADMM+TV at 8×; TV slightly ahead of DnCNN at 2×; least norm's gap to the priors does not grow with compression (md + artifact).
+4. §27.4 flying pixels: described as what "LiDAR users call" artifacts created by averaging → the term mainly names sensor-side foreground/background mixing; averaging creates the same kind of artifact (md, glossary.md, artifact, artifact card).
+5. Fig. 155 (Fourier slice theorem): label "x-ray lines at angle θ" → lines run **perpendicular** to direction θ (drawn at 120° for θ = 30°); caption and aria label fixed to match.
+6. Artifact §25: "linearly independent" linked to *Independence (probability theory)* → *Linear independence*.
+7. Artifact `#glossary-week-6` card: 12 malformed Wikipedia links (closing ")" outside the `href`, so the URL pointed at a nonexistent page and a stray ")" showed in the text): Independence, Proportionality, Mode, Regularization, Norm, Moment, Hyperparameter, Constraint, Duality, Kernel (null space), K-space, Hallucination. All fixed.
+
+---
+
+## Corrected claims (detail)
+
+### 1. Smoothness prior form (§7)
+- **Before:** "1. 'Blurry stuff' → promote smoothness: Ψ(x) = ‖Δx‖₂²." Glossary: "smooth images → ‖Δx‖₂²".
+- **After:** "Ψ(x) = ‖Δx‖₂ (slide 38's form; in practice it is usually squared, ‖Δx‖₂², which favors the same smooth images and is easier to minimize; the rest of this section uses the squared form)." Glossary: "‖Δx‖₂ (slide 38; usually used squared, ‖Δx‖₂²)".
+- **Source:** lecture6.pdf slides 34–38 ("Ψ(x) = ‖Δx‖₂", arrow "Laplace operator").
+
+### 2. Why "half-quadratic" (§22)
+- **Before:** "'half-quadratic' because the coupling term added is quadratic in the split variables."
+- **After:** "'half-quadratic' because, once z is held fixed, the new objective is quadratic in the image x (one 'half' of the variables), so the x-step has a closed-form answer."
+- **Source:** Allain, Idier & Goussard, "On Global and Local Convergence of Half-Quadratic Algorithms," IEEE TIP 15(5), 2006, §II-B: "By construction, J* is quadratic w.r.t. x when ℓ remains constant, hence the terminology 'half-quadratic'" ([PDF](https://pagesperso.ls2n.fr/~idier-j/pub/pubC/Allain06C.pdf)).
+
+### 3. Slide 121 single-pixel results (§26 and its summary)
+- **Before:** "the prior-based methods degrade much more gracefully as compression grows from 2× to 8×. ADMM beat HQS for the same prior, and the learned DnCNN prior generally beat TV." Summary: "Priors dramatically beat least norm, more so at higher compression."
+- **After:** "least norm is far worse than any method with a prior. As compression grows from 2× to 8×, ADMM + DnCNN degrades most gracefully, while both TV-based methods already drop sharply at 4×. ADMM beat HQS with the same prior in every case except TV at 8×, where the two are about tied (HQS slightly ahead). The learned DnCNN prior beat TV at 4× and 8×; at 2×, TV was slightly ahead." Summary: "Priors dramatically beat least norm at every compression factor; the DnCNN prior with ADMM holds up best as compression grows."
+- **Source:** lecture6.pdf slide 121 PSNR grid (LN 12.3/10.5/9.7; HQS+TV 33.7/18.6/15.4; HQS+DnCNN 32.0/26.0/16.3; ADMM+TV 44.0/19.6/15.2; ADMM+DnCNN 42.2/34.7/30.5 at 2×/4×/8×). These are the lecture's numbers; the wording stays qualitative and no HW5 PSNR is computed.
+
+### 4. Flying pixels (§27.4)
+- **Before:** "Ordinary smoothing ... invents depths that belong to no surface ... LiDAR users call these flying pixels (or mixed pixels). TV's edge-preserving behavior avoids them." Glossary: "produced by ordinary averaging at depth edges; TV avoids them."
+- **After:** "These are the same artifacts LiDAR and time-of-flight users call flying pixels (or mixed pixels); a sensor also creates them on its own when one pixel's light comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them." Glossary reworded to match.
+- **Sources:** Chugunov et al., "Mask-ToF," CVPR 2021 (flying pixels arise where light from an object and its background is integrated in one pixel; "floating in empty space") ([paper](https://openaccess.thecvf.com/content/CVPR2021/papers/Chugunov_Mask-ToF_Learning_Microlens_Masks_for_Flying_Pixel_Correction_in_Time-of-Flight_CVPR_2021_paper.pdf)); Kadambi et al., SIGGRAPH 2013 poster on mixed pixels ([PDF](https://history.siggraph.org/wp-content/uploads/2022/12/2013-Poster-33-Kadambi_Customizing-Time-of-Flight-Modulation-Codes-to-Resolve-Mixed-Pixels.pdf)).
+
+### 5. Fig. 155 (Fourier slice theorem)
+- **Before:** in-figure label "image; x-ray lines at angle θ"; caption "Summing the image along parallel lines (left, θ = 30° here)". The drawn rays run at 120° and the highlighted spectrum slice at 30°, so the label put the rays at the wrong angle.
+- **After:** label "image; x-ray lines ⟂ direction θ"; caption "Summing the image along parallel lines that run perpendicular to the direction θ (left, θ = 30° here, so the lines run at 120°) gives one CT projection, laid out along direction θ"; aria label updated. Geometry unchanged: it was already correct (slice parallel to the projection axis).
+- **Source:** [Projection-slice theorem](https://en.wikipedia.org/wiki/Projection-slice_theorem) (the slice is "through the origin, parallel to the projection line"); lecture6.pdf slide 131.
+
+### 6–7. Artifact hyperlinks
+- §25 `linearly independent`: `Independence_(probability_theory)` → `Linear_independence` (glossary.md already used the right target).
+- Week-6 glossary card: 12 links of the form `href=".../Norm_(mathematics">Norm</a>)` → `href=".../Norm_(mathematics)">Norm</a>`. glossary.md had all of these correct, so this was drift between the markdown and the artifact.
+
+---
+
+## Confirmed claims
+
+*(Slide numbers refer to lecture6.pdf pages; every worked example was recomputed by hand.)*
+
+1. Forward model b = c ∗ x + η with slide 7's labels; slide 14's duality b = Cx, C ∈ ℝ^{N×N}; inverse and Wiener formulas (slides 10–13); slide 16 noise σ = 0.1; slide 17 quotes.
+2. Cx ↔ F{c}F{x}, Cᵀx ↔ F{c}*F{x}, CᵀCx ↔ |F{c}|²F{x}; PS5 slide 9 "conjugation in Fourier domain = time-reversal (matrix transpose)"; circulant matrices ([Circulant matrix](https://en.wikipedia.org/wiki/Circulant_matrix)).
+3. Gaussian density formula; a density can exceed 1 ([Normal distribution](https://en.wikipedia.org/wiki/Normal_distribution)).
+4. Likelihood b_i ∼ 𝒩((Ax)_i, σ²) and its product form (slides 20–25).
+5. Likelihood worked example: exp(−0.5) = 0.61, exp(−4.5) = 0.011, ratio ≈ 90.
+6. Bayes' rule and slide 27's labels (posterior / image formation model / prior); MAP derivation (slides 28–30); terminology (slide 31).
+7. Gaussian-prior example: x_MAP = b·τ²/(τ² + σ²) = 0.8b; λ = σ²/τ² = 0.25.
+8. Norm definitions and ℓ₂ vs ℓ₁ example on x₁ + 2x₂ = 5: (1, 2) length 2.236, (0, 2.5) ℓ₁ 2.5, (5, 0).
+9. ℓ₁ ↔ Laplace prior p ∝ exp(−|t|/β), heavier tails ([Laplace distribution](https://en.wikipedia.org/wiki/Laplace_distribution)).
+10. "Stars → ‖x‖₁" and "natural → TV(x)" (slides 36–38).
+11. Discrete Laplacian kernel [0 1 0; 1 −4 1; 0 1 0], zero on flat patches and straight ramps ([Discrete Laplace operator](https://en.wikipedia.org/wiki/Discrete_Laplace_operator)).
+12. Forward differences; lecture kernels d_x = [0 0 0; 1 −1 0; 0 0 0], d_y = [0 1 0; 0 −1 0; 0 0 0] (slide 40) and PS5's d_x = [0 0 0; 0 −1 1; 0 0 0] (PS5 slide 5); both give "next minus this" (convolution flips, correlation does not).
+13. Starter `dx = [[-1., 1.]]`, `dy = [[-1.], [1.]]`, `psf2otf`, `dxyFT` stack, `cTFT`/`dxTFT`/`dyTFT`/`bFT` (PS5 slides 6 and 9).
+14. 4×4 wrap-around example: D_x x columns 0, 1, 0, −1.
+15. (Dᵀw)[i] = w[i−1] − w[i]; spike [0, 0, 1, 0, 0] → [0, 0, −1, 1, 0].
+16. DᵀD ↔ [−1, 2, −1]; |F{d}|² = 4 sin²(πk/N); N = 8 values 0, 0.59, 2, 3.41, 4.
+17. TV formulas (slide 45; PS5 slide 5); "better: isotropic / easier: anisotropic" (slide 41); "mostly black" quote (slide 42); "pseudo-norm" (slide 43).
+18. (3, 4) → anisotropic 7, isotropic 5; 45° edge costs √2 ≈ 1.41× anisotropically.
+19. TV profile table: TV 1.0 for all three; quadratic 1, 0.25, 0.18; ramp 4× cheaper.
+20. Slide 46 extensions (hyper-Laplacian, TGV, Hessian/Frobenius); staircasing ([Total variation denoising](https://en.wikipedia.org/wiki/Total_variation_denoising)).
+21. `torch.sqrt` NaN at 0: PyTorch's sqrt backward is grad/(2·result), infinite at 0, times dt/da = 0 gives NaN ([derivatives.yaml](https://raw.githubusercontent.com/pytorch/pytorch/main/tools/autograd/derivatives.yaml)).
+22. `torch.abs` backward = grad·sgn(x) (0 at 0); `torch.norm` p = 2 backward masks norm == 0 to 0 ([derivatives.yaml](https://raw.githubusercontent.com/pytorch/pytorch/main/tools/autograd/derivatives.yaml); [FunctionsManual.cpp `norm_backward`](https://raw.githubusercontent.com/pytorch/pytorch/main/torch/csrc/autograd/FunctionsManual.cpp)).
+23. `.backward()` accumulates into `.grad`, hence `zero_grad()` ([torch.Tensor.backward](https://docs.pytorch.org/docs/2.14/generated/torch.Tensor.backward.html): "This function accumulates gradients in the leaves").
+24. Adam update, bias correction, ε added outside the square root; PyTorch defaults lr 1e−3, betas (0.9, 0.999), eps 1e−8 ([torch.optim.Adam](https://docs.pytorch.org/docs/2.14/generated/torch.optim.Adam.html); Kingma & Ba, Algorithm 1, [arXiv 1412.6980](https://arxiv.org/abs/1412.6980)).
+25. Bias correction recovers g₁ at k = 1; step ≈ α ("|Δt| ≲ α", with a larger bound only under extreme sparsity; Kingma & Ba §2.1), so "roughly between −1 and 1" holds.
+26. Adam vs GD worked example: Adam 0.950, 0.900, 0.850 for a = 100 and a = 0.01; GD −4.0 and 0.9995.
+27. "Practical #1 go-to", 3 steps (slide 50); "fine print" (slide 51); Adam lacks a general convergence guarantee ([Reddi et al., ICLR 2018](https://arxiv.org/abs/1904.09237)).
+28. PS5 Task 1 objective ½‖Cx − b‖² + λTV(x) and `Afun` (PS5 slides 5–6).
+29. Variable splitting, "mathematically equivalent" (slides 53–54); Lagrangian, "optimal if all partial derivatives are zero", "constraint is satisfied", contour picture (slides 55–62).
+30. Lagrange example: (0.5, 0.5), f = 0.5, y = −1; (1, 0) → 1, (0.8, 0.2) → 0.68; shadow-price rate 1.
+31. Augmented Lagrangian and "see Boyd 2011" (slides 63–64); penalty-only x = ρ/(1 + ρ) → 0.5, 0.909, 0.990; method of multipliers rounds 0.5, 0.75, 0.875, 0.9375, 0.969, 0.984 with y → −1.
+32. Completing the square; scaled form with u = y/ρ (slides 65–67; Boyd et al. scaled ADMM, [Stanford slides](https://web.stanford.edu/~boyd/papers/pdf/admm_slides.pdf)).
+33. ADMM x/z/u steps (slides 68, 71, 118); z, u ∈ ℝ^{2N}, "slack/dual variable, twice the size of x!" (slides 76–79).
+34. Scalar ADMM example: x = 1.5, 1.25, 1.625, 1.813, 1.906, 1.953, 1.988; z from iteration 2 equal; u = 1.
+35. Convergence criterion "unroll for K iterations" or threshold (slide 100).
+36. Proximal operator and slide 69's figure description.
+37. Soft thresholding cases and (v − κ)₊ − (−v − κ)₊ form (slide 91); it is the prox of ℓ₁ ([Proximal gradient methods for learning](https://en.wikipedia.org/wiki/Proximal_gradient_methods_for_learning)); κ = 0.5 example 1.5, 0, −0.5, 0; max(1 − κ/|v|, 0)·v is equivalent.
+38. Block soft thresholding (3, 4), κ = 1 → (2.4, 3.2); entrywise (2, 3); slide 91 points to block thresholding for isotropic TV.
+39. Division by zero in max(1 − κ/|v|, 0)·v still yields 0 (κ/0 = ∞, max(−∞, 0) = 0, 0·0 = 0; IEEE arithmetic).
+40. x-update derivation steps (slides 82–87) and Fourier form with v₁ = v(1:N), v₂ = v(N+1:2N) (slide 88; PS5 slide 8).
+41. Denominator: |F{c}(0)|² = 1 for a unit-sum kernel; high-pass term up to 8ρ; "can pre-compute most parts" (slide 88).
+42. Denoiser x-update F⁻¹{(F{c}*F{b} + ρF{v})/(F{c}*F{c} + ρ)}, "no matrix D!" (slides 92–94; PS5 slide 10); z-update as denoising with σ² = λ/ρ (slides 95–97).
+43. DnCNN: 17 layers, 64 channels (PS5 slide 11 `nb=17, nc=64`; Zhang et al., depth 17 for DnCNN-S, 64 filters, residual learning, separate σ = 15/25/50 models, [ar5iv 1608.03981](https://ar5iv.labs.arxiv.org/html/1608.03981)); 25/255 = 0.098.
+44. PS5 slide 11 run steps: `net(...)`, `load_state_dict`, `eval()`, `requires_grad = False`, `.to(device)`, reshape (1, 1, H, W), `.cpu().numpy()`.
+45. HQS penalty form, "very sensitive to the penalty parameter", "Steps not tied together with dual variable" (slides 122–127).
+46. Unrolled optimization: λ^(k), ρ^(k), 𝒟^(k), DenseNet-like skips, adapts to C, perceptual/adversarial losses (slides 101–102).
+47. Single-pixel camera hardware (slides 104–107, Duarte et al. 2008); DMD with "several hundred thousand" mirrors, ±10–12° on/off tilt, used in DLP projectors ([Digital micromirror device](https://en.wikipedia.org/wiki/Digital_micromirror_device)).
+48. Slide 106 reconstructions at 10%, 5%, 2%; M < N under-determined (slides 108–109); compression factor N/M (slide 112).
+49. Least norm x = Aᵀ(AAᵀ)⁻¹b, "smallest L2 norm" (slide 111); Lagrange derivation; Tikhonov λ → 0 limit.
+50. Least-norm worked example: AAᵀ = [[2, 1], [1, 3]], w = [−0.04, 0.68], x̃ = [−0.04, 0.68, 0.64, 0.68], lengths 1.156 vs 1.225, error [0.24, 0.22, −0.24, 0.02] in the null space.
+51. Two-stage CG solve, `LinearOperator` size (measurements × measurements), "Don't forget to apply the final Aᵀ!" (PS5 slides 13–14).
+52. CG algorithm; 2×2 example: SD 0.21, 0.054, 0.018, 0.0015 error; CG exact at step 2 with β₀ = 0.0625 ([Conjugate gradient method](https://en.wikipedia.org/wiki/Conjugate_gradient_method)).
+53. AAᵀ SPD for independent rows; AᵀA + ρDᵀD and AᵀA + ρI SPD.
+54. SciPy `cg` returns (x, info), info 0 = converged, > 0 = iterations without convergence; `tol` deprecated in 1.12 and removed in 1.14 for `rtol` ([cg docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.cg.html), [1.12 cg docs](https://docs.scipy.org/doc/scipy-1.12.0/reference/generated/scipy.sparse.linalg.cg.html), [1.14.0 release notes](https://docs.scipy.org/doc/scipy/release/1.14.0-notes.html)); PS5 slide 14 passes `tol=cg_tolerance`.
+55. Single-pixel ADMM x-updates and "the red part doesn't have Fourier counterpart" (PS5 slides 15–16); slide 119 matrix-free CG quote.
+56. "If you can solve this, you can solve anything" (slide 114); slide 98 ranking (Wiener 19.5 dB worst; Adam+TV 26.1 and ADMM+TV 26.3 close; ADMM+DnCNN 26.7 best).
+57. d = ct/2; 1 ns ↔ 30 cm of travel ↔ 0.15 m depth bin; 30 m → 200 bins.
+58. SPADs count single photons with sub-ns timing; arrays are hard to scale ([SPAD](https://en.wikipedia.org/wiki/Single-photon_avalanche_diode)); 1550 nm is absorbed before the retina, allowing higher permissible exposure, and needs InGaAs/Ge detectors ([Laser Focus World](https://www.laserfocusworld.com/blogs/article/14040682/safety-questions-raised-about-1550-nm-lidar)).
+59. B = AX per-bin model, sizes 1024 × 4096, 4096 × 200, 1024 × 200; 819 200 vs 204 800; 4-pixel two-surface example (0.2/0.9 and 0.4/1.1, sums 0.6 and 2.0).
+60. Multiplex (Fellgett) advantage applies when detector noise dominates, not when shot noise dominates ([Fellgett's advantage](https://en.wikipedia.org/wiki/Fellgett%27s_advantage)).
+61. Poisson counts: SD = √mean (4 ± 2, 400 ± 20); NLL Σ[(Ax)_i − b_i log(Ax)_i] + const ([Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution)).
+62. Depth scan-line example: moving average 10.03, 10.00, 10.00, 11.67, 13.33, 15.00, 14.97, 15.00; TV (λ = 0.2) plateaus 10.05/14.95 verified as the exact minimizer by checking the subgradient optimality conditions (all |s_i| ≤ 1); shift λ/4 = 0.05 m.
+63. TGV treats planes as free (slide 46, Bredies et al. 2009).
+64. Fourier slice theorem statement and compressive CT (slides 129–131; [Projection-slice theorem](https://en.wikipedia.org/wiki/Projection-slice_theorem)).
+65. MRI measures (random) Fourier coefficients; k-space (slide 132; [k-space](https://en.wikipedia.org/wiki/K-space_(magnetic_resonance_imaging))).
+66. CASSI: coded aperture, then a single disperser, then a detector that sums the sheared copies (slides 134–137; Wagadarikar et al., Applied Optics 2008, [Duke record](https://scholars.duke.edu/individual/pub714106)); "moderate quality for snapshot, good quality for coded multi-shot" (slide 137).
+67. Medical-imaging caution quotes (slide 133); closing notes (slide 139).
+68. Slide and PS5 page references throughout (slides 7–139; PS5 slides 5–16) match the decks.
+69. Wikipedia anchors and targets resolve and match: `Gradient_descent#Momentum_or_heavy_ball_method`, `Stochastic_gradient_descent#Momentum`, `#Adam`, `Moving_average#Exponential_moving_average`, `Proximal_gradient_methods_for_learning`, `Fellgett%27s_advantage`, `Projection-slice_theorem`, `Digital_micromirror_device`, `Single-photon_avalanche_diode`.
+70. `formulas.md` Week 6: every entry matches the notes' formulas and the slides (no edits needed).
+
+**Diagrams confirmed (28 of 29):** Figs. 128–154 and 156. Each was re-derived from its own coordinates: Gaussian height ratio 0.607 at ±σ (128); likelihood 1/0.61/0.011 and −log 0/0.5/4.5 (129); posterior peak 0.8 with width √(σ²τ²/(σ²+τ²)) = 0.089 (130); circle r = √5 touching at (1, 2), diamond corner (0, 2.5), line through (−3, 4) and (5.49, −0.25) (131); Laplacian −4 at the bump, 0 on the ramp (132); 4×4 differences (133); stems 0.586…4 (134); unit circle vs diamond, 45° arrow (0.707, 0.707) (135); TV/quadratic profiles (136); Adam 0.95/0.90/0.85, GD −4 (137); split diagram (138); tangency at (0.5, 0.5), (0.8, 0.2) on the line and f = 0.68 (139); 0.5/0.909/0.990 and 0.5…0.984 (140); ADMM loop (141); scalar ADMM iterates (142); prox points shrink by 0.5 along the shallow axis and 0.25 along the 3× steeper one, consistent with ρ = 1 (143); soft threshold dead zone ±0.5 and S(2) = 1.5, S(−1) = −0.5; block (2.4, 3.2) collinear with (3, 4) (144); |F{c}|² = exp(−4π²σ²f²) for σ = 1.5 px (0.411 at f = 0.1), 4ρ sin²(πf) = 2 at f = 0.5, Wiener floor 0.1 (145); PnP loop (146); unrolled chain (147); single-pixel camera (148); 2×2 masks row-major (149); least norm (1, 2), other solution (2.6, 1.2) along (2, −1) (150); SD and CG iterates on the Ã = [[4, 1], [1, 3]] bowl (151); histogram bars at bins 3 and 5 (152); 0.2/0.4/0.9/1.1 bars (153); depth plateaus 10.05/14.95 and flying points 11.67/13.33 (154); CASSI mask → disperser → shifted sum (156). Captions describe what is drawn, and Fig. numbers 128–156 run sequentially in document order.
+
+---
+
+## Unverifiable
+
+*(HW5's handout and starter code are distributed on Quercus, not on the public course site, so these were not checked. Where arithmetic is involved, it was checked and is internally consistent.)*
+
+1. HW5 Task 1 Adam learning rate 5 × 10⁻².
+2. HW5 Task 2 λ = 0.005, ρ = 0.5 and Task 3 λ = 0.05, ρ = 5.2 (σ = 0.1 and 0.098 follow correctly).
+3. HW5's 75 ADMM iterations and 25 CG iterations per ADMM iteration (1875 total).
+4. HW5 Task 3 setup: 64×64 logo, compression factor 4, `np.random.rand` masks, noise σ = 0.001, starter variable `N` = number of measurements.
+5. `finite_differences.py`'s `opDtx = -diffx + np.roll(diffx, 1)` (the formula matches the derived Dᵀ).
+6. Other starter-code and handout details: `anisotropic_tv`/`vnorm` branches, `device = torch.device("mps")` in Task 2, data term `(Afun(x) - b).pow(2).sum()`, one color channel at a time, and the quoted handout phrases ("gradient of this function at 0 is nan", "nominator", "positive semi-definite matrices, like AA′").
+7. "The starter code's hint calls the first-stage unknown y": PS5 slide 13 calls it **u**; the starter code itself could not be checked, so the claim was left unchanged.
+
+Not checked (out of scope): cross-references into other weeks (e.g. "Week 2 §18", "Week 3 §16.3", "Week 5 §31.2").
+
+## Markdown / artifact drift
+
+The text errors (items 1–4) appeared the same way in the markdown and the artifact, and both are now fixed the same way. Drift was found in two places, both artifact-only: the week-6 glossary card had 12 malformed links where `glossary.md` was correct, and §25's "linearly independent" link pointed at the wrong article while the glossary used *Linear independence*. Fig. 155 exists only in the artifact. Out of scope, noted for whoever maintains `formulas.md`: its header links an older artifact URL (`claude.ai/code/artifact/81a2c9a4-…`), not the URL in `README.md`.
