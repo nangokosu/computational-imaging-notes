@@ -12394,9 +12394,10 @@ Wiener filter:    x̃_wf = F⁻¹{ |F{c}|² / (|F{c}|² + 1/SNR) · F{b} / F{c} 
 <line x1="437.1" y1="220" x2="437.1" y2="122.3" stroke="var(--ink-faint)" stroke-width="1" fill="none" stroke-dasharray="3 3" />
 <text x="368" y="53" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >peak 1/√(2πσ²) at t = μ</text>
 <line x1="360" y1="112.3" x2="437.1" y2="112.3" stroke="var(--accent-2)" stroke-width="1.5" fill="none" marker-end="url(#w6-gauss-arr)" />
-<text x="398.6" y="106.3" text-anchor="middle" class="chart-label" fill="var(--accent-2)" >width σ</text>
+<text x="398.6" y="127" text-anchor="middle" class="chart-label" fill="var(--accent-2)" >width σ</text>
 <text x="360" y="171.6" text-anchor="middle" class="chart-label" fill="var(--accent-3)" >≈68% of area</text>
-<text x="630" y="139.3" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >falls off as exp(−squared distance)</text>
+<text x="630" y="150" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >falls off as</text>
+<text x="630" y="164" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >exp(−squared distance)</text>
 </svg>
 <figcaption>Fig. 128 &mdash; the Gaussian (normal) density 𝒩(μ, σ²), drawn to scale. The peak sits at the mean μ; σ sets the width; the shaded band μ ± σ holds about 68% of the area. Far from μ the curve drops fast, because the exponent is a squared distance.</figcaption>
 </figure>
@@ -12708,7 +12709,7 @@ Wiener filter:    x̃_wf = F⁻¹{ |F{c}|² / (|F{c}|² + 1/SNR) · F{b} / F{c} 
   <div class="eyebrow">07</div>
   <h2>Three Example Priors</h2>
   <p>Slides 33–38 match three kinds of images to three regularizers.</p>
-  <p><strong>1. "Blurry stuff" → promote smoothness: Ψ(</strong>x<strong>) = ‖Δ</strong>x<strong>‖₂².</strong> The <strong><a href="https://en.wikipedia.org/wiki/Laplace_operator">Laplace operator</a></strong> Δ (the <strong>Laplacian</strong>) measures how much a pixel differs from the average of its neighbors, i.e. local <strong><a href="https://en.wikipedia.org/wiki/Curvature">curvature</a></strong>: how much the brightness surface <em>bends</em> there. A flat floor or a straight ramp does not bend (curvature 0); the top of a bump or the lip of a step bends sharply. In discrete form it is a <a href="https://en.wikipedia.org/wiki/Convolution">convolution</a> with the kernel</p>
+  <p><strong>1. "Blurry stuff" → promote smoothness: Ψ(</strong>x<strong>) = ‖Δ</strong>x<strong>‖₂</strong> (slide 38's form; in practice it is usually squared, ‖Δ<strong>x</strong>‖₂², which favors the same smooth images and is easier to minimize; the rest of this section uses the squared form). The <strong><a href="https://en.wikipedia.org/wiki/Laplace_operator">Laplace operator</a></strong> Δ (the <strong>Laplacian</strong>) measures how much a pixel differs from the average of its neighbors, i.e. local <strong><a href="https://en.wikipedia.org/wiki/Curvature">curvature</a></strong>: how much the brightness surface <em>bends</em> there. A flat floor or a straight ramp does not bend (curvature 0); the top of a bump or the lip of a step bends sharply. In discrete form it is a <a href="https://en.wikipedia.org/wiki/Convolution">convolution</a> with the kernel</p>
   <div class="formula" style="white-space:pre"> 0   1   0
  1  −4   1
  0   1   0</div>
@@ -12847,68 +12848,68 @@ Wiener filter:    x̃_wf = F⁻¹{ |F{c}|² / (|F{c}|² + 1/SNR) · F{b} / F{c} 
 <defs><marker id="w6-fd-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/></marker><marker id="w6-fd-arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"/></marker></defs>
 <text x="186" y="36" text-anchor="middle" class="chart-label" fill="var(--ink)" >image x</text>
 <text x="496" y="36" text-anchor="middle" class="chart-label" fill="var(--ink)" >Dₓx = next pixel − this pixel</text>
-<rect x="110" y="50" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="129" y="73" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="110" y="50" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="129" y="73" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="420" y="50" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="439" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="148" y="50" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="167" y="73" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="148" y="50" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="167" y="73" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="458" y="50" width="38" height="38" rx="0" fill="var(--accent-3)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="477" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">1</text>
-<rect x="186" y="50" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="205" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="186" y="50" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="205" y="73" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="496" y="50" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="515" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="224" y="50" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="243" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="224" y="50" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="243" y="73" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="534" y="50" width="38" height="38" rx="0" fill="var(--accent)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="553" y="73" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">−1</text>
-<rect x="110" y="88" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="129" y="111" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="110" y="88" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="129" y="111" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="420" y="88" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="439" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="148" y="88" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="167" y="111" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="148" y="88" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="167" y="111" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="458" y="88" width="38" height="38" rx="0" fill="var(--accent-3)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="477" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">1</text>
-<rect x="186" y="88" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="205" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="186" y="88" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="205" y="111" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="496" y="88" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="515" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="224" y="88" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="243" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="224" y="88" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="243" y="111" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="534" y="88" width="38" height="38" rx="0" fill="var(--accent)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="553" y="111" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">−1</text>
-<rect x="110" y="126" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="129" y="149" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="110" y="126" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="129" y="149" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="420" y="126" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="439" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="148" y="126" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="167" y="149" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="148" y="126" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="167" y="149" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="458" y="126" width="38" height="38" rx="0" fill="var(--accent-3)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="477" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">1</text>
-<rect x="186" y="126" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="205" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="186" y="126" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="205" y="149" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="496" y="126" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="515" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="224" y="126" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="243" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="224" y="126" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="243" y="149" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="534" y="126" width="38" height="38" rx="0" fill="var(--accent)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="553" y="149" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">−1</text>
-<rect x="110" y="164" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="129" y="187" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="110" y="164" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="129" y="187" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="420" y="164" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="439" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="148" y="164" width="38" height="38" rx="0" fill="var(--ink)" stroke="var(--border)" stroke-width="1.0" />
-<text x="167" y="187" text-anchor="middle" class="chart-label" fill="var(--bg)" >0</text>
+<rect x="148" y="164" width="38" height="38" rx="0" fill="#15161F" stroke="var(--border)" stroke-width="1.0" />
+<text x="167" y="187" text-anchor="middle" class="chart-label" fill="#F4F5FA" >0</text>
 <rect x="458" y="164" width="38" height="38" rx="0" fill="var(--accent-3)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="477" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">1</text>
-<rect x="186" y="164" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="205" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="186" y="164" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="205" y="187" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="496" y="164" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <text x="515" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">0</text>
-<rect x="224" y="164" width="38" height="38" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
-<text x="243" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" >1</text>
+<rect x="224" y="164" width="38" height="38" rx="0" fill="#F4F5FA" stroke="var(--border)" stroke-width="1.0" />
+<text x="243" y="187" text-anchor="middle" class="chart-label" fill="#15161F" >1</text>
 <rect x="534" y="164" width="38" height="38" rx="0" fill="var(--accent)" fill-opacity="0.4" stroke="var(--border)" stroke-width="1.0" />
 <text x="553" y="187" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">−1</text>
 <path d="M 243.0 206 C 243.0 242, 129.0 242, 129.0 208" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#w6-fd-arr)"/>
@@ -12974,25 +12975,25 @@ Wiener filter:    x̃_wf = F⁻¹{ |F{c}|² / (|F{c}|² + 1/SNR) · F{b} / F{c} 
 <text x="92" y="210" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >0</text>
 <line x1="147.5" y1="220" x2="147.5" y2="195.8" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="147.5" cy="195.8" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="159.5" y="185.8" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >0.59</text>
+<text x="141.5" y="189.8" text-anchor="end" class="chart-label" fill="var(--accent-ink)" >0.59</text>
 <line x1="215" y1="220" x2="215" y2="137.4" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="215" cy="137.4" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="227" y="127.4" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >2</text>
+<text x="209" y="131.4" text-anchor="end" class="chart-label" fill="var(--accent-ink)" >2</text>
 <line x1="282.5" y1="220" x2="282.5" y2="79" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="282.5" cy="79" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="294.5" y="69" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >3.41</text>
+<text x="276.5" y="73" text-anchor="end" class="chart-label" fill="var(--accent-ink)" >3.41</text>
 <line x1="350" y1="220" x2="350" y2="54.8" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="350" cy="54.8" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
 <text x="350" y="44.8" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >4</text>
 <line x1="417.5" y1="220" x2="417.5" y2="79" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="417.5" cy="79" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="405.5" y="69" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >3.41</text>
+<text x="423.5" y="73" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >3.41</text>
 <line x1="485" y1="220" x2="485" y2="137.4" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="485" cy="137.4" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="473" y="127.4" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >2</text>
+<text x="491" y="131.4" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >2</text>
 <line x1="552.5" y1="220" x2="552.5" y2="195.8" stroke="var(--accent)" stroke-width="1.5" fill="none" />
 <circle cx="552.5" cy="195.8" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
-<text x="540.5" y="185.8" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >0.59</text>
+<text x="558.5" y="189.8" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >0.59</text>
 </svg>
 <figcaption>Fig. 134 &mdash; the squared frequency response of the forward difference on an 8-pixel row, |F{dₓ}|² = 4 sin²(πk/N), N = 8. The stems are the 8 DFT values (0, 0.59, 2, 3.41, 4, 3.41, 2, 0.59); the dashed curve joins them. Zero at k = 0, largest at k = 4 (0.5 cycles/pixel): DᵀD is a high-pass filter. Indices 5–7 mirror 3–1 because they are the negative image frequencies.</figcaption>
 </figure>
@@ -13054,15 +13055,15 @@ TV_isotropic(x)   = ‖D x‖₂,₁           = Σ_{i=1}^{N} √( (D_x x)_i² +
 <text x="262.8" y="156" text-anchor="start" class="chart-label" fill="var(--accent-2)" >(1, 0): both 1</text>
 <text x="80" y="272" text-anchor="start" class="chart-label" fill="var(--accent-3)" >circle: iso cost 1</text>
 <text x="80" y="289" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >diamond: aniso cost 1</text>
-<line x1="410" y1="40" x2="410" y2="250" stroke="var(--border)" stroke-width="0.5" fill="none" />
+<line x1="410" y1="40" x2="410" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="410" y="245.2" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >0</text>
-<line x1="447.8" y1="40" x2="447.8" y2="250" stroke="var(--border)" stroke-width="0.5" fill="none" />
+<line x1="447.8" y1="40" x2="447.8" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="447.8" y="245.2" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >1</text>
-<line x1="485.6" y1="40" x2="485.6" y2="250" stroke="var(--border)" stroke-width="0.5" fill="none" />
+<line x1="485.6" y1="40" x2="485.6" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="485.6" y="245.2" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >2</text>
-<line x1="523.3" y1="40" x2="523.3" y2="250" stroke="var(--border)" stroke-width="0.5" fill="none" />
+<line x1="523.3" y1="40" x2="523.3" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="523.3" y="245.2" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >3</text>
-<line x1="561.1" y1="40" x2="561.1" y2="250" stroke="var(--border)" stroke-width="0.5" fill="none" />
+<line x1="561.1" y1="40" x2="561.1" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="561.1" y="245.2" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >4</text>
 <line x1="410" y1="230.2" x2="580" y2="230.2" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="404" y="234.2" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >0</text>
@@ -13075,8 +13076,8 @@ TV_isotropic(x)   = ‖D x‖₂,₁           = Σ_{i=1}^{N} √( (D_x x)_i² +
 <line x1="410" y1="71.7" x2="580" y2="71.7" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="404" y="75.7" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >4</text>
 <line x1="410" y1="230.2" x2="580" y2="230.2" stroke="currentColor" stroke-width="1.0" fill="none" />
-<line x1="410" y1="40" x2="410" y2="250" stroke="currentColor" stroke-width="1.0" fill="none" />
-<text x="495" y="284" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >Dₓx</text>
+<line x1="410" y1="40" x2="410" y2="230.2" stroke="currentColor" stroke-width="1.0" fill="none" />
+<text x="495" y="264" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >Dₓx</text>
 <text x="370" y="145" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" transform="rotate(-90 370 145)">D_y x</text>
 <line x1="410" y1="230.2" x2="523.3" y2="71.7" stroke="var(--accent-3)" stroke-width="2.5" fill="none" marker-end="url(#w6-tv-arr3)" />
 <polyline points="410,230.2 523.3,230.2 523.3,71.7" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linejoin="round" stroke-dasharray="6 4"/>
@@ -13443,12 +13444,13 @@ x^(k) = x^(k−1) − α · m̂_k / ( √v̂_k + ε )         5. step</div>
 <circle cx="211.2" cy="218.8" r="167.5" fill="none" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3"/>
 </g>
 <line x1="165.3" y1="20" x2="410" y2="264.7" stroke="var(--accent)" stroke-width="2.5" fill="none" />
-<text x="387.1" y="243.2" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >x₁ + x₂ = 1</text>
+<text x="396" y="243.2" text-anchor="start" class="chart-label" fill="var(--accent-ink)" >x₁ + x₂ = 1</text>
 <line x1="287.6" y1="142.4" x2="330.5" y2="99.5" stroke="var(--accent-3)" stroke-width="2.5" fill="none" marker-end="url(#w6-lag-arr3)" />
 <line x1="287.6" y1="142.4" x2="317.6" y2="112.4" stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-dasharray="4 2" marker-end="url(#w6-lag-arr)" />
 <circle cx="287.6" cy="142.4" r="5" fill="var(--accent-3)" stroke="none" stroke-width="1.0" />
 <text x="336.5" y="99.5" text-anchor="start" class="chart-label" fill="var(--accent-3)" >∇f ∥ ∇constraint</text>
-<text x="279.6" y="160.4" text-anchor="end" class="chart-label" fill="var(--accent-3)" >(0.5, 0.5), f = 0.5</text>
+<line x1="148" y1="161" x2="283" y2="145.5" stroke="var(--accent-3)" stroke-width="0.8" fill="none" />
+<text x="145" y="165" text-anchor="end" class="chart-label" fill="var(--accent-3)" >(0.5, 0.5), f = 0.5</text>
 <circle cx="333.5" cy="188.2" r="4" fill="var(--ink-soft)" stroke="none" stroke-width="1.0" />
 <text x="341.5" y="182.2" text-anchor="start" class="chart-label" fill="var(--ink-soft)" >(0.8, 0.2): crosses, f = 0.68</text>
 <text x="280" y="304" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >dashed circles: level curves of f = x₁² + x₂²</text>
@@ -13814,7 +13816,8 @@ yᵀr + (ρ/2) ‖r‖²  =  (ρ/2) ‖r + y/ρ‖²  −  (1/(2ρ)) ‖y‖²</
 <ellipse cx="340.0" cy="140.0" rx="120.2" ry="70.0" fill="none" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3"/>
 <ellipse cx="340.0" cy="140.0" rx="160.3" ry="93.3" fill="none" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3"/>
 <circle cx="340" cy="140" r="4" fill="var(--ink)" stroke="none" stroke-width="1.0" />
-<text x="346" y="156" text-anchor="start" class="chart-label" fill="var(--ink-soft)" >minimum of f</text>
+<line x1="346" y1="138.4" x2="526" y2="150.4" stroke="var(--ink-faint)" stroke-width="0.8" fill="none" />
+<text x="530" y="154" text-anchor="start" class="chart-label" fill="var(--ink-soft)" >minimum of f</text>
 <line x1="204" y1="71.4" x2="272" y2="122.9" stroke="var(--ink-soft)" stroke-width="1.2" fill="none" marker-end="url(#w6-prox-arr)" />
 <circle cx="204" cy="71.4" r="5" fill="var(--accent-2)" stroke="none" stroke-width="1.0" />
 <circle cx="272" cy="122.9" r="5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
@@ -14132,7 +14135,7 @@ x-update:    ( F{c}* · F{b} + ρ·[prior's gradients] )  /  ( |F{c}|² + ρ·(|
 while not converged:
     x ← argmin_x  f(x) + (ρ/2) ‖D x − z‖₂²
     z ← argmin_z  g(z) + (ρ/2) ‖D x − z‖₂²</div>
-  <p>The name: "half-quadratic" because the coupling term added is quadratic in the split variables. Each step is the same prox as in ADMM with <strong>u</strong> = 0. The weakness is §15's: without <strong>u</strong> the constraint holds exactly only as ρ → ∞, so HQS is "very sensitive to the penalty parameter" and usually needs a schedule of growing ρ. "Steps not tied together with dual variable" (slide 127).</p>
+  <p>The name: "half-quadratic" because, once <strong>z</strong> is held fixed, the new objective is quadratic in the image <strong>x</strong> (one "half" of the variables), so the x-step has a closed-form answer. Each step is the same prox as in ADMM with <strong>u</strong> = 0. The weakness is §15's: without <strong>u</strong> the constraint holds exactly only as ρ → ∞, so HQS is "very sensitive to the penalty parameter" and usually needs a schedule of growing ρ. "Steps not tied together with dual variable" (slide 127).</p>
   <p><strong>Unrolled optimization (slides 101–102).</strong> Run ADMM or HQS for a fixed small number <em>K</em> of iterations and draw them as a chain: <strong>b</strong> → (x-step, z-step) → (x-step, z-step) → … → <strong>x̃</strong>. That chain is a <strong><a href="https://en.wikipedia.org/wiki/Feedforward_neural_network">feedforward network</a></strong>: a pipeline of layers where data flows one way, each layer feeding the next, with no loops back. Then <strong>train</strong> it like one:</p>
 <figure class="chart-fig">
 <svg viewBox="0 0 680 200" role="img" aria-label="A chain: measurement b feeds stage 1 (x- and z-step), then stage 2, then up to stage K, ending in the estimate x tilde; each stage has its own learned lambda and rho.">
@@ -14231,7 +14234,8 @@ while not converged:
 <line x1="302" y1="120" x2="358" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" fill="none" marker-end="url(#w6-spc-arr)" />
 <line x1="382" y1="120" x2="426" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" fill="none" marker-end="url(#w6-spc-arr)" />
 <line x1="480" y1="120" x2="526" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" fill="none" marker-end="url(#w6-spc-arr)" />
-<line x1="260" y1="166" x2="260" y2="210" stroke="var(--ink-faint)" stroke-width="1" fill="none" stroke-dasharray="3 3" />
+<line x1="260" y1="164" x2="260" y2="174" stroke="var(--ink-faint)" stroke-width="1" fill="none" stroke-dasharray="3 3" />
+<line x1="260" y1="193" x2="260" y2="213" stroke="var(--ink-faint)" stroke-width="1" fill="none" stroke-dasharray="3 3" />
 <text x="260" y="226" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >“off” mirrors send light away</text>
 <text x="340" y="30" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >repeat with M different patterns → M numbers b = Ax</text>
 </svg>
@@ -14351,7 +14355,7 @@ substitute:                        x = Aᵀ (A Aᵀ)⁻¹ b</div>
 <text x="418.7" y="304.9" text-anchor="middle" class="chart-label" fill="var(--ink)" >all exact solutions: Ax = b</text>
 <line x1="220.7" y1="274.3" x2="267.9" y2="180" stroke="var(--accent-3)" stroke-width="2.5" fill="none" marker-end="url(#w6-ln-arr3)" />
 <circle cx="267.9" cy="180" r="5" fill="var(--accent-3)" stroke="none" stroke-width="1.0" />
-<text x="249.9" y="197.9" text-anchor="end" class="chart-label" fill="var(--accent-3)" >least norm (1, 2)</text>
+<text x="214" y="190" text-anchor="end" class="chart-label" fill="var(--accent-3)" >least norm (1, 2)</text>
 <polyline points="278.4,185.3 273.1,195.8 262.6,190.5" stroke="var(--accent-3)" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
 <line x1="267.9" y1="180" x2="343.3" y2="217.7" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#w6-ln-arr)" />
 <circle cx="343.3" cy="217.7" r="4.5" fill="var(--accent)" stroke="none" stroke-width="1.0" />
@@ -14475,7 +14479,7 @@ repeat for k = 0, 1, 2, …
 </svg>
 <figcaption>Fig. 151 &mdash; steepest descent (SD, amber) vs. conjugate gradients (CG, dashed teal) on the bowl ½wᵀÃw − b̃ᵀw with Ã = [[4, 1], [1, 3]], b̃ = [1, 2], both computed from w = (0, 0). The dashed ellipses are its level curves. Both take the same first step to (0.25, 0.5). SD then zig-zags across the valley; CG's second, conjugate direction lands exactly on the answer (1/11, 7/11).</figcaption>
 </figure>
-  <p><strong>Why AAᵀ qualifies.</strong> It is symmetric ((<strong>A A</strong>ᵀ)ᵀ = <strong>A A</strong>ᵀ), and <strong>w</strong>ᵀ<strong>A A</strong>ᵀ<strong>w</strong> = ‖<strong>A</strong>ᵀ<strong>w</strong>‖² ≥ 0, with equality only if <strong>A</strong>ᵀ<strong>w</strong> = 0, which cannot happen for nonzero <strong>w</strong> when the patterns are <strong>linearly <a href="https://en.wikipedia.org/wiki/Independence_(probability_theory)">independent</a></strong> (no pattern can be built as a weighted sum of the others; true, with overwhelming probability, for random patterns with <em>M</em> &lt; <em>N</em>). The starter code's hint says CG needs "positive semi-definite matrices, like AA′"; semi-definite (≥ 0 instead of &gt; 0) is enough as long as the system has a solution.</p>
+  <p><strong>Why AAᵀ qualifies.</strong> It is symmetric ((<strong>A A</strong>ᵀ)ᵀ = <strong>A A</strong>ᵀ), and <strong>w</strong>ᵀ<strong>A A</strong>ᵀ<strong>w</strong> = ‖<strong>A</strong>ᵀ<strong>w</strong>‖² ≥ 0, with equality only if <strong>A</strong>ᵀ<strong>w</strong> = 0, which cannot happen for nonzero <strong>w</strong> when the patterns are <strong><a href="https://en.wikipedia.org/wiki/Linear_independence">linearly independent</a></strong> (no pattern can be built as a weighted sum of the others; true, with overwhelming probability, for random patterns with <em>M</em> &lt; <em>N</em>). The starter code's hint says CG needs "positive semi-definite matrices, like AA′"; semi-definite (≥ 0 instead of &gt; 0) is enough as long as the system has a solution.</p>
   <p><strong>Using <a href="https://en.wikipedia.org/wiki/SciPy">SciPy</a>'s CG matrix-free (PS5 slide 14).</strong> <code>scipy.sparse.linalg.cg</code> never needs the matrix, only a way to apply it, wrapped in a <code>LinearOperator</code>:</p>
   <ul>
     <li><code>LinearOperator(shape, matvec=function)</code>. <em>shape</em> is the matrix's size: for least <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">norm</a>, (number of measurements, number of measurements). <em>matvec</em> is a function that takes a <strong>flat vector</strong> and returns <strong>Ã</strong> times it as a flat vector; for least norm, <strong>w</strong> ↦ <strong>A A</strong>ᵀ<strong>w</strong> (apply <code>Atfun</code>, then <code>Afun</code>).</li>
@@ -14519,7 +14523,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <p>"Combine the <a href="https://en.wikipedia.org/wiki/Least_squares">least squares</a> objectives first" (PS5) means exactly this: merge the data term and the ADMM coupling term into one system <strong>Ã x</strong> = <strong>b̃</strong> before calling CG. Both versions of <strong>Ã</strong> are <a href="https://en.wikipedia.org/wiki/Symmetric_matrix">symmetric</a> and <a href="https://en.wikipedia.org/wiki/Definite_matrix">positive definite</a>, so CG applies. Each is a sum of terms <strong>G</strong>ᵀ<strong>G</strong>, which are never negative (<strong>x</strong>ᵀ<strong>G</strong>ᵀ<strong>G x</strong> = ‖<strong>G x</strong>‖² ≥ 0). With ρ<em>I</em>, every nonzero <strong>x</strong> gives a positive value. With ρ<strong>D</strong>ᵀ<strong>D</strong>, the only images it ignores are constant ones, and the patterns do see a constant image (every mask has positive weights), so no nonzero image is ignored by both terms.</p>
   <p><strong>Costs.</strong> HW5 runs 75 ADMM iterations with 25 CG iterations inside each: 1875 applications of <strong>A</strong> and <strong>A</strong>ᵀ in total. Note <strong>b̃</strong> changes every ADMM iteration (through <strong>v</strong>), so it is rebuilt inside the loop; <strong>Ã</strong> itself does not change.</p>
   <p><strong>A practical tip: warm starts.</strong> Consecutive ADMM iterations produce similar <strong>x</strong>, so starting CG from the previous <strong>x</strong> (<a href="https://en.wikipedia.org/wiki/SciPy">SciPy</a>'s <code>x0</code> argument) instead of from zero usually reaches the tolerance in fewer iterations. Optional; the HW does not require it.</p>
-  <p><strong>What the lecture's results show (slide 121).</strong> At every compression factor, least <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">norm</a> is far worse than ADMM with a prior, and the prior-based methods degrade much more gracefully as compression grows from 2× to 8×. ADMM beat HQS for the same prior, and the learned DnCNN prior generally beat TV. The values on HW5's image are for you to measure.</p>
+  <p><strong>What the lecture's results show (slide 121).</strong> At every compression factor, least <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">norm</a> is far worse than any method with a prior. As compression grows from 2× to 8×, ADMM + DnCNN degrades most gracefully, while both TV-based methods already drop sharply at 4×. ADMM beat HQS with the same prior in every case except TV at 8×, where the two are about tied (HQS slightly ahead). The learned DnCNN prior beat TV at 4× and 8×; at 2×, TV was slightly ahead. The values on HW5's image are for you to measure.</p>
   <p><strong>"If you can solve this, you can solve anything" (slide 114).</strong> CT, MRI, <a href="https://en.wikipedia.org/wiki/Hyperspectral_imaging">hyperspectral</a> imaging and many more (§28) are all "minimize ½‖<strong>b</strong> − <strong>A x</strong>‖² + λΨ(<strong>x</strong>)" with a different <strong>A</strong>. Swap in the right <code>Afun</code> and <code>Atfun</code>, and every line of this ADMM code stays the same.</p>
   <div class="summary-box">
     <div class="label">Summary</div>
@@ -14527,7 +14531,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
       <li>Single-pixel ADMM: same z- and u-updates; the x-update solves <strong>(AᵀA + ρDᵀD)x = Aᵀb + ρDᵀv</strong> (TV) or <strong>(AᵀA + ρI)x = Aᵀb + ρv</strong> (DnCNN).</li>
       <li>Rule to remember: no Fourier shortcut for random patterns, so <strong>solve the x-update with CG</strong> using a matvec built from <code>Afun</code>, <code>Atfun</code> (and <code>opDx</code>, <code>opDtx</code>).</li>
       <li><strong>Ã</strong> is fixed; <strong>b̃</strong> changes every iteration. Warm-starting CG from the previous <strong>x</strong> is an optional speedup.</li>
-      <li>Priors dramatically beat least norm, more so at higher compression.</li>
+      <li>Priors dramatically beat least norm at every compression factor; the DnCNN prior with ADMM holds up best as compression grows.</li>
       <li>Next: the same machinery for <a href="https://en.wikipedia.org/wiki/Lidar">LiDAR</a> (§27).</li>
     </ul>
   </div>
@@ -14712,7 +14716,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <p>This replaces ½‖<strong>b</strong> − <strong>A x</strong>‖²/σ² as the data term. The MAP <a href="https://en.wikipedia.org/wiki/Loss_function">objective</a> is still "data term + λΨ," and <a href="https://en.wikipedia.org/wiki/Alternating_direction_method_of_multipliers">ADMM</a> still applies: the data step is no longer a linear system (no closed form), but splitting can isolate it into its own simple per-measurement prox step. The deeper machinery is beyond this week; the point is that the Bayesian view tells you <em>which</em> data term to use when the noise is not Gaussian.</p>
   <h3>27.4 TV for depth maps: edges stay sharp, no "flying pixels"</h3>
   <p><strong>Why TV fits depth even better than brightness.</strong> A depth map has no texture: a printed poster on a wall has a busy brightness image but a perfectly flat depth image. Depth maps are mostly flat or smoothly varying patches separated by sharp jumps at object boundaries: exactly what TV favors (§9).</p>
-  <p><strong>Flying pixels.</strong> Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to <em>no</em> surface: points floating in mid-air between a foreground object and the background. LiDAR users call these <strong>flying pixels</strong> (or <strong>mixed pixels</strong>). TV's edge-preserving behavior avoids them.</p>
+  <p><strong>Flying pixels.</strong> Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to <em>no</em> surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call <strong>flying pixels</strong> (or <strong>mixed pixels</strong>); a sensor also creates them on its own when one pixel's light comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.</p>
   <div class="callout">
     <div class="label">Worked example &mdash; a scan line across a box edge</div>
   <p>Measured depths, in meters, with noise: [10.0, 10.1, 9.9, 10.0, 15.1, 14.9, 15.0, 15.0] (a wall at 10 m, then a box surface at 15 m). Two clean-ups:</p>
@@ -14804,7 +14808,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <p>Slides 113–138 survey other inverse problems; all are "minimize ½‖<strong>b</strong> − <strong>A x</strong>‖² + λΨ(<strong>x</strong>)" with a different <strong>A</strong>.</p>
   <p><strong><a href="https://en.wikipedia.org/wiki/CT_scan">Computed tomography</a> (CT, slides 129–131).</strong> An x-ray source and a sensor rotate around the patient. Each reading is the total absorption along one straight line through the body; a full set of readings at one angle is a <strong>projection</strong>. The <strong><a href="https://en.wikipedia.org/wiki/Projection-slice_theorem">Fourier slice theorem</a></strong> links projections to the image: the 1D <a href="https://en.wikipedia.org/wiki/Fourier_transform">Fourier transform</a> of the projection at angle θ equals the 2D Fourier transform of the image along a straight line through the origin at that same angle θ. So each angle fills in one line ("slice") of the image's 2D spectrum, and many angles fill the whole spectrum. <strong>Compressive CT</strong> uses fewer angles, so fewer slices, so less radiation dose and faster scans, with a <a href="https://en.wikipedia.org/wiki/Prior_probability">prior</a> filling in the gaps.</p>
 <figure class="chart-fig">
-<svg viewBox="0 0 680 250" role="img" aria-label="Left: an image crossed by parallel dashed x-ray lines at angle theta; summing along them gives a projection. Arrow: its 1D Fourier transform. Right: the image&#x27;s 2D spectrum with one straight line through the origin at the same angle theta highlighted: that slice equals the transformed projection.">
+<svg viewBox="0 0 680 250" role="img" aria-label="Left: an image crossed by parallel dashed x-ray lines running perpendicular to the direction theta; summing along them gives a projection laid out along direction theta. Arrow: its 1D Fourier transform. Right: the image&#x27;s 2D spectrum with one straight line through the origin at the same angle theta highlighted: that slice equals the transformed projection.">
 <defs><marker id="w6-fst-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-soft)"/></marker><clipPath id="w6-fst-clip"><rect x="70" y="40" width="160" height="160"/></clipPath></defs>
 <rect x="70" y="40" width="160" height="160" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="1.0" />
 <ellipse cx="135" cy="125" rx="38" ry="26" fill="var(--accent-2)" fill-opacity="0.45" stroke="none"/>
@@ -14820,7 +14824,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <line x1="244.3" y1="175.3" x2="149.3" y2="10.7" stroke="var(--ink-faint)" stroke-width="0.8" fill="none" stroke-dasharray="3 3" />
 <line x1="259.9" y1="166.3" x2="164.9" y2="1.7" stroke="var(--ink-faint)" stroke-width="0.8" fill="none" stroke-dasharray="3 3" />
 </g>
-<text x="150" y="220" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >image; x-ray lines at angle θ</text>
+<text x="150" y="220" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >image; x-ray lines ⟂ direction θ</text>
 <text x="150" y="236" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >line sums = projection at θ</text>
 <line x1="260" y1="120" x2="400" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" fill="none" marker-end="url(#w6-fst-arr)" />
 <text x="330" y="110" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >1D Fourier transform</text>
@@ -14835,7 +14839,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <text x="530" y="220" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >2D spectrum of the image</text>
 <text x="530" y="236" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >= the slice at angle θ through 0</text>
 </svg>
-<figcaption>Fig. 155 &mdash; the Fourier slice theorem. Summing the image along parallel lines (left, θ = 30° here) gives one CT projection. Its 1D Fourier transform equals the image's 2D Fourier transform along the straight line through the origin at the same angle θ (right, amber). Each angle fills in one slice; many angles fill the spectrum.</figcaption>
+<figcaption>Fig. 155 &mdash; the Fourier slice theorem. Summing the image along parallel lines that run perpendicular to the direction θ (left, θ = 30° here, so the lines run at 120°) gives one CT projection, laid out along direction θ. Its 1D Fourier transform equals the image's 2D Fourier transform along the straight line through the origin at the same angle θ (right, amber). Each angle fills in one slice; many angles fill the spectrum.</figcaption>
 </figure>
   <p><strong><a href="https://en.wikipedia.org/wiki/Magnetic_resonance_imaging">Magnetic resonance imaging</a> (MRI, slide 132).</strong> An MRI scanner measures the image's Fourier coefficients directly (radiologists call the frequency domain <strong><a href="https://en.wikipedia.org/wiki/K-space_(magnetic_resonance_imaging)">k-space</a></strong>). <strong>Compressive MRI</strong> measures fewer (often randomly chosen) coefficients, shortening scans, which matters for patients who must hold still. Here <strong>A</strong> = "Fourier transform, then keep only the measured frequencies."</p>
   <p><strong><a href="https://en.wikipedia.org/wiki/Hyperspectral_imaging">Hyperspectral</a> imaging (slides 134–137).</strong> A <strong>hyperspectral</strong> image records many narrow wavelength bands per pixel (dozens to hundreds, instead of RGB's three): a 3D <strong>datacube</strong> (<em>x</em>, <em>y</em>, λ), here λ meaning wavelength. Conventional instruments scan, either over space (<em>x</em>, <em>y</em>) or over wavelength. <strong>CASSI</strong> (<a href="https://en.wikipedia.org/wiki/Coded_aperture">coded aperture</a> snapshot spectral imager) captures the whole cube in one 2D photo: a <strong>coded aperture</strong> (a fixed random mask) patterns the light, then a <strong>disperser</strong> (a <a href="https://en.wikipedia.org/wiki/Dispersive_prism">prism</a> or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways by a different distance, and all the shifted, masked copies land summed on one sensor. <strong>A</strong> = "mask, shift by wavelength, sum." Quality is moderate for a single snapshot, good with several coded shots (slide 137).</p>
@@ -15290,28 +15294,28 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Probability_density_function">Probability density</a>, p(·)</dt><dd>how likely values near t are, per unit of t; in plain words, "a ranking of which values are likely." It can exceed 1; only the area under it over a range is a probability (§3).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian (normal) density</a></dt><dd>p(t) = 1/√(2πσ²)·exp(−(t − μ)²/(2σ²)), written t ∼ 𝒩(μ, σ²): a bell curve, "a pile of sand poured from one spot," with peak at the mean μ and width the standard deviation σ (σ² = the <a href="https://en.wikipedia.org/wiki/Variance">variance</a>); its exponent is a squared distance, which is where squared errors come from (§3). Same concept, different names: Gaussian = normal = bell curve.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Conditional_probability_distribution">Conditional density</a>, p(b | x)</dt><dd>"the density of b given x": how likely each measurement is if we assume the true image is x; the bar means "assuming" (§3).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Independence_(probability_theory">Independence</a>) → multiply</dt><dd>quantities that do not influence each other (the noise in two different pixels) have a joint probability equal to the product of their separate ones, like two fair coins both landing heads, ½ × ½ (§3, §4).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Proportionality_(mathematics">Proportional to</a>) (∝)</dt><dd>p ∝ q means p = constant × q; constants never move a maximum or minimum, so they can be dropped (§3).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Independence_(probability_theory)">Independence</a> → multiply</dt><dd>quantities that do not influence each other (the noise in two different pixels) have a joint probability equal to the product of their separate ones, like two fair coins both landing heads, ½ × ½ (§3, §4).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Proportionality_(mathematics)">Proportional to</a> (∝)</dt><dd>p ∝ q means p = constant × q; constants never move a maximum or minimum, so they can be dropped (§3).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Likelihood_function">Likelihood</a></dt><dd>p(b | x) ∝ exp(−‖b − Ax‖₂²/(2σ²)) under Gaussian noise: a score of how well a candidate image explains the measured data; in plain words, "if this were the true scene, how believable is what we measured?" (§4). Same concept, different names: likelihood = image formation model in probabilistic form (slide 27) = data model = noise model.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes' rule</a></dt><dd>p(x | b) = p(b | x)·p(x)/p(b): turns "given the image, how likely is this data?" into "given this data, how likely is each image?"; posterior ∝ likelihood × prior. In plain words, a doctor's diagnosis weighing how well symptoms fit (likelihood) against how common each illness is (prior) (§5). Same concept, different names: Bayes' rule = Bayes' theorem.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Posterior_probability">Posterior</a></dt><dd>p(x | b), Latin for "coming after": how plausible image x is after seeing the data (§5).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Prior_probability">Prior</a></dt><dd>p(x), "coming before": how plausible x is as an image before any data; real photos are likely, TV static is not (§5).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Marginal_likelihood">Evidence</a></dt><dd>p(b), how likely the data was overall, averaged over every possible image; the same for every candidate x, so it is a dropped constant (§5).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation">MAP estimate</a></dt><dd>x_MAP = argmin_x (1/(2σ²))‖b − Ax‖₂² + Ψ(x): the single image with the highest posterior, "the most likely image, after seeing the data," found by taking −log so products become sums (§5). Same concept, different names: MAP = maximum a posteriori = posterior <a href="https://en.wikipedia.org/wiki/Mode_(statistics">mode</a>) (mode = the peak, the most common value).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation">MAP estimate</a></dt><dd>x_MAP = argmin_x (1/(2σ²))‖b − Ax‖₂² + Ψ(x): the single image with the highest posterior, "the most likely image, after seeing the data," found by taking −log so products become sums (§5). Same concept, different names: MAP = maximum a posteriori = posterior <a href="https://en.wikipedia.org/wiki/Mode_(statistics)">mode</a> (mode = the peak, the most common value).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Arg_max">argmin</a></dt><dd>"the value of x that makes the following expression smallest": the location of the minimum, not the minimum value itself (§5).</dd></div>
           <div class="row"><dt>Data fidelity term</dt><dd>(1/(2σ²))‖b − Ax‖₂² (or ½‖b − Ax‖₂²), the part of the objective that comes from the noise and rewards reproducing the measurements; in plain words, "does the answer match what was measured?" (§4–§5). Same concept, different names: data fidelity term = data term = data-consistency term = loss (Week 5 §29) = −log likelihood.</dd></div>
-          <div class="row"><dt>Natural image prior / <a href="https://en.wikipedia.org/wiki/Regularization_(mathematics">regularization</a>)</dt><dd>assumptions about what real images typically look like, used to make an ill-posed inverse problem solvable. Made precise this week as the regularizer Ψ(x) = −log p(x): a number that is small for plausible images, added to the data term as λΨ(x); in plain words, "a built-in sense of what a real photo should look like" (§5, §7). Same concept, different names: prior ↔ regularizer = regularization term = image prior = penalty, Ψ(x) (some slides write Γ(x)).</dd></div>
+          <div class="row"><dt>Natural image prior / <a href="https://en.wikipedia.org/wiki/Regularization_(mathematics)">regularization</a></dt><dd>assumptions about what real images typically look like, used to make an ill-posed inverse problem solvable. Made precise this week as the regularizer Ψ(x) = −log p(x): a number that is small for plausible images, added to the data term as λΨ(x); in plain words, "a built-in sense of what a real photo should look like" (§5, §7). Same concept, different names: prior ↔ regularizer = regularization term = image prior = penalty, Ψ(x) (some slides write Γ(x)).</dd></div>
           <div class="row"><dt>Regularization weight λ</dt><dd>the dial between "believe the data" (small λ) and "believe what images usually look like" (large λ); from the Bayesian derivation λ plays the role of σ² times the prior's strength, so more noise → larger λ (§5). A Gaussian prior gives Week 5's Tikhonov regularization, with λ = σ²/τ² (§5).</dd></div>
         </div>
         <p style="font-family:var(--font-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin:14px 0 0">Image priors</p>
         <div class="term-table">
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Norm_(mathematics">Norm</a>)</dt><dd>a rule that turns a list of numbers into one "size" that is never negative, is zero only for the all-zero list, doubles when every entry doubles, and obeys the triangle inequality (§6).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Norm_(mathematics)">Norm</a></dt><dd>a rule that turns a list of numbers into one "size" that is never negative, is zero only for the all-zero list, doubles when every entry doubles, and obeys the triangle inequality (§6).</dd></div>
           <div class="row"><dt>ℓ₂ / ℓ₁ / "ℓ₀" norms</dt><dd>straight-line length √(Σv_i²) (Euclidean); sum of absolute values Σ|v_i| (Manhattan / taxicab, "blocks walked on a grid"); number of nonzero entries (a counting "norm," not a true norm) (§6). Minimizing ℓ₁ gives sparse answers because the diamond-shaped ℓ₁ ball touches a line of solutions at a corner, where a coordinate is exactly zero; minimizing ℓ₂ spreads values out (§6).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Sparse_approximation">Sparse</a></dt><dd>"thinly scattered": a vector whose entries are mostly exactly zero (small ℓ₀), a few meaningful values among zeros (§6).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Laplace_distribution">Laplace distribution</a></dt><dd>p(t) ∝ exp(−|t|/β), the prior behind an ℓ₁ penalty: a sharper peak at 0 than a Gaussian and heavier tails; in plain words, "most values are exactly or nearly zero, but a few can be large," the statistics of image gradients (§6).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Heavy-tailed_distribution">Heavy tails</a></dt><dd>tails are a curve's far-left and far-right ends (the large values); heavy tails fall off slowly, so large values stay reasonably likely rather than practically impossible as under a Gaussian (§6).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator">Laplacian</a> / <a href="https://en.wikipedia.org/wiki/Curvature">curvature</a></dt><dd>Δ, how much a pixel differs from the average of its neighbors, i.e. how much the brightness surface bends there; the kernel [0 1 0; 1 −4 1; 0 1 0], zero on flat regions and straight ramps. ‖Δx‖₂² is the "smooth everywhere" prior, good for blurry stuff, bad for photos with edges (§7). Same concept, different names: Laplacian = Laplace operator = Δ.</dd></div>
-          <div class="row"><dt>Three example priors</dt><dd>smooth images → ‖Δx‖₂²; stars (mostly black) → ‖x‖₁; natural photos (flat regions separated by sharp edges) → TV(x), sparse image gradients (§7).</dd></div>
+          <div class="row"><dt>Three example priors</dt><dd>smooth images → ‖Δx‖₂ (slide 38; usually used squared, ‖Δx‖₂²); stars (mostly black) → ‖x‖₁; natural photos (flat regions separated by sharp edges) → TV(x), sparse image gradients (§7).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Finite_difference">Finite difference</a> / <a href="https://en.wikipedia.org/wiki/Image_gradient">image gradient</a></dt><dd>"next pixel minus this pixel": (D_x x)[r, s] = x[r, s+1] − x[r, s] horizontally, (D_y x)[r, s] = x[r+1, s] − x[r, s] vertically, like measuring a staircase's slope one step at a time; each is a convolution with a 2-tap kernel, so in the Fourier domain D_x x = F⁻¹{F{d_x}·F{x}} (§8). Same concept, different names: finite difference = discrete derivative = image gradient (both directions stacked) = gradient operator D = <code>grad_fn</code> (HW5 Task 1–2) = <code>opDx</code> (HW5 Task 3). Not the objective gradient ∇f (§1, §11).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Cross-correlation">Cross-correlation</a></dt><dd>sliding a "multiply-and-sum template" across an image without flipping it; true convolution flips the kernel first, which is why the lecture's and PS5's d_x kernels look mirrored yet describe the same forward difference (§8).</dd></div>
           <div class="row"><dt>Gradient operator D = [D_x; D_y]</dt><dd>the two difference images stacked: N pixels in, 2N numbers out; HW5 stores D x as an array of shape [2, M, N], horizontal in slot 0, vertical in slot 1 (§8).</dd></div>
@@ -15333,22 +15337,22 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Automatic_differentiation">Automatic differentiation</a> / <a href="https://en.wikipedia.org/wiki/Automatic_differentiation">computational graph</a></dt><dd>PyTorch records every operation of the loss computation in a computational graph ("a diagram of which numbers were combined, how, to make which"); <code>loss.backward()</code> walks it backwards with the chain rule and stores ∇f in <code>x.grad</code>; <code>optim.zero_grad()</code> clears it first because <code>.backward()</code> adds to what is stored (§11). Same concept, different names: automatic differentiation = autograd = <a href="https://en.wikipedia.org/wiki/Backpropagation">backpropagation</a> (in neural networks).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/PyTorch">PyTorch</a></dt><dd>a Python library for numerical computing and neural networks that differentiates code automatically (§11).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam">Adam</a></dt><dd>a gradient method that keeps a running average of recent gradients (smoothing out jumps) and divides each pixel's step by a running estimate of its typical gradient size, so each pixel moves about α per step whatever the problem's scale; "convenient but doesn't always converge well," since it hovers near the minimum (§11). Same concept, different names: Adam = adaptive moment estimation.</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Moment_(mathematics">Moment</a>) (first / second)</dt><dd>statistics word for an average of a power of a quantity: the 1st moment is the mean, the 2nd the mean of the square. In Adam, m_k (first moment) = running mean of gradients = momentum; v_k (second moment) = running mean of squared gradients, each pixel's typical gradient size (RMS after the square root) (§11).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Moment_(mathematics)">Moment</a> (first / second)</dt><dd>statistics word for an average of a power of a quantity: the 1st moment is the mean, the 2nd the mean of the square. In Adam, m_k (first moment) = running mean of gradients = momentum; v_k (second moment) = running mean of squared gradients, each pixel's typical gradient size (RMS after the square root) (§11).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Momentum">Momentum</a></dt><dd>averaging gradients over steps so the consistent downhill direction builds up and back-and-forth flips cancel, "a ball rolling downhill does not stop at every bump" (§11).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average">Exponential moving average</a></dt><dd>a running average where each older value counts a fixed fraction (β) as much as the next newer one; β₁ = 0.9 remembers about 1/(1 − 0.9) = 10 steps, β₂ = 0.999 about 1000 (§11).</dd></div>
           <div class="row"><dt>Bias correction</dt><dd>dividing Adam's running averages by 1 − β^k, which scales up the too-small early averages caused by starting m and v at 0 (at k = 1 it recovers g₁ exactly) (§11).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Learning_rate">Learning rate</a> α (restated)</dt><dd>roughly "how far a pixel value may move per step" in Adam; HW5 Task 1 uses 5 × 10⁻² (§11). Same concept, different names: learning rate = step size = α = <code>lr</code>.</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning">Hyperparameter</a>)</dt><dd>a setting you choose before running (learning rate, λ, number of iterations), as opposed to the unknowns the solver finds (§11).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)">Hyperparameter</a></dt><dd>a setting you choose before running (learning rate, λ, number of iterations), as opposed to the unknowns the solver finds (§11).</dd></div>
         </div>
         <p style="font-family:var(--font-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin:14px 0 0">Constrained optimization</p>
         <div class="term-table">
           <div class="row"><dt>Splitting / split variable z</dt><dd>giving the regularizer its own copy of the unknown, minimize f(x) + g(z) subject to Kx − z = 0 (K = D for TV, K = I for a denoiser prior); mathematically equivalent to the original, but lets each term be handled by the method it suits, like a plumber and an electrician each working on their own copy of a plan and meeting to reconcile (§13). Same concept, different names: split variable = slack variable (loosely) = auxiliary variable.</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Constraint_(mathematics">Constraint</a>)</dt><dd>a condition the answer is required to satisfy; "subject to" = "while obeying the condition that" (§13).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Constraint_(mathematics)">Constraint</a></dt><dd>a condition the answer is required to satisfy; "subject to" = "while obeying the condition that" (§13).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Contour_line">Level curve</a></dt><dd>a line of equal height of a function, like contour lines on a hiking map (§14). Same concept, different names: level curve = contour = isoline.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">Lagrange multiplier</a></dt><dd>a number y attached to a constraint; at a constrained minimum the constraint is <a href="https://en.wikipedia.org/wiki/Tangent">tangent</a> to a level curve ("touches without crossing"), so ∇f is parallel to the constraint's gradient, ∇f = −y·∇(constraint). In plain words, finding the lowest point of a park while staying on a footpath (§14). Same concept, different names: Lagrange multiplier = dual variable = <a href="https://en.wikipedia.org/wiki/Shadow_price">shadow price</a>, written y on the slides (λ in many textbooks).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">Lagrangian</a></dt><dd>L = f + yᵀ(constraint): one function whose zero partial derivatives give both the tangency condition and the constraint itself (§14).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Shadow_price">Shadow price</a></dt><dd>what a constraint "costs" you: |y| is how much the best objective would improve if the constraint were loosened a little (§14).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Duality_(optimization">Primal / dual</a>) variables</dt><dd>"primal" = the original unknowns (x, z); "dual" = the partners attached to the constraints (y, or u) (§14).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Duality_(optimization)">Primal / dual</a> variables</dt><dd>"primal" = the original unknowns (x, z); "dual" = the partners attached to the constraints (y, or u) (§14).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Augmented_Lagrangian_method">Method of multipliers</a></dt><dd>repeat: find the best x for the current price y, then raise the price in proportion to how much the constraint was broken, like a city raising a parking fine until nobody parks illegally (§15).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Augmented_Lagrangian_method">Augmented Lagrangian</a></dt><dd>L_ρ = f(x) + g(z) + yᵀ(Kx − z) + (ρ/2)‖Kx − z‖₂²: the Lagrangian plus a quadratic <a href="https://en.wikipedia.org/wiki/Penalty_method">penalty</a> ("augmented" = "with something added"); the penalty makes each sub-problem a well-behaved bowl, the multiplier makes the answer exact without ρ → ∞ (§15).</dd></div>
           <div class="row"><dt>Penalty parameter ρ</dt><dd>how hard a constraint violation is punished in the augmented Lagrangian; you choose it (§15). A penalty alone (no multiplier) satisfies the constraint only as ρ → ∞ (§15, §22).</dd></div>
@@ -15389,7 +15393,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
           <div class="row"><dt>Measurement matrix A</dt><dd>one pattern per row; for HW5 Task 3, M = 1024 random gray-level masks on a 64×64 (N = 4096) image; <code>Afun</code> = Ax (masks times image, summed), <code>Atfun</code> = Aᵀb (masks weighted by readings, summed) (§23). Same concept, different names: measurement matrix = sensing matrix = A. Watch the names: the starter code's <code>N</code> is the lecture's M.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Compressed_sensing">Compressive imaging</a></dt><dd>measuring fewer numbers than pixels (M &lt; N), so the camera "compresses while measuring" instead of measuring everything and compressing afterwards as JPEG does; the compression factor is N/M (HW5: 4) (§23). Same concept, different names: compressive imaging = compressed sensing setting (M &lt; N).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Underdetermined_system">Under-determined</a> (restated)</dt><dd>more unknowns than equations, so infinitely many exact solutions exist (§23–§24; Week 5 §28). Same concept, different names: under-determined = compressive (M &lt; N).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra">Null space</a>) (restated)</dt><dd>the changes to the image that leave every reading unchanged; any solution plus a null-space vector is another solution (§24; Week 5 §27.1).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra)">Null space</a> (restated)</dt><dd>the changes to the image that leave every reading unchanged; any solution plus a null-space vector is another solution (§24; Week 5 §27.1).</dd></div>
           <div class="row"><dt>Least-norm solution</dt><dd>x̃_ln = Aᵀ(AAᵀ)⁻¹b, the exact solution with the smallest ℓ₂ norm, derived with a Lagrange multiplier; it is a weighted sum of the patterns, contains no null-space part, and with random patterns looks like speckle ("not great," slide 112); Tikhonov in the limit λ → 0 (§24). Same concept, different names: least-norm = minimum-norm solution = "LN" = the pseudoinverse solution A⁺b for a wide A.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Conjugate_gradient_method">Conjugate gradient (CG) method</a></dt><dd>solves Ãw = b̃ for symmetric positive definite Ã using one matrix-vector product per step, by choosing conjugate directions that "never undo a previous step"; exact in at most N steps (§25). Used to compute least norm ((AAᵀ)w = b, then x = Aᵀw) and the single-pixel ADMM x-update (§24, §26). Same concept, different names: CG = conjugate gradient method.</dd></div>
           <div class="row"><dt>Conjugate (Ã-orthogonal) directions</dt><dd>directions that would be perpendicular if space were stretched so the elliptical bowl became round; minimizing along one never spoils the minimization along the others (§25).</dd></div>
@@ -15409,7 +15413,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
           <div class="row"><dt>Compressive LiDAR forward model B = AX</dt><dd>each time bin is an ordinary single-pixel problem b_t = Ax_t sharing the same A; X's column t is the image of "what is at depth bin t," and each such slice is sparse (an ℓ₁ prior suits it) (§27.2).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Fellgett%27s_advantage">Multiplex advantage</a></dt><dd>each pattern sends roughly half the scene's light to the detector instead of one pixel's worth, improving SNR when the detector's own electronic noise dominates (§27.2). Same concept, different names: multiplex advantage = Fellgett advantage (the spectroscopy name).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> (restated)</dt><dd>the probability law for counting independent random events, "raindrops landing on a tile in a minute"; photon counts follow it (shot noise, Week 2 §18), with standard deviation √mean, so a Gaussian noise model is wrong at low counts and the data term becomes Σ[(Ax)_i − b_i log(Ax)_i] (§27.3).</dd></div>
-          <div class="row"><dt>Flying pixels</dt><dd>invented depths that belong to no surface, points floating in mid-air between a foreground object and the background, produced by ordinary averaging at depth edges; TV avoids them (§27.4). Same concept, different names: flying pixels = mixed pixels = edge artifacts in depth maps.</dd></div>
+          <div class="row"><dt>Flying pixels</dt><dd>invented depths that belong to no surface, points floating in mid-air between a foreground object and the background, produced at depth edges when foreground and background are mixed, either by the sensor itself (one pixel's light coming from both) or by ordinary averaging; TV smoothing does not add them (§27.4). Same concept, different names: flying pixels = mixed pixels = edge artifacts in depth maps.</dd></div>
           <div class="row"><dt>Contrast loss</dt><dd>TV's small bias of moving each plateau toward its neighbor by λ ÷ (plateau length), because it charges for a jump's height (§27.4).</dd></div>
           <div class="row"><dt>Total generalized variation (TGV)</dt><dd>a higher-order prior that penalizes <em>changes</em> in the gradient rather than the gradient itself, so a slanted plane costs nothing; fits depth maps of slanted surfaces better than plain TV (§9, §27.4).</dd></div>
         </div>
@@ -15417,10 +15421,10 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
         <div class="term-table">
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/CT_scan">Computed tomography (CT)</a></dt><dd>an x-ray source and sensor rotate around the patient, each reading the total absorption along one line; a full set of readings at one angle is a <strong>projection</strong>; compressive CT uses fewer angles for less dose (§28). Same concept, different names: CT = computed tomography = CAT scan.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Projection-slice_theorem">Fourier slice theorem</a></dt><dd>the 1D Fourier transform of the projection at angle θ equals the 2D Fourier transform of the image along a line through the origin at that angle, so each angle fills in one "slice" of the spectrum (§28). Same concept, different names: Fourier slice theorem = projection-slice theorem = central slice theorem.</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Magnetic_resonance_imaging">MRI</a> / <a href="https://en.wikipedia.org/wiki/K-space_(magnetic_resonance_imaging">k-space</a>)</dt><dd>magnetic resonance imaging measures the image's Fourier coefficients directly; k-space is radiologists' name for that frequency domain; compressive MRI measures fewer coefficients for shorter scans, A = "Fourier transform, then keep the measured frequencies" (§28).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Magnetic_resonance_imaging">MRI</a> / <a href="https://en.wikipedia.org/wiki/K-space_(magnetic_resonance_imaging)">k-space</a></dt><dd>magnetic resonance imaging measures the image's Fourier coefficients directly; k-space is radiologists' name for that frequency domain; compressive MRI measures fewer coefficients for shorter scans, A = "Fourier transform, then keep the measured frequencies" (§28).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Hyperspectral_imaging">Hyperspectral imaging</a> / datacube</dt><dd>recording many narrow wavelength bands per pixel (dozens to hundreds, vs. RGB's three), a 3D (x, y, λ) datacube with λ meaning wavelength (§28). Same concept, different names: datacube = spectral cube; hyperspectral (many narrow bands) vs. <a href="https://en.wikipedia.org/wiki/Multispectral_imaging">multispectral</a> (a handful of bands).</dd></div>
           <div class="row"><dt>CASSI / <a href="https://en.wikipedia.org/wiki/Coded_aperture">coded aperture</a> / disperser</dt><dd>the coded aperture snapshot spectral imager captures the whole datacube in one 2D photo: a fixed random mask (coded aperture) patterns the light, a disperser (<a href="https://en.wikipedia.org/wiki/Dispersive_prism">prism</a> or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways, and the sensor sums them; A = "mask, shift by wavelength, sum" (§28).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence">Hallucination</a>)</dt><dd>a prior producing plausible-looking detail that was never measured (e.g. a learned prior smoothing away a small tumor or inventing a structure); why medical practitioners are "often hesitant about priors" (§28).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence)">Hallucination</a></dt><dd>a prior producing plausible-looking detail that was never measured (e.g. a learned prior smoothing away a small tumor or inventing a structure); why medical practitioners are "often hesitant about priors" (§28).</dd></div>
         </div>
       </div>
 
