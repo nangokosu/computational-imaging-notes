@@ -32,6 +32,8 @@ sin θ ≈ tan θ ≈ θ          ⇒   2·d·tan(α/2) ≈ d·α        (size �
 | 1 arcsec | 1/3600 | π/648000 | ≈ 4.8×10⁻⁶ |
 | 1 radian | 180/π ≈ 57.3 | 1 | — |
 
+Which of these a question needs is often unstated: anything "per degree" (cpd, px/deg) silently assumes 1°, while acuity assumes 1 arcmin. The Week 1 note "the hidden 1°" and its decision table explain which angle to use.
+
 **π:** π ≈ 3.14, 1/π ≈ 0.318, π² ≈ 10. Check a division by multiplying back: 1080/π ≈ 344 because 344 × 3.14 ≈ 1080.
 
 **Special angles (exact):** tan 30° = 1/√3 ≈ 0.577, tan 45° = 1, tan 60° = √3 ≈ 1.732. So FOV = 2·arctan(ratio) is exactly 60°, 90° or 120° when the ratio is 1/√3, 1 or √3. Also sin²(π/6) = 1/4, sin²(π/4) = 1/2, sin²(π/2) = 1.
@@ -108,6 +110,21 @@ The six weeks form a few long chains. Knowing these makes most conceptual questi
 
 **Angles and displays**
 - **Visual angle** — angular size at the eye (1° = 60 arcmin, 1 arcmin = 60 arcsec). **20/20 acuity ≈ 1 arcmin.**
+
+> **Note (the hidden 1°):** any quantity written **"per degree"** (cycles per degree = cpd, pixels per degree = px/deg) quietly fixes the visual angle at **exactly 1°**. Nobody measures that 1°; it is the unit. You are counting how many cycles (or pixels) fit inside a 1° slice of your view.
+> - **When to assume 1°:** whenever cpd or px/deg appears. That covers the CSF's x-axis, the CSF peak (4–6 cpd), the 60 cpd cutoff, HW1's 5 cpd target, and every hybrid-image cutoff.
+> - **Convert it before using it:** 1° = **π/180 rad**. At viewing distance D, the slice covers a width of 1° = 2·D·tan(0.5°) ≈ **D·π/180**.
+> - **Where the 0.5° comes from:** it is half of that same 1°. The 1° wedge is split into two right triangles, each with angle 0.5° = **π/360 rad**, so 2·D·(π/360) = D·π/180.
+> - **Don't mix it up with 1 arcmin:** acuity and "retina display" questions use α = 1 arcmin = 1/60° = **π/10800 rad**, an angle 60× smaller.
+
+**Which angle to assume (Week 1 decision table)**
+
+| You see… | Angle to assume | In radians | Width it covers at distance D |
+|---|---|---|---|
+| cpd, px/deg, CSF peak or cutoff, hybrid-image cutoff | 1° (the "per degree") | π/180 | D·π/180 |
+| the half-angle inside 2·D·tan(…) for that 1° | 0.5° | π/360 | D·π/360 (each half) |
+| 20/20 acuity, smallest resolvable pixel, "retina" dpi | 1 arcmin | π/10800 | D·π/10800 |
+| foveal cone spacing | 0.5 arcmin | π/21600 | D·π/21600 |
 - **dpi** — pixels per inch = 1/p. Same concept, different names: dpi = ppi (pixel density).
 - **FOV** — ~190° monocular, ~120° binocular, ~135° vertical.
 
@@ -120,9 +137,9 @@ The six weeks form a few long chains. Knowing these makes most conceptual questi
 - **Dynamic range** — brightest ÷ darkest representable signal. Eye ~14 orders (≈ 46.5 stops) over all adaptation; ~6.5 stops instantaneous (slide; ~5 orders is a separate, looser figure); displays ~3 orders (≈ 10 stops).
 
 **Frequency** (always say which one)
-- **Spatial frequency** — cycles of light/dark per distance (cycles/inch) or per degree (**cpd**, viewer-dependent; rises as you step back). **Image frequency** — cycles per pixel, fixed by the file (the `fft2` axis). Not light frequency (color) and not temporal frequency (flicker, ~60 Hz limit).
+- **Spatial frequency** — cycles of light/dark per distance (cycles/inch) or per degree (**cpd** = cycles inside **1°** of visual angle, 1° = π/180 rad; viewer-dependent; rises as you step back). **Image frequency** — cycles per pixel, fixed by the file (the `fft2` axis). Not light frequency (color) and not temporal frequency (flicker, ~60 Hz limit).
 - **Contrast** — Weber (one feature on a background) vs. Michelson (periodic gratings).
-- **CSF** — contrast sensitivity (1 / minimum detectable contrast) vs. cpd. **Band-pass**, peak ~4–6 cpd, cutoff ~60 cpd (cone spacing: 2 × 0.5 arcmin = 1 arcmin per cycle).
+- **CSF** — contrast sensitivity (1 / minimum detectable contrast) vs. cpd. **Band-pass**, peak ~4–6 cpd, cutoff ~60 cpd. The cutoff means 60 cycles squeezed into 1° = 60 arcmin, so 1 arcmin per cycle, which matches the cone spacing: 2 × 0.5 arcmin = 1 arcmin per cycle.
 - **Fourier transform** — image as a sum of 2D gratings; `fft2` output entry = one grating's magnitude + phase. `fftshift` moves DC (zero frequency, the mean) to the center; `ifftshift` before `ifft2`. One FFT per color channel.
 - **Convolution** — slide/stamp a kernel and sum. Same concept, different names: kernel = filter = impulse response = PSF (optics). LSI system = convolution with its impulse response.
 - **Low-pass / high-pass** — keep a disc around the shifted spectrum's center / keep everything outside it. Masking spectra = convolving in space.
@@ -168,26 +185,27 @@ physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi
 | image frequency | cycles per pixel in the file | cycles/pixel | fixed by the image |
 | dpi | print/display density | pixels/inch | chosen when printing |
 
-*Use it when:* moving between `fft2` units and the CSF's cpd. *Gotcha:* the final step to cpd needs viewing distance (E4).
+*Use it when:* moving between `fft2` units and the CSF's cpd. *Gotcha:* the final step to cpd needs viewing distance (E4), plus the hidden 1°: cpd = cycles/inch × (inches spanned by 1° at distance D) = cycles/inch × D·π/180.
 
 #### E4. Pixels per degree and cpd → cycles/pixel (HW1 Task 3 chain)
 ```
-width of 1° = 2 · D · tan(0.5°)
+width of 1° = 2 · D · tan(0.5°)            ← assume 1°: it is the "per degree" in px/deg and cpd; 0.5° is half of it
 px/deg = (width of 1°) / pixel pitch,     pixel pitch = 2.54 cm / dpi
 image frequency (cycles/px) = cpd / (px/deg)
-by hand (small angle):  width of 1° ≈ D · π/180   ⇒   px/deg ≈ π · D · dpi / (180 · 2.54)   (D in cm)
+by hand (small angle):  0.5° = π/360 rad  ⇒  width of 1° ≈ 2·D·π/360 = D · π/180   ⇒   px/deg ≈ π · D · dpi / (180 · 2.54)   (D in cm)
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
 | D | viewing distance | cm | chosen |
-| width of 1° | length on the print spanned by 1° of visual angle | cm | computed |
+| width of 1° | length on the print spanned by 1° (= π/180 rad) of visual angle. The 1° is fixed by the unit "per degree", not chosen | cm | computed |
+| 0.5° | half of the 1° wedge, the angle in each right triangle (= π/360 rad) | degrees (rad) | fixed |
 | pixel pitch | printed size of one pixel | cm/pixel | set by dpi |
 | dpi | print density | pixels/inch | chosen |
 | px/deg | pixels inside 1° of visual angle | pixels/degree | computed |
 | cpd | target spatial frequency (e.g. CSF peak) | cycles/degree | chosen from CSF |
 | image frequency | the same frequency on the pixel grid | cycles/pixel | computed |
 
-*Use it when:* picking a hybrid-image cutoff. *Gotcha:* farther D → more px/deg → lower cycles/px for the same cpd. By hand, keep π in the answer (e.g. px/deg = 20π) and divide it out only at the end. A dpi of 254 makes the pitch exactly 0.01 cm, because 2.54/254 = 0.01.
+*Use it when:* picking a hybrid-image cutoff. *Gotcha:* the 1° is never stated in a question; it is implied by "cpd" or "px/deg". Plug in 1° = π/180 rad (or 0.5° = π/360 rad inside the tan), not 1 arcmin. Farther D → more px/deg → lower cycles/px for the same cpd. By hand, keep π in the answer (e.g. px/deg = 20π) and divide it out only at the end. A dpi of 254 makes the pitch exactly 0.01 cm, because 2.54/254 = 0.01.
 
 #### E5. Contrast
 ```
@@ -256,8 +274,8 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 *Use it when:* building the hybrid per channel, then `ifftshift` → `ifft2` → real part → clip. *Gotcha:* add spectra (or filtered images), not a pixel cross-fade of the originals.
 
 ### Causal chains
-1. Step back from a print → each cycle subtends a smaller angle → more cycles per degree (cpd ↑) → fine detail passes the ~60 cpd cutoff. *So:* distance, not the print, decides what is visible.
-2. Cone spacing 0.5 arcmin → ≥ 2 samples per cycle → smallest cycle ≈ 1 arcmin → 60 cpd cutoff = 20/20 acuity. *So:* acuity, CSF cutoff and sampling are one fact.
+1. Step back from a print → each cycle subtends a smaller angle → more cycles fit in the fixed 1° slice (width D·π/180 grows with D) → more cycles per degree (cpd ↑) → fine detail passes the ~60 cpd cutoff. *So:* distance, not the print, decides what is visible.
+2. Cone spacing 0.5 arcmin → ≥ 2 samples per cycle → smallest cycle ≈ 1 arcmin → 1° = 60 arcmin holds 60 such cycles → 60 cpd cutoff = 20/20 acuity. *So:* acuity, CSF cutoff and sampling are one fact.
 3. Acuity 1 arcmin at d = 12 in → p ≈ 12 · π/10800 = π/900 in ≈ 0.0035 in → dpi = 900/π ≈ 286 → 300 dpi "retina" claim holds. *So:* "retina" only means retina at a stated distance.
 4. Stereo display → vergence at simulated depth, accommodation at the screen → conflicting cues → VAC discomfort. *So:* displays that give correct focus per pixel (light field/holographic) are needed.
 5. Eye ~46.5 stops vs. display ~10 stops → scenes cannot be shown as-is → HDR capture + tonemapping (Week 4). *So:* dynamic range gaps drive HDR.
@@ -266,7 +284,7 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 
 ### HW tie-in
 **HW1 Task 3 — Hybrid images.** Given 1001×1001 px images printed at 300 dpi, viewed at 40 cm and 2 m, CSF peak 5 cpd.
-- 3.1 Print size: 1001/300 = 3.34 in = 8.48 cm. Pitch 2.54/300 = 0.00847 cm. Width of 1° = 2·D·tan(0.5°) → **82 px/deg** (82.46) at 40 cm, **412 px/deg** (412.29) at 2 m.
+- 3.1 Print size: 1001/300 = 3.34 in = 8.48 cm. Pitch 2.54/300 = 0.00847 cm. Width of 1° (the implied "per degree" slice) = 2·D·tan(0.5°) → **82 px/deg** (82.46) at 40 cm, **412 px/deg** (412.29) at 2 m.
 - 3.2 Image frequency = cpd / (px/deg): 5/82 = **0.0610 cycles/px** (40 cm), 5/412 = **0.0121 cycles/px** (2 m); cutoff = arithmetic mean = **0.0366 cycles/px**.
 - 3.3 FFT radius = f × N = 0.036556 × 1001 = **36.59 px** (FFT bins = cycles per image width). Ideal circular LPF r ≤ 36.59 on the airplane, HPF r ≥ 36.59 on the macaw; per channel; `fftshift`/`ifftshift`; real part; sum; clip to [0, 255].
 - Result: at 40 cm the macaw (high frequencies) dominates; at 2 m its detail is beyond the CSF, only the blurry airplane remains.
@@ -307,7 +325,7 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 <details><summary>Answer</summary>
 
 (a) Pitch = 2.54 cm/254 = **0.01 cm**. Print size = 1000 × 0.01 = **10 cm** (= 1000/254 ≈ 3.94 in).  
-(b) Width of 1° ≈ D·π/180. At 36 cm: 36π/180 = π/5 cm, so px/deg = (π/5)/0.01 = **20π ≈ 63 px/deg**. At 180 cm: 180π/180 = π cm, so px/deg = π/0.01 = **100π ≈ 314 px/deg**.  
+(b) "px/deg" means pixels inside 1° of visual angle, so assume 1° = π/180 rad. Width of 1° = 2·D·tan(0.5°) ≈ 2·D·(π/360) = D·π/180. At 36 cm: 36π/180 = π/5 cm, so px/deg = (π/5)/0.01 = **20π ≈ 63 px/deg**. At 180 cm: 180π/180 = π cm, so px/deg = π/0.01 = **100π ≈ 314 px/deg**.  
 (c) cycles/px = cpd/(px/deg). At 36 cm: 4/(20π) = **1/(5π) ≈ 0.064**. At 1.8 m: 4/(100π) = **1/(25π) ≈ 0.013**. Mean = ½(5/(25π) + 1/(25π)) = 6/(50π) = **3/(25π) ≈ 0.038 cycles/px**.  
 (d) Radius = cycles/px × N = 1000 · 3/(25π) = **120/π ≈ 38 px** (120/3.14 ≈ 38.2). Use LPF r ≤ 38 on the far image and HPF r ≥ 38 on the near image.
 
@@ -318,7 +336,7 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 
 (a) u = 16/512 = **1/32 cycles/px**, period **32 px**.  
 (b) (1/32) × 160 = **5 cycles/inch**.  
-(c) Width of 1° at 36 in ≈ 36 · π/180 = π/5 in. cpd = 5 cycles/in × π/5 in/degree = **π ≈ 3.1 cpd**. That is just below the 4–6 cpd peak, on the rising low-frequency side. It is clearly visible and becomes more visible (toward the peak) as you step back.
+(c) "cpd" means cycles inside 1° of visual angle, so assume 1° = π/180 rad. Width of 1° at 36 in ≈ 36 · π/180 = π/5 in. cpd = 5 cycles/in × π/5 in/degree = **π ≈ 3.1 cpd**. That is just below the 4–6 cpd peak, on the rising low-frequency side. It is clearly visible and becomes more visible (toward the peak) as you step back.
 
 </details>
 
@@ -332,7 +350,7 @@ A contributes only high spatial frequencies (small features). Up close those fea
 **Q7. [Concept]** A student says "image frequency of 0.06 cycles/px is high, so it's invisible from far away." What is wrong?
 <details><summary>Answer</summary>
 
-Cycles/px is a property of the file only. Visibility depends on cpd, which needs dpi (print size) and viewing distance: cpd = cycles/px × px/deg. The same 0.06 cycles/px is ~5 cpd at 40 cm/300 dpi (peak, very visible) and ~25 cpd at 2 m. Never compare cycles/px to the CSF directly.
+Cycles/px is a property of the file only. Visibility depends on cpd, which needs dpi (print size) and viewing distance: cpd = cycles/px × px/deg, where px/deg counts the pixels inside the implied 1° (= π/180 rad) slice at that distance. The same 0.06 cycles/px is ~5 cpd at 40 cm/300 dpi (peak, very visible) and ~25 cpd at 2 m. Never compare cycles/px to the CSF directly.
 
 </details>
 
@@ -363,6 +381,7 @@ Inverse filter divides by DFT{h}, so noise at that frequency is multiplied by 1/
 > - The eye is an optical instrument (pupil = aperture, retina = sensor) whose limits are angles (1 arcmin acuity, 60 cpd cutoff) and ratios (stops, dynamic range).
 > - Rules to remember: **p = 2·d·tan(α/2) ≈ d·α** (α in rad, 1 arcmin = π/10800), **stops = log₂(ratio)**, and the chain **cycles/px = cpd / (px/deg)** with radius = cycles/px × N.
 > - CSF is band-pass (peak 4–6 cpd); cpd depends on distance, which is why hybrid images work.
+> - Hidden assumption: "per degree" (cpd, px/deg) always means a 1° slice = π/180 rad, covering width D·π/180 at distance D. Acuity uses 1 arcmin = π/10800 rad instead.
 > - Fourier transform + convolution theorem: masking spectra = convolving; deconvolution reverses it but is ill-posed.
 > - Sets up Week 2 (lens/aperture optics, pinhole FOV) and Week 5 (sampling, Wiener deconvolution).
 
