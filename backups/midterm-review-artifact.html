@@ -177,15 +177,15 @@
 <p><strong>Habits</strong></p>
 <ul>
 <li>Keep fractions and symbols (π, √5, e^(−1)) until the very end. Cancel common factors before multiplying anything out.</li>
-<li>Write very big or very small numbers in scientific notation: c = 3×10⁸ m/s, λ = 500 nm = 5×10⁻⁷ m.</li>
-<li>Compare without dividing or rooting: to decide whether 326 &lt; 1080/π, check whether 326·π (≈ 1024) &lt; 1080. To compare two SNRs, compare their squares.</li>
+<li>Write very big or very small numbers in scientific notation: c = 3×10⁸ m/s (speed of light), λ = 500 nm (a wavelength of light) = 5×10⁻⁷ m.</li>
+<li>Compare without dividing or rooting: to decide whether 326 &lt; 1080/π, check whether 326·π (≈ 1024) &lt; 1080. To compare two SNRs (signal-to-noise ratios: signal ÷ noise), compare their squares.</li>
 <li>Finish with an order-of-magnitude sanity check.</li>
 </ul>
 <p><strong>Small-angle approximation.</strong> Picture an angle θ opening from your eye. At distance d, it spans an arc of length d·θ (θ in <strong>radians</strong>). When θ is small, that arc, the straight chord across it and the tangent segment are almost the same length. So, for small θ in radians:</p>
 <pre class="formula">sin θ ≈ tan θ ≈ θ          ⇒   2·d·tan(α/2) ≈ d·α        (size ≈ distance × angle)</pre>
 <ul>
 <li>How good it is: tan θ ≈ θ + θ³/3, so for small θ the relative error is about θ²/3: 0.01% at 1° and 1% at 10°. By 45° the error has grown to 27%.</li>
-<li>Safe for visual acuity (arcminutes), pixels per degree (1°), diffraction angles, and narrow (telephoto) fields of view.</li>
+<li>Safe for visual acuity (arcminutes; 1 arcmin = 1/60 of a degree), pixels per degree (1°), diffraction angles, and narrow fields of view (FOV = the angle of scene a camera takes in; narrow = telephoto, a long-focal-length lens).</li>
 <li><strong>Not</strong> safe for wide FOV. The exact 2·arctan(1) is 90°, but the small-angle form would give 2 rad ≈ 115°. Use the special angles below instead.</li>
 </ul>
 <p><strong>Angle conversions (keep them as fractions)</strong></p>
@@ -231,23 +231,23 @@
 </tr>
 </tbody>
 </table></div>
-<p>Which of these a question needs is often unstated: anything &quot;per degree&quot; (cpd, px/deg) silently assumes 1°, while acuity assumes 1 arcmin. The Week 1 note &quot;the hidden 1°&quot; and its decision table explain which angle to use.</p>
+<p>Which of these a question needs is often unstated: anything &quot;per degree&quot; (cycles per degree = cpd, pixels per degree = px/deg) silently assumes 1°, while acuity assumes 1 arcmin. The Week 1 note &quot;the hidden 1°&quot; and its decision table explain which angle to use.</p>
 <p><strong>π:</strong> π ≈ 3.14, 1/π ≈ 0.318, π² ≈ 10. Check a division by multiplying back: 1080/π ≈ 344 because 344 × 3.14 ≈ 1080.</p>
 <p><strong>Special angles (exact):</strong> tan 30° = 1/√3 ≈ 0.577, tan 45° = 1, tan 60° = √3 ≈ 1.732. So FOV = 2·arctan(ratio) is exactly 60°, 90° or 120° when the ratio is 1/√3, 1 or √3. Also sin²(π/6) = 1/4, sin²(π/4) = 1/2, sin²(π/2) = 1.</p>
 <p><strong>Powers of 2 and logs</strong></p>
 <ul>
 <li>2¹⁰ = 1024 ≈ 10³. So log₂(1000) ≈ 10, log₂(10⁶) ≈ 20, and log₂(10) ≈ 10/3 ≈ 3.32.</li>
 <li>Know these: 2⁸ = 256, 2¹² = 4096, 2¹⁴ = 16 384, 2¹⁶ = 65 536, 2¹⁸ = 262 144.</li>
-<li>log₁₀ 2 ≈ 0.301 and log₁₀ 3 ≈ 0.477. So ×2 in power = +3 dB (10·log₁₀ 2), ×2 in amplitude = +6 dB (20·log₁₀ 2), and log₁₀ 11 ≈ 1.04.</li>
+<li>log₁₀ 2 ≈ 0.301 and log₁₀ 3 ≈ 0.477. So ×2 in power = +3 dB (decibels: 10·log₁₀ of a power ratio, or 20·log₁₀ of an amplitude ratio) (10·log₁₀ 2), ×2 in amplitude = +6 dB (20·log₁₀ 2), and log₁₀ 11 ≈ 1.04.</li>
 <li>ln 2 ≈ 0.693 and ln 10 ≈ 2.303.</li>
 <li>Fractional powers of 2: 2^(1/2) ≈ 1.41, 2^(1/3) ≈ 1.26, 2^(1/6) ≈ 1.12.</li>
 </ul>
-<p><strong>Camera number sequences (memorize; each step = 1 stop)</strong></p>
+<p><strong>Camera number sequences (memorize; each step = 1 stop = a ×2 change in light)</strong></p>
 <ul>
-<li>f-numbers go up by ×√2: 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22. The printed values are rounded: f/2.8 means 2√2 (N² = 8), f/5.6 means 4√2 (N² = 32), f/11 means 8√2 (N² = 128).</li>
-<li>Shutter times halve: 1, 1/2, 1/4, 1/8, 1/15, 1/30, 1/60, 1/125, 1/250, 1/500, 1/1000 s. Again rounded: 1/125 means 1/128, 1/250 means 1/256.</li>
+<li>f-numbers (N = focal length ÷ aperture diameter, written &quot;f/N&quot;; bigger N = smaller opening; Week 2 E4) go up by ×√2: 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22. The printed values are rounded: f/2.8 means 2√2 (N² = 8), f/5.6 means 4√2 (N² = 32), f/11 means 8√2 (N² = 128).</li>
+<li>Shutter times (how long the sensor collects light per photo) halve: 1, 1/2, 1/4, 1/8, 1/15, 1/30, 1/60, 1/125, 1/250, 1/500, 1/1000 s. Again rounded: 1/125 means 1/128, 1/250 means 1/256.</li>
 </ul>
-<p><strong>Exponentials (Gaussian weights):</strong> e^(−1/8) ≈ 0.88, e^(−1/4) ≈ 0.78, e^(−1/2) ≈ 0.61, e^(−1) ≈ 0.37, e^(−2) ≈ 0.14, e^(−3) ≈ 0.05, e^(−4) ≈ 0.018. For small x, e^(−x) ≈ 1 − x + x²/2. Multiply exponentials by adding exponents: e^(−a)·e^(−b) = e^(−(a+b)).</p>
+<p><strong>Exponentials (Gaussian = bell-curve weights, used in later weeks):</strong> e^(−1/8) ≈ 0.88, e^(−1/4) ≈ 0.78, e^(−1/2) ≈ 0.61, e^(−1) ≈ 0.37, e^(−2) ≈ 0.14, e^(−3) ≈ 0.05, e^(−4) ≈ 0.018. For small x, e^(−x) ≈ 1 − x + x²/2. Multiply exponentials by adding exponents: e^(−a)·e^(−b) = e^(−(a+b)).</p>
 <p><strong>Square roots:</strong> √2 ≈ 1.414, √3 ≈ 1.732, √5 ≈ 2.236, √10 ≈ 3.162. Pull out perfect squares: √2000 = √(400·5) = 20√5 ≈ 44.7. Near a perfect square, √(n² + δ) ≈ n + δ/(2n), e.g. √1025 ≈ 32 + 1/64.</p>
 <aside class="callout summary"><div class="label">Summary</div><ul>
 <li>Keep exact fractions and symbols; convert to a rough decimal only at the end.</li>
@@ -334,18 +334,18 @@
 </tr>
 </tbody>
 </table></div>
-<p>Week 6 has no midterm homework (HW5 is outside the midterm).</p>
+<p>Week 6 has no midterm homework (HW5 is outside the midterm). The terms in this table and in the causal map below are defined in each week's section; on a first pass, skim the maps and come back to them after the weeks.</p>
 <h2 id="causal-map">Cross-week causal map</h2>
 <p>The six weeks form a few long chains. Knowing these makes most conceptual questions answerable.</p>
 <ol class="chain-list big">
 <li><strong>Perception sets the encoding (W1 → W3).</strong> The eye is far more sensitive to relative (Weber) contrast and to mid image frequencies (CSF peak ≈ 4–6 cycles/degree; HW1 uses 5) than to fine chroma detail → gamma encoding spends code values where the eye notices, YCbCr chroma filtering and JPEG discard what it doesn't, and hybrid images exploit distance-dependent CSF cutoffs.</li>
-<li><strong>Light → photons → noise → SNR (W2 → W4).</strong> Exposure H ∝ L·t/N² → photon count n → shot noise √n (Poisson) plus read noise σ per readout → SNR → decides whether to take one long exposure, a burst (pays read noise K times), or a flutter shutter (loses light, reads once).</li>
+<li><strong>Light → photons → noise → SNR (W2 → W4).</strong> Exposure H ∝ L·t/N² (H = light per unit sensor area, L = scene brightness, t = exposure time, N = f-number; not Week 2's hyperfocal H) → photon count n → shot noise √n (Poisson) plus read noise σ per readout → SNR → decides whether to take one long exposure, a burst (pays read noise K times), or a flutter shutter (loses light, reads once).</li>
 <li><strong>Dynamic range mismatch (W1 → W2 → W4).</strong> World ≫ sensor (full well / read noise, bit depth) ≫ display → bracket exposures → linearize with the inverse response curve → weighted log-domain merge (HDR) → tonemap for the display.</li>
-<li><strong>Optics blur is a low-pass filter (W2 → W4 → W5).</strong> Finite aperture → diffraction (Airy disk ≈ 2.44·λ·N) and defocus (circle of confusion) → PSF → its Fourier transform, the OTF, attenuates high image frequencies → limits resolution and, together with pixel pitch, sets the Nyquist limit; sampling below Nyquist aliases.</li>
+<li><strong>Optics blur is a low-pass filter (W2 → W4 → W5).</strong> Finite aperture → diffraction (Airy disk diameter ≈ 2.44·λ·N; λ = wavelength of light, N = f-number) and defocus (circle of confusion) → PSF → its Fourier transform, the OTF (optical transfer function), attenuates high image frequencies → limits resolution and, together with pixel pitch (centre-to-centre pixel spacing), sets the Nyquist limit (the finest pattern a pixel grid can record: 0.5 cycles/pixel); sampling below Nyquist aliases.</li>
 <li><strong>Blur is convolution, deblurring is division (W1 → W4 → W5 → W6).</strong> Image ∗ PSF ⇔ spectrum × OTF → inverse filter divides by the OTF → noise explodes where |OTF| ≈ 0 → fixes: make the OTF broadband (coded aperture / flutter shutter, W4), damp the division (Wiener, W5), or add a prior and solve iteratively (TV + ADMM, W6).</li>
 <li><strong>Everything is Ax = b (W3 → W5 → W6).</strong> Blur, demosaicking, and single-pixel imaging are all linear measurements → least squares (normal equations / gradient descent) → under-determined or ill-conditioned → regularization = a Bayesian prior (MAP) → sparsity (ℓ1, TV) → solved by splitting (ADMM, soft thresholding, plug-and-play denoisers).</li>
 <li><strong>Color is three samples of a spectrum (W1 → W3).</strong> Three cone types / three camera filters reduce a spectrum to 3 numbers (metamers exist) → a Bayer CFA records only 1 of 3 per pixel → demosaicking interpolates → zipper and false-color artifacts at edges → gradient-corrected (MHC) or chroma-domain filtering reduces them.</li>
-<li><strong>The LiDAR thread (W4 → W5 → W6).</strong> Range from round-trip time d = c·τ/2 (W4) → a fixed pulse rate means echoes from beyond c/(2·f_rep) alias back as near targets — temporal aliasing (W5) → a single-pixel detector with coded illumination plus sparsity priors gives compressive LiDAR (W6).</li>
+<li><strong>The LiDAR thread (W4 → W5 → W6).</strong> Range from round-trip time d = c·τ/2 (d = distance to the target, c = speed of light, τ = round-trip time of the light pulse; W4) → a fixed pulse rate means echoes from beyond c/(2·f_rep) (f_rep = pulses sent per second; not a focal length) alias back as near targets — temporal aliasing (W5) → a single-pixel detector with coded illumination plus sparsity priors gives compressive LiDAR (W6).</li>
 </ol>
 </section>
     <section class="week" id="week1"><div class="eyebrow">Week 1 · 10 practice questions</div><h2>Human Visual System</h2><p class="scope"><span class="scope-label">Scope</span> Eye anatomy, accommodation, refractive errors, rods/cones, color, eye vs. camera, visual angle/acuity, retina displays, FOV, depth cues, stereo displays and VAC, stops/EV, dynamic range, spatial frequency (cpd), contrast, CSF, Fourier transform/<code>fft2</code>, convolution, frequency-domain filtering, hybrid images, deconvolution first look. Tested by <strong>HW1 Task 3 (hybrid images)</strong>.</p>
@@ -355,24 +355,24 @@
 <li><strong>Cornea</strong> — fixed front lens, does most of the focusing. <strong>Lens</strong> — adjustable fine focus.</li>
 <li><strong>Pupil</strong> — the eye's <strong>aperture</strong> (the opening that sets how much light enters). <strong>Retina</strong> — the eye's <strong>image sensor</strong>. Fovea = small cone-packed center patch (sharp, color vision). Optic disc = <strong>blind spot</strong> (no photoreceptors).</li>
 <li><strong>Accommodation</strong> — ciliary muscle reshapes the lens to refocus. Range ~8 cm–∞ at ~16 yr, ~50 cm–∞ at ~50 yr (<strong>presbyopia</strong>).</li>
-<li><strong>Refractive errors</strong> — myopia (focus in front of retina → concave lens), hyperopia (behind → convex), astigmatism (no single focus → cylindrical). Same concept, different names: hyperopia = hypermetropia = farsightedness; myopia = nearsightedness.</li>
+<li><strong>Refractive errors</strong> — myopia (focus in front of retina → concave lens, thinner in the middle, spreads light), hyperopia (behind → convex lens, thicker in the middle, converges light), astigmatism (no single focus → cylindrical lens, curved in one direction only). Same concept, different names: hyperopia = hypermetropia = farsightedness; myopia = nearsightedness.</li>
 </ul>
 <p><strong>Retina and color</strong></p>
 <ul>
-<li><strong>Rods</strong> ~120 M: very sensitive, colorless, periphery. <strong>Cones</strong> ~6 M: color (S ~440, M ~545, L ~565 nm), fovea, high acuity. Foveal cone spacing ≈ <strong>0.5 arcmin</strong>.</li>
-<li><strong>Metamerism</strong> — different spectra with the same 3 cone responses look identical; why RGB works.</li>
-<li><strong>Bayer CFA (RGGB)</strong> — one color filter per pixel; the other 2 channels are interpolated (<strong>demosaicking</strong>, Week 3). Retina differs: irregular mosaic, non-uniform density.</li>
+<li><strong>Rods</strong> ~120 M: very sensitive, colorless, periphery. <strong>Cones</strong> ~6 M: color (S, M, L = short-, medium-, long-wavelength types; peak sensitivity at ~440, ~545, ~565 nm wavelength), fovea, high acuity. Foveal cone spacing ≈ <strong>0.5 arcmin</strong>.</li>
+<li><strong>Metamerism</strong> — different spectra (spectrum = how much light there is at each wavelength) with the same 3 cone responses look identical; why RGB works.</li>
+<li><strong>Bayer CFA (color filter array), RGGB pattern</strong> — one color filter per pixel, in repeating 2×2 blocks of red, green, green, blue; the other 2 channels are interpolated (<strong>demosaicking</strong>, Week 3). Retina differs: irregular mosaic, non-uniform density.</li>
 </ul>
 <p><strong>Angles and displays</strong></p>
 <ul>
-<li><strong>Visual angle</strong> — angular size at the eye (1° = 60 arcmin, 1 arcmin = 60 arcsec). <strong>20/20 acuity ≈ 1 arcmin.</strong></li>
+<li><strong>Visual angle</strong> — angular size at the eye (1° = 60 arcmin, 1 arcmin = 60 arcsec). <strong>20/20 acuity ≈ 1 arcmin.</strong> (20/20 = normal eye-chart vision; acuity = the smallest angle the eye can resolve.)</li>
 </ul>
 <aside class="callout note"><div class="label">Note (the hidden 1°)</div><p>any quantity written <strong>&quot;per degree&quot;</strong> (cycles per degree = cpd, pixels per degree = px/deg) quietly fixes the visual angle at <strong>exactly 1°</strong>. Nobody measures that 1°; it is the unit. You are counting how many cycles (or pixels) fit inside a 1° slice of your view.</p>
 <ul>
 <li><strong>When to assume 1°:</strong> whenever cpd or px/deg appears. That covers the CSF's x-axis, the CSF peak (4–6 cpd), the 60 cpd cutoff, HW1's 5 cpd target, and every hybrid-image cutoff.</li>
 <li><strong>Convert it before using it:</strong> 1° = <strong>π/180 rad</strong>. At viewing distance D, the slice covers a width of 1° = 2·D·tan(0.5°) ≈ <strong>D·π/180</strong>.</li>
 <li><strong>Where the 0.5° comes from:</strong> it is half of that same 1°. The 1° wedge is split into two right triangles, each with angle 0.5° = <strong>π/360 rad</strong>, so 2·D·(π/360) = D·π/180.</li>
-<li><strong>Don't mix it up with 1 arcmin:</strong> acuity and &quot;retina display&quot; questions use α = 1 arcmin = 1/60° = <strong>π/10800 rad</strong>, an angle 60× smaller.</li>
+<li><strong>Don't mix it up with 1 arcmin:</strong> acuity and &quot;retina display&quot; (a screen whose pixels each span ≤ 1 arcmin at the intended distance, so none can be seen individually) questions use α = 1 arcmin = 1/60° = <strong>π/10800 rad</strong>, an angle 60× smaller.</li>
 </ul></aside>
 <p><strong>Which angle to assume (Week 1 decision table)</strong></p>
 <div class="tbl-wrap"><table>
@@ -412,26 +412,26 @@
 </tbody>
 </table></div>
 <ul>
-<li><strong>dpi</strong> — pixels per inch = 1/p. Same concept, different names: dpi = ppi (pixel density).</li>
-<li><strong>FOV</strong> — ~190° monocular, ~120° binocular, ~135° vertical.</li>
+<li><strong>dpi</strong> (dots per inch) — pixels per inch = 1/p, with p = one pixel's size in inches. Same concept, different names: dpi = ppi (pixel density).</li>
+<li><strong>FOV</strong> (field of view: the angle of scene seen at once) — ~190° monocular, ~120° binocular, ~135° vertical.</li>
 </ul>
 <p><strong>Depth and displays</strong></p>
 <ul>
-<li><strong>Depth cues</strong> — monocular: perspective, relative/absolute size, occlusion, accommodation, retinal blur, motion parallax, texture gradient, shading. Binocular: <strong>vergence</strong>, <strong>disparity</strong>. Same concept, different names: disparity = binocular parallax.</li>
-<li><strong>VAC</strong> — stereo display: eyes verge to the simulated depth but accommodate to the physical screen. Causes discomfort; light-field/holographic displays are the fix (Week 9).</li>
+<li><strong>Depth cues</strong> — monocular: perspective, relative/absolute size, occlusion, accommodation, retinal blur, motion parallax, texture gradient, shading. Binocular: <strong>vergence</strong> (both eyes rotating to point at the same object), <strong>disparity</strong> (the difference between the left and right eyes' images). Same concept, different names: disparity = binocular parallax.</li>
+<li><strong>VAC</strong> (vergence-accommodation conflict) — stereo display: eyes verge to the simulated depth but accommodate to the physical screen. Causes discomfort; light-field/holographic displays are the fix (Week 9).</li>
 </ul>
 <p><strong>Brightness ratios</strong></p>
 <ul>
-<li><strong>Stop</strong> — a factor of 2 in light. Same concept, different names: &quot;+1 stop&quot; = &quot;+1 EV&quot; (exposure compensation). Shutter time = exposure time = shutter speed.</li>
-<li><strong>Dynamic range</strong> — brightest ÷ darkest representable signal. Eye ~14 orders (≈ 46.5 stops) over all adaptation; ~6.5 stops instantaneous (slide; ~5 orders is a separate, looser figure); displays ~3 orders (≈ 10 stops).</li>
+<li><strong>Stop</strong> — a factor of 2 in light. Same concept, different names: &quot;+1 stop&quot; = &quot;+1 EV&quot; (EV = exposure value; &quot;exposure compensation&quot; = telling the camera to make the photo brighter or darker by that many stops). Shutter time = exposure time = shutter speed (how long the sensor collects light).</li>
+<li><strong>Dynamic range</strong> — brightest ÷ darkest representable signal. Eye ~14 orders of magnitude (a factor of 10¹⁴ ≈ 46.5 stops) over all adaptation; ~6.5 stops instantaneous (slide; ~5 orders is a separate, looser figure); displays ~3 orders (≈ 10 stops).</li>
 </ul>
 <p><strong>Frequency</strong> (always say which one)</p>
 <ul>
 <li><strong>Spatial frequency</strong> — cycles of light/dark per distance (cycles/inch) or per degree (<strong>cpd</strong> = cycles inside <strong>1°</strong> of visual angle, 1° = π/180 rad; viewer-dependent; rises as you step back). <strong>Image frequency</strong> — cycles per pixel, fixed by the file (the <code>fft2</code> axis). Not light frequency (color) and not temporal frequency (flicker, ~60 Hz limit).</li>
 <li><strong>Contrast</strong> — Weber (one feature on a background) vs. Michelson (periodic gratings).</li>
-<li><strong>CSF</strong> — contrast sensitivity (1 / minimum detectable contrast) vs. cpd. <strong>Band-pass</strong>, peak ~4–6 cpd, cutoff ~60 cpd. The cutoff means 60 cycles squeezed into 1° = 60 arcmin, so 1 arcmin per cycle, which matches the cone spacing: 2 × 0.5 arcmin = 1 arcmin per cycle.</li>
-<li><strong>Fourier transform</strong> — image as a sum of 2D gratings; <code>fft2</code> output entry = one grating's magnitude + phase. <code>fftshift</code> moves DC (zero frequency, the mean) to the center; <code>ifftshift</code> before <code>ifft2</code>. One FFT per color channel.</li>
-<li><strong>Convolution</strong> — slide/stamp a kernel and sum. Same concept, different names: kernel = filter = impulse response = PSF (optics). LSI system = convolution with its impulse response.</li>
+<li><strong>CSF</strong> (contrast sensitivity function) — contrast sensitivity (1 / minimum detectable contrast) vs. cpd. <strong>Band-pass</strong> (most sensitive to middle frequencies, less to low and high ones), peak ~4–6 cpd, cutoff ~60 cpd. The cutoff means 60 cycles squeezed into 1° = 60 arcmin, so 1 arcmin per cycle, which matches the cone spacing: 2 × 0.5 arcmin = 1 arcmin per cycle.</li>
+<li><strong>Fourier transform</strong> — image as a sum of 2D gratings; <code>fft2</code> (2D FFT = fast Fourier transform, the standard algorithm that computes it) output entry = one grating's magnitude + phase. <code>fftshift</code> moves DC (zero frequency, the mean) to the center; <code>ifftshift</code> before <code>ifft2</code>. One FFT per color channel.</li>
+<li><strong>Convolution</strong> — slide/stamp a kernel and sum. Same concept, different names: kernel = filter = impulse response = PSF (point spread function: the blur pattern a single point of light makes; optics). LSI (linear shift-invariant: same blur everywhere, effects add) system = convolution with its impulse response.</li>
 <li><strong>Low-pass / high-pass</strong> — keep a disc around the shifted spectrum's center / keep everything outside it. Masking spectra = convolving in space.</li>
 <li><strong>Hybrid image</strong> — high-pass of A + low-pass of B: A seen up close, B from afar.</li>
 <li><strong>Deconvolution</strong> — inverse of convolution; <strong>ill-posed</strong> (zeros destroy info, near-zeros amplify noise) → regularization (Wiener, Week 5; priors, Week 6). Non-blind = kernel known; blind = kernel unknown.</li>
@@ -459,7 +459,7 @@ by hand (small angle, α in rad):   p ≈ d · α,   α = 1 arcmin = π/10800   
 </tr>
 <tr>
   <td>d</td>
-  <td>viewing distance</td>
+  <td>viewing distance (written D in E4 and the 1° note; unrelated to Week 2's d)</td>
   <td>same length unit as p</td>
   <td>set by use case</td>
 </tr>
@@ -511,7 +511,7 @@ by hand:  2¹⁰ ≈ 10³  ⇒  stops ≈ (10/3) × (orders of magnitude)</pre>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> exposure compensation, dynamic range, aperture/shutter trade-offs. <em>Gotcha:</em> 1 order of magnitude = log₂10 ≈ 3.32 stops; one aperture stop = f-number × √2 (area ∝ diameter²).</p>
+<p><em>Use it when:</em> exposure compensation, dynamic range, aperture/shutter trade-offs. <em>Gotcha:</em> 1 order of magnitude = log₂10 ≈ 3.32 stops; one aperture stop = f-number × √2 (f-number N = focal length ÷ opening diameter; Week 2) (area ∝ diameter²).</p>
 <h4 class="eq-head" id="week1-e3"><span class="eq-num">E3</span> Image frequency → physical spatial frequency</h4>
 <pre class="formula">physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi (pixels/inch)</pre>
 <div class="tbl-wrap"><table>
@@ -547,7 +547,7 @@ by hand:  2¹⁰ ≈ 10³  ⇒  stops ≈ (10/3) × (orders of magnitude)</pre>
 <p><em>Use it when:</em> moving between <code>fft2</code> units and the CSF's cpd. <em>Gotcha:</em> the final step to cpd needs viewing distance (E4), plus the hidden 1°: cpd = cycles/inch × (inches spanned by 1° at distance D) = cycles/inch × D·π/180.</p>
 <h4 class="eq-head" id="week1-e4"><span class="eq-num">E4</span> Pixels per degree and cpd → cycles/pixel (HW1 Task 3 chain)</h4>
 <pre class="formula">width of 1° = 2 · D · tan(0.5°)            ← assume 1°: it is the &quot;per degree&quot; in px/deg and cpd; 0.5° is half of it
-px/deg = (width of 1°) / pixel pitch,     pixel pitch = 2.54 cm / dpi
+px/deg = (width of 1°) / pixel pitch,     pixel pitch = 2.54 cm / dpi (2.54 cm = 1 inch)
 image frequency (cycles/px) = cpd / (px/deg)
 by hand (small angle):  0.5° = π/360 rad  ⇒  width of 1° ≈ 2·D·π/360 = D · π/180   ⇒   px/deg ≈ π · D · dpi / (180 · 2.54)   (D in cm)</pre>
 <div class="tbl-wrap"><table>
@@ -670,7 +670,7 @@ contrast sensitivity = 1 / (minimum detectable contrast)</pre>
 </tbody>
 </table></div>
 <p><em>Use it when:</em> gratings/CSF → Michelson; single spot → Weber.</p>
-<h4 class="eq-head" id="week1-e6"><span class="eq-num">E6</span> 2D grating and DFT index → cycles/pixel</h4>
+<h4 class="eq-head" id="week1-e6"><span class="eq-num">E6</span> 2D grating and DFT (discrete Fourier transform, what fft2 computes) index → cycles/pixel</h4>
 <pre class="formula">I(x, y) = A · cos(2π(u·x + v·y) + φ)
 u = k_u / W      v = k_v / H</pre>
 <div class="tbl-wrap"><table>
@@ -727,7 +727,7 @@ u = k_u / W      v = k_v / H</pre>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> turning a cutoff in cycles/px into an FFT mask radius: radius (bins) = f × N for an N-pixel side. <em>Gotcha:</em> stripes are perpendicular to (u, v); combined frequency = √(u² + v²).</p>
+<p><em>Use it when:</em> turning a cutoff in cycles/px into an FFT mask radius: radius (bins = FFT array cells) = cutoff image frequency (cycles/px) × image side (px). Neither factor here is a focal length or an f-number. <em>Gotcha:</em> stripes are perpendicular to (u, v); combined frequency = √(u² + v²).</p>
 <h4 class="eq-head" id="week1-e7"><span class="eq-num">E7</span> Convolution and the convolution theorem</h4>
 <pre class="formula">(x * h)[n] = Σ_m h[m] · x[n − m]
 DFT{ x * h } = DFT{ x } · DFT{ h }</pre>
@@ -791,7 +791,7 @@ DFT{ x * h } = DFT{ x } · DFT{ h }</pre>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> blur, filtering, PSFs, deconvolution. <em>Gotcha:</em> theorem is exact for circular convolution (zero-pad to ≥ N + K − 1 for linear); full output length = N + K − 1. Cost: direct N·K vs. FFT ~N log N.</p>
+<p><em>Use it when:</em> blur, filtering, PSFs, deconvolution. <em>Gotcha:</em> theorem is exact for circular convolution (the signal wraps around at its edges); zero-pad (append zeros) to ≥ N + K − 1 for ordinary linear convolution, where N = signal length and K = kernel length; full output length = N + K − 1. Cost: direct N·K vs. FFT ~N log N.</p>
 <h4 class="eq-head" id="week1-e8"><span class="eq-num">E8</span> Hybrid image in the frequency domain</h4>
 <pre class="formula">F_hybrid(u, v) = H_A(u, v) + L_B(u, v)</pre>
 <div class="tbl-wrap"><table>
@@ -838,7 +838,7 @@ DFT{ x * h } = DFT{ x } · DFT{ h }</pre>
 <li>Acuity 1 arcmin at d = 12 in → p ≈ 12 · π/10800 = π/900 in ≈ 0.0035 in → dpi = 900/π ≈ 286 → 300 dpi &quot;retina&quot; claim holds. <em>So:</em> &quot;retina&quot; only means retina at a stated distance.</li>
 <li>Stereo display → vergence at simulated depth, accommodation at the screen → conflicting cues → VAC discomfort. <em>So:</em> displays that give correct focus per pixel (light field/holographic) are needed.</li>
 <li>Eye ~46.5 stops vs. display ~10 stops → scenes cannot be shown as-is → HDR capture + tonemapping (Week 4). <em>So:</em> dynamic range gaps drive HDR.</li>
-<li>Mask on shifted spectrum = multiplying by DFT{h} → convolution theorem → same as blurring (LPF) or original − blur (HPF). <em>So:</em> frequency masking gives an exact cutoff radius for the same operation.</li>
+<li>Mask on shifted spectrum = multiplying by DFT{h} → convolution theorem → same as blurring (LPF, low-pass filter) or original − blur (HPF, high-pass filter). <em>So:</em> frequency masking gives an exact cutoff radius for the same operation.</li>
 <li>Blur multiplies each frequency by DFT{h} → undo by dividing → zeros lose info, small values amplify noise (×1/|H|). <em>So:</em> deconvolution is ill-posed and needs regularization.</li>
 </ol>
 <h3 id="week1-hw">HW tie-in</h3>
@@ -846,7 +846,7 @@ DFT{ x * h } = DFT{ x } · DFT{ h }</pre>
 <ul>
 <li>3.1 Print size: 1001/300 = 3.34 in = 8.48 cm. Pitch 2.54/300 = 0.00847 cm. Width of 1° (the implied &quot;per degree&quot; slice) = 2·D·tan(0.5°) → <strong>82 px/deg</strong> (82.46) at 40 cm, <strong>412 px/deg</strong> (412.29) at 2 m.</li>
 <li>3.2 Image frequency = cpd / (px/deg): 5/82 = <strong>0.0610 cycles/px</strong> (40 cm), 5/412 = <strong>0.0121 cycles/px</strong> (2 m); cutoff = arithmetic mean = <strong>0.0366 cycles/px</strong>.</li>
-<li>3.3 FFT radius = f × N = 0.036556 × 1001 = <strong>36.59 px</strong> (FFT bins = cycles per image width). Ideal circular LPF r ≤ 36.59 on the airplane, HPF r ≥ 36.59 on the macaw; per channel; <code>fftshift</code>/<code>ifftshift</code>; real part; sum; clip to [0, 255].</li>
+<li>3.3 FFT radius = cutoff (cycles/px) × image side (px) = 0.036556 × 1001 = <strong>36.59 px</strong> (FFT bins = cycles per image width). Ideal circular LPF r ≤ 36.59 on the airplane, HPF r ≥ 36.59 on the macaw; per channel; <code>fftshift</code>/<code>ifftshift</code>; real part; sum; clip to [0, 255].</li>
 <li>Result: at 40 cm the macaw (high frequencies) dominates; at 2 m its detail is beyond the CSF, only the blurry airplane remains.</li>
 <li>Takeaway: one cpd target maps to different cycles/px at each distance; the cutoff is set between them.</li>
 </ul>
@@ -859,11 +859,11 @@ DFT{ x * h } = DFT{ x } · DFT{ h }</pre>
 Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024 &lt; 1080, so 326 &lt; 1080/π. The phone's pixels are slightly too big, so it is <strong>not</strong> quite retina at 10 in. At 12 in the threshold is 10800/(π·12) = 900/π ≈ 286 dpi, which 326 beats.</p>
 </div></details></div>
 
-<div class="q" id="week1-q2"><div class="q-head"><span class="q-num">Q2</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) A display has a 1000:1 contrast ratio. How many stops is that? (b) You take one shot at +2 EV exposure compensation and another at −3 EV. What is the light ratio between them? (c) The meter suggests f/8 at 1/250 s; you open to f/4. What shutter time keeps the same exposure?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week1-q2"><div class="q-head"><span class="q-num">Q2</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) A display has a 1000:1 contrast ratio. How many stops is that? (b) You take one shot at +2 EV exposure compensation and another at −3 EV. What is the light ratio between them? (c) The camera's light meter (built-in sensor that suggests settings) suggests f/8 at 1/250 s; you open to f/4. What shutter time keeps the same exposure?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>(a) 2¹⁰ = 1024 ≈ 1000, so log₂(1000) ≈ <strong>10 stops</strong> (just under; 3 orders × 10/3).<br />
 (b) Difference = 2 − (−3) = 5 stops → 2⁵ = <strong>32×</strong> more light in the +2 shot.<br />
-(c) f/8 → f/4: N halves, area ×4 → 2·log₂(8/4) = 2 stops more light. Pay back with 2 stops less time: 1/250 → 1/500 → <strong>1/1000 s</strong>.</p>
+(c) f/8 → f/4: N halves, so the opening's diameter D = f/N doubles and its area (∝ D²) ×4 → 2·log₂(8/4) = 2 stops more light. Pay back with 2 stops less time: 1/250 → 1/500 → <strong>1/1000 s</strong>.</p>
 </div></details></div>
 
 <div class="q" id="week1-q3"><div class="q-head"><span class="q-num">Q3</span><span class="chip calc">Calculation</span></div><p class="q-text">A sinusoidal grating varies between luminance 180 and 20. (a) Michelson contrast? (b) An observer at 5 cpd can just detect a grating of contrast 0.005. What is their contrast sensitivity there? (c) Weber contrast of a 120 spot on a 100 background?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -878,7 +878,7 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 <p>(a) Pitch = 2.54 cm/254 = <strong>0.01 cm</strong>. Print size = 1000 × 0.01 = <strong>10 cm</strong> (= 1000/254 ≈ 3.94 in).<br />
 (b) &quot;px/deg&quot; means pixels inside 1° of visual angle, so assume 1° = π/180 rad. Width of 1° = 2·D·tan(0.5°) ≈ 2·D·(π/360) = D·π/180. At 36 cm: 36π/180 = π/5 cm, so px/deg = (π/5)/0.01 = <strong>20π ≈ 63 px/deg</strong>. At 180 cm: 180π/180 = π cm, so px/deg = π/0.01 = <strong>100π ≈ 314 px/deg</strong>.<br />
 (c) cycles/px = cpd/(px/deg). At 36 cm: 4/(20π) = <strong>1/(5π) ≈ 0.064</strong>. At 1.8 m: 4/(100π) = <strong>1/(25π) ≈ 0.013</strong>. Mean = ½(5/(25π) + 1/(25π)) = 6/(50π) = <strong>3/(25π) ≈ 0.038 cycles/px</strong>.<br />
-(d) Radius = cycles/px × N = 1000 · 3/(25π) = <strong>120/π ≈ 38 px</strong> (120/3.14 ≈ 38.2). Use LPF r ≤ 38 on the far image and HPF r ≥ 38 on the near image.</p>
+(d) Radius = cycles/px × image side (N = 1000 px) = 1000 · 3/(25π) = <strong>120/π ≈ 38 px</strong> (120/3.14 ≈ 38.2). Use LPF r ≤ 38 on the image meant to be seen from far away and HPF r ≥ 38 on the image meant to be seen up close.</p>
 </div></details></div>
 
 <div class="q" id="week1-q5"><div class="q-head"><span class="q-num">Q5</span><span class="chip calc">Calculation</span></div><p class="q-text">A 512-px-wide image's <code>fft2</code> has a strong peak at k_u = 16. (a) Image frequency? Period in pixels? (b) Printed at 160 dpi, physical frequency? (c) Viewed from 36 inches, cpd (small-angle approximation)? Where on the CSF?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -895,7 +895,7 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 
 <div class="q" id="week1-q7"><div class="q-head"><span class="q-num">Q7</span><span class="chip concept">Conceptual</span></div><p class="q-text">A student says &quot;image frequency of 0.06 cycles/px is high, so it's invisible from far away.&quot; What is wrong?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>Cycles/px is a property of the file only. Visibility depends on cpd, which needs dpi (print size) and viewing distance: cpd = cycles/px × px/deg, where px/deg counts the pixels inside the implied 1° (= π/180 rad) slice at that distance. The same 0.06 cycles/px is ~5 cpd at 40 cm/300 dpi (peak, very visible) and ~25 cpd at 2 m. Never compare cycles/px to the CSF directly.</p>
+<p>Cycles/px is a property of the file only. Visibility depends on cpd, which needs dpi (print size) and viewing distance: cpd = cycles/px × px/deg, where px/deg counts the pixels inside the implied 1° (= π/180 rad) slice at that distance. The same 0.06 cycles/px is ~5 cpd at 40 cm/300 dpi (0.06 × 82 px/deg; peak, very visible) and ~25 cpd at 2 m (0.06 × 412 px/deg). Never compare cycles/px to the CSF directly.</p>
 </div></details></div>
 
 <div class="q" id="week1-q8"><div class="q-head"><span class="q-num">Q8</span><span class="chip concept">Conceptual</span></div><p class="q-text">Explain the vergence-accommodation conflict and why it does not occur in natural viewing.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -907,12 +907,12 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 
 <p>(a) <code>ifft2</code> expects DC in the corner (the raw layout); masks are drawn on the centered (<code>fftshift</code>ed) spectrum, so you must undo the shift first.<br />
 (b) <code>fft2</code> takes one 2D array; color = three independent arrays, so three spectra with no interaction.<br />
-(c) A real image's spectrum is conjugate-symmetric; after symmetric masking the inverse is real up to tiny numerical imaginary parts, which are discarded.</p>
+(c) A real image's spectrum is conjugate-symmetric (the value at frequency −(u, v) has the same magnitude and opposite phase as the value at +(u, v)); after symmetric masking the inverse is real up to tiny numerical imaginary parts, which are discarded.</p>
 </div></details></div>
 
-<div class="q" id="week1-q10"><div class="q-head"><span class="q-num">Q10</span><span class="chip concept">Conceptual</span></div><p class="q-text">A blur kernel's spectrum has a smallest value of 0.2 at the fastest frequency and no exact zeros. What happens to noise at that frequency under the inverse filter? What if the minimum were 0?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week1-q10"><div class="q-head"><span class="q-num">Q10</span><span class="chip concept">Conceptual</span></div><p class="q-text">A blur kernel's spectrum has a smallest value of 0.2 at the highest image frequency (finest stripes) and no exact zeros. What happens to noise at that frequency under the inverse filter? What if the minimum were 0?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>Inverse filter divides by DFT{h}, so noise at that frequency is multiplied by 1/0.2 = <strong>5×</strong>. With an exact zero, the blurred spectrum there is 0 for any original → information destroyed, division undefined; many originals give the same image. Both make deconvolution ill-posed → regularize (Wiener damps where |H| is small).</p>
+<p>Inverse filter divides by DFT{h}, so noise at that frequency is multiplied by 1/0.2 = <strong>5×</strong>. With an exact zero, the blurred spectrum there is 0 for any original → information destroyed, division undefined; many originals give the same image. Both make deconvolution ill-posed → regularize (Wiener damps where |H| (the magnitude of DFT{h}) is small).</p>
 </div></details></div>
 
 <aside class="callout summary"><div class="label">Summary</div><ul>
@@ -928,29 +928,31 @@ Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024
 <p><strong>Optics</strong></p>
 <ul>
 <li><strong>Pinhole camera</strong> — one small hole lets roughly one ray per scene point through, giving an inverted, scaled image. (Same concept, different names: pinhole camera = camera obscura.)</li>
-<li><strong>Pinhole size trade-off</strong> — a bigger hole gives more geometric blur (blur ≈ d); a smaller hole gives more diffraction blur (≈ fλ/d). The sharpest hole sits where the two balance.</li>
+<li><strong>Pinhole size trade-off</strong> — a bigger hole gives more geometric blur (blur ≈ d, the hole's diameter); a smaller hole gives more diffraction blur (≈ fλ/d, with f = hole-to-screen distance and λ = wavelength of light). The sharpest hole sits where the two balance.</li>
 <li><strong>Diffraction</strong> — a wave spreads out after passing through a narrow opening; the smaller the opening, the wider the spread. Ray optics ignores it.</li>
-<li><strong>Focal length f</strong> — lens (or pinhole) to the plane where a sharp image forms. It is intrinsic: you change it only by swapping lenses or zooming.</li>
-<li><strong>Object distance S / sensor distance S′</strong> — S is a property of the scene, S′ of the setup (set with the focus ring). (Same concept, different names: S′ = image distance = sensor distance.)</li>
+<li><strong>Focal length f</strong> — the distance from the lens (or pinhole) to where light from a very distant (infinitely far) object comes into focus. <strong>Lenses are named by their focal length:</strong> a &quot;50 mm lens&quot; means f = 50 mm, <em>not</em> a lens 50 mm wide. The width of the opening is a separate number, the aperture diameter D = f/N (below). It is intrinsic: you change it only by swapping lenses or zooming.</li>
+<li><strong>Object distance S / sensor distance S′</strong> — S is a property of the scene, S′ of the setup (set with the focus ring, which moves the lens toward or away from the sensor). (Same concept, different names: S′ = image distance = sensor distance.)</li>
 <li><strong>Thin lens model</strong> — a ray through the lens centre goes straight; parallel rays meet at the focal point. These two rules give <code>1/S + 1/S′ = 1/f</code>. (Same concept, different names: thin lens equation = Gaussian lens formula.)</li>
+<li><strong>Infinity focus</strong> — the lens setting for subjects infinitely far away (in practice, anything much farther than f, like a landscape). Then 1/S → 0, so S′ = f: the lens sits exactly one focal length from the sensor. Any nearer subject needs S′ &gt; f, so focusing closer moves the lens <em>out</em>, away from the sensor.</li>
 <li><strong>Field of view (FOV)</strong> — the angle of scene that lands on the sensor. Longer f means a narrower view (telephoto); shorter f means a wider view (wide-angle).</li>
-<li><strong>Aperture D / f-number N</strong> — D is the opening's diameter and N = f/D. A <strong>bigger N means a smaller hole</strong>. (Same concept, different names: aperture size written as &quot;f/N&quot; = f-stop = f-number.)</li>
-<li><strong>Stop</strong> — a ×2 change in light. One full aperture stop multiplies N by √2.</li>
+<li><strong>Aperture D / f-number N</strong> — D is the diameter of the lens's adjustable opening and N = f/D. In &quot;f/8&quot; the f is the focal length, so f/8 literally means D = f ÷ 8 (on a 50 mm lens, D = 6.25 mm). A &quot;wide&quot; or &quot;fast&quot; aperture means a big D, i.e. a small N. A <strong>bigger N means a smaller hole</strong>. (Same concept, different names: aperture size written as &quot;f/N&quot; = f-stop = f-number.)</li>
+<li><strong>Stop</strong> — a ×2 change in light. One full aperture stop multiplies N by √2 (area ∝ D² = (f/N)², so N × √2 halves the light). (Same concept, different names: full stop = whole stop.)</li>
+<li><strong>Third stop</strong> — most cameras change the aperture (and shutter time) in clicks of 1/3 of a stop, so three clicks make one full stop. Each click multiplies N by the cube root of √2, i.e. 2^(1/6) ≈ 1.12. Between f/8 and f/11 there are two in-between clicks, marked on the camera as f/9 and f/10.</li>
 <li><strong>Defocus / actual distance O</strong> — a point at O ≠ S focuses in front of or behind the sensor, so it lands as a disc instead of a point.</li>
 <li><strong>Circle of confusion (CoC) c</strong> — that blur disc's diameter on the sensor, measured as a length. (Same concept, different names: CoC = blur disc = bokeh disc when you look at its shape.)</li>
 <li><strong>Depth of field (DoF)</strong> — the range of O where c ≤ ε, a threshold usually given in pixels. Convert it to a length with the <strong>pixel pitch</strong> (centre-to-centre pixel spacing).</li>
 <li><strong>Hyperfocal distance H</strong> — the focus distance whose far DoF edge reaches ∞. Everything from H/2 to ∞ is then acceptably sharp.</li>
-<li><strong>Diffraction limit</strong> — even a perfect lens cannot make a spot smaller than about λN. (Same concept, different names: diffraction-limited spot ≈ Airy disk; Week 5 gives its radius as 1.22λN.)</li>
+<li><strong>Diffraction limit</strong> — even a perfect lens cannot make a spot smaller than about λN (λ = wavelength of light, N = f-number). (Same concept, different names: diffraction-limited spot ≈ Airy disk, the bright central blob a diffraction-blurred point forms; Week 5 gives its radius as 1.22λN.)</li>
 <li><strong>Bokeh</strong> — the look of out-of-focus blur. A defocused point becomes a copy of the aperture's shape.</li>
 </ul>
 <p><strong>Sensor</strong></p>
 <ul>
-<li><strong>Pixel</strong> — a photodiode (photon → electron via the photoelectric effect) plus a microlens and a colour filter. <strong>Quantum efficiency Qe</strong> = fraction of photons counted; <strong>fill factor</strong> = light-sensitive fraction of the pixel's area.</li>
-<li><strong>CCD vs CMOS</strong> — CCD shifts charge row by row to a few shared amplifiers (sensitive, low noise). CMOS has an amplifier in every pixel (fast, cheap).</li>
+<li><strong>Pixel</strong> — a photodiode (photon → electron via the photoelectric effect) plus a microlens (tiny lens that funnels light onto the photodiode) and a colour filter. <strong>Quantum efficiency Qe</strong> = fraction of photons counted; <strong>fill factor</strong> = light-sensitive fraction of the pixel's area.</li>
+<li><strong>CCD (charge-coupled device) vs CMOS (complementary metal-oxide-semiconductor) sensors</strong> — CCD shifts charge row by row to a few shared amplifiers (sensitive, low noise). CMOS has an amplifier in every pixel (fast, cheap).</li>
 <li><strong>Global vs rolling shutter</strong> — a global shutter exposes all rows together. A rolling shutter exposes rows one after another, which causes skew and flicker banding.</li>
-<li><strong>Noise sources</strong> — shot (Poisson, variance N), dark current (variance D·t), read (Nr² per readout), quantization (Δ²/12), fixed-pattern (not random; same every frame).</li>
-<li><strong>SNR</strong> — mean ÷ noise standard deviation. <strong>Dynamic range</strong> — brightest ÷ darkest signal the sensor can represent, capped by the noise floor or the bit depth (2^b levels), whichever is smaller.</li>
-<li><strong>&quot;Frequency&quot; / λ check:</strong> in this week, λ in pinhole and diffraction formulas is the <em>wavelength of light</em>. λ in the Poisson formula is the <em>mean count</em>. The 120 Hz lamp flicker is a <em>temporal</em> frequency.</li>
+<li><strong>Noise sources</strong> — shot (randomness in when photons arrive; Poisson statistics, where variance = mean, so variance N = mean electron count, not the f-number), dark current (electrons freed by heat even with no light; variance D·t, D = dark-current rate, not the aperture D), read (electronics noise added each time a pixel is read out; variance Nr² per readout), quantization (rounding to integer output levels; variance Δ²/12, Δ = step between levels), fixed-pattern (pixel-to-pixel differences; not random, same every frame).</li>
+<li><strong>SNR</strong> (signal-to-noise ratio) — mean ÷ noise standard deviation. <strong>Dynamic range</strong> — brightest ÷ darkest signal the sensor can represent, capped by the noise floor or the bit depth (2^b levels), whichever is smaller.</li>
+<li><strong>&quot;Frequency&quot; / λ check:</strong> in this week, λ in pinhole and diffraction formulas is the <em>wavelength of light</em>. λ as the Poisson mean (lecture notation, used in Week 4 E2) is the <em>mean count</em>, written N in this week's noise formulas. The 120 Hz lamp flicker is a <em>temporal</em> frequency.</li>
 </ul>
 <h3 id="week2-equations">Key equations</h3>
 <h4 class="eq-head" id="week2-e1"><span class="eq-num">E1</span> Optimal pinhole diameter</h4>
@@ -1073,7 +1075,7 @@ by hand:  d/(2f) = 1/√3, 1, √3  ⇒  FOV = 60°, 90°, 120° exactly;   narr
 <p><em>Use it when:</em> finding where to put the sensor, or the m that CoC and DoF need. <em>Gotcha:</em> compute S′ first, then m. Keep every length in one unit.</p>
 <h4 class="eq-head" id="week2-e4"><span class="eq-num">E4</span> F-number and stops</h4>
 <pre class="formula">N = f / D        stops = 2 · log₂(N₂ / N₁)        N_k = N₀ · 2^(k/2)
-by hand:  count steps along 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22 (each step = 1 stop);  third stops: × 2^(1/6) ≈ 1.12</pre>
+by hand:  count steps along 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22 (each step = 1 stop);  third stops (one click of a camera's aperture dial; three clicks = one full stop): N × (√2)^(1/3) = N × 2^(1/6) ≈ N × 1.12</pre>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -1283,7 +1285,7 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> landscape focusing, or checking whether a far focus distance already makes the far edge infinite (S ≥ H ⇒ O_far = ∞). <em>Gotcha:</em> this c is the threshold, not E5's variable c. The formula drops f next to H.</p>
+<p><em>Use it when:</em> landscape focusing, or checking whether a far focus distance already makes the far edge infinite (S ≥ H ⇒ O_far = ∞). <em>Gotcha:</em> this c is the threshold, not E5's variable c. This is the approximate form: the exact one is f²/(N·c) + f, and the + f is dropped because H ≫ f.</p>
 <h4 class="eq-head" id="week2-e8"><span class="eq-num">E8</span> Diffraction limit (Abbe)</h4>
 <pre class="formula">d = λ / (2·n·sinθ) = λ / (2·NA) ≈ λ·N</pre>
 <div class="tbl-wrap"><table>
@@ -1298,7 +1300,7 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 <tbody>
 <tr>
   <td>d</td>
-  <td>smallest resolvable spot</td>
+  <td>smallest resolvable spot (not E1's pinhole d or E2's sensor width d)</td>
   <td>µm</td>
   <td>result</td>
 </tr>
@@ -1334,7 +1336,7 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 </tr>
 </tbody>
 </table></div>
-<p><em>By hand:</em> NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). <em>Use it when:</em> comparing the best possible spot with the pixel pitch. Stopping down too far gives diffraction blur bigger than a pixel. <em>Gotcha:</em> the Airy-disk <em>diameter</em> to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.</p>
+<p><em>By hand:</em> NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). <em>Use it when:</em> comparing the best possible spot with the pixel pitch. Stopping down (raising N, i.e. shrinking the opening) too far gives diffraction blur bigger than a pixel. <em>Gotcha:</em> the Airy-disk <em>diameter</em> to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.</p>
 <h4 class="eq-head" id="week2-e9"><span class="eq-num">E9</span> Signal-to-noise ratio</h4>
 <pre class="formula">SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)        shot noise: σ = √N</pre>
 <div class="tbl-wrap"><table>
@@ -1379,13 +1381,13 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 </tr>
 <tr>
   <td>Nr</td>
-  <td>RMS read noise, paid once per readout</td>
-  <td>e⁻</td>
+  <td>RMS (root-mean-square, i.e. standard deviation) read noise, paid once per readout</td>
+  <td>e⁻ (electrons)</td>
   <td>sensor</td>
 </tr>
 <tr>
   <td>N</td>
-  <td>mean collected electrons (= P·Qe·t)</td>
+  <td>mean collected electrons (= P·Qe·t; not the f-number)</td>
   <td>e⁻</td>
   <td>result</td>
 </tr>
@@ -1424,9 +1426,9 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 </tr>
 <tr>
   <td>b</td>
-  <td>ADC bit depth</td>
+  <td>ADC (analog-to-digital converter: turns the pixel's voltage into an integer) bit depth</td>
   <td>bits</td>
-  <td>sensor / RAW format</td>
+  <td>sensor / RAW (unprocessed sensor data) format</td>
 </tr>
 <tr>
   <td>levels</td>
@@ -1441,20 +1443,20 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 <ol class="chain-list">
 <li>Pinhole shrinks → geometric blur ↓ but diffraction (fλ/d) ↑ and light ↓ (∝ d²) → <strong>so:</strong> there is one optimal d = 2√(fλ); smaller is not always sharper.</li>
 <li>Pinhole too dim → a lens bends many rays from a point back to one image point → bright <em>and</em> sharp, but only at one S for each S′ → <strong>so:</strong> a lens brings defocus (CoC) and the need to focus.</li>
-<li>N ↓ (wider D) → more light (∝ 1/N²) and a bigger CoC (c ∝ D) → shallower DoF → <strong>so:</strong> fast lenses give subject isolation and smooth bokeh, at the cost of a thin focus zone.</li>
+<li>N ↓ (wider D) → more light (∝ 1/N²) and a bigger CoC (c ∝ D) → shallower DoF → <strong>so:</strong> fast lenses (lenses with a small minimum N, which gather light quickly) give subject isolation and smooth bokeh, at the cost of a thin focus zone.</li>
 <li>N ↑ (stopping down) → deeper DoF, but diffraction spot ≈ λN grows → once λN exceeds the pixel pitch, the image softens everywhere → <strong>so:</strong> there is a sweet-spot aperture (resolution vs DoF trade).</li>
-<li>Focus distance S ↑ → k = Nε(S−f)/f² grows → DoF grows roughly as S², until k = 1 at S = H → <strong>so:</strong> far subjects are easy to get sharp; macro DoF is millimetres.</li>
-<li>Rolling shutter reads rows at different times → 120 Hz (temporal) lamp flicker is sampled at different phases per row → horizontal bands → <strong>so:</strong> a global shutter, or exposure times that are multiples of 1/120 s, avoid banding.</li>
+<li>Focus distance S ↑ → k = Nε(S−f)/f² grows → DoF grows roughly as S², until k = 1 at S = H → <strong>so:</strong> far subjects are easy to get sharp; macro (extreme close-up) DoF is millimetres.</li>
+<li>Rolling shutter reads rows at different times → 120 Hz (temporal) lamp flicker (60 Hz AC power, two brightness peaks per cycle) is sampled at different phases per row → horizontal bands → <strong>so:</strong> a global shutter, or exposure times that are multiples of 1/120 s, avoid banding.</li>
 <li>Shot noise variance = mean → SNR = √N → 4× the light gives only 2× the SNR; read noise is fixed per readout → <strong>so:</strong> dark scenes are read-noise-limited, which matters for burst vs single exposure (HW3).</li>
 </ol>
 <h3 id="week2-hw">HW tie-in</h3>
 <p><strong>HW1 Task 1 — Pinhole camera.</strong> They built a shoebox camera (white-paper screen 30 cm × 20 cm, pinhole-to-screen f = 19.5 cm) and tried 0.1, 3 and 5 mm pinholes with 15–60 s exposures. FOV from E2: <strong>75.1° horizontal, 54.3° vertical, 85.5° diagonal</strong> (diagonal = √(30² + 20²) cm). Optimal pinhole from E1 at λ = 550 nm: <strong>d ≈ 0.655 mm</strong> (≈ 0.622 mm with Wikipedia's 1.9 constant). Takeaway: 0.1 mm is diffraction-limited, 3–5 mm is geometric-blur-limited, and none of the drilled holes was optimal.</p>
 <p><strong>HW1 Task 2 — Photos.</strong> 9 photos. Images are inverted. A larger pinhole gave a brighter but blurrier image (light ∝ d², blur ≈ d). Some blur also came from the phone camera not being focused on the screen.</p>
-<p><strong>HW2 Task 1 — Depth of field.</strong> Canon 5D Mark II (36 × 24 mm, 5616 × 3744 px), EF 50 mm f/1.8; sharp means CoC ≤ <strong>5 px</strong>. Pixel pitch = √(36·24/(5616·3744)) = 0.00641 mm, so <strong>c = 5 × 0.00641 ≈ 0.032 mm</strong>. Method: E6 HW form with f = 50 mm (this matches the notes' k = ε/(mD), since both give identical numbers).</p>
+<p><strong>HW2 Task 1 — Depth of field.</strong> Canon 5D Mark II (36 × 24 mm, 5616 × 3744 px), EF 50 mm f/1.8 lens (EF = Canon's lens mount; 50 mm = focal length f, not the lens's width; f/1.8 = its widest aperture, smallest N); the 36 × 24 mm is the sensor size; sharp means CoC ≤ <strong>5 px</strong>. Pixel pitch = √(36·24/(5616·3744)) = 0.00641 mm, so <strong>c = 5 × 0.00641 ≈ 0.032 mm</strong>. Method: E6 HW form with f = 50 mm (this matches the notes' k = ε/(mD), since both give identical numbers).</p>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
-  <th>Setting</th>
+  <th>Setting (f-number @ focus distance S)</th>
   <th>Near</th>
   <th>Far</th>
   <th>DoF</th>
@@ -1503,20 +1505,20 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 (c) fλ = 0.1 m × 4×10⁻⁷ m = 4×10⁻⁸ m², so √(fλ) = 2×10⁻⁴ m and d = 2√(fλ) = <strong>4×10⁻⁴ m = 0.4 mm</strong>. blur ≈ d + fλ/d = 0.4 mm + (4×10⁻⁸)/(4×10⁻⁴) m = 0.4 + 0.1 = <strong>0.5 mm</strong> (= 5d/4). For comparison, a 1 mm hole gives 1 + 0.04 = 1.04 mm, and a 0.05 mm hole gives 0.05 + 0.8 = 0.85 mm.</p>
 </div></details></div>
 
-<div class="q" id="week2-q2"><div class="q-head"><span class="q-num">Q2</span><span class="chip calc">Calculation</span></div><p class="q-text">A 50 mm lens is focused on a person 1.8 m tall standing 2.55 m away. Find the sensor distance S′, the magnification m, and the person's image height. Does the person fit on a 36 × 24 mm sensor? How far must the lens move from its infinity-focus position?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week2-q2"><div class="q-head"><span class="q-num">Q2</span><span class="chip calc">Calculation</span></div><p class="q-text">A 50 mm lens (focal length f = 50 mm) is focused on a person 1.8 m tall standing 2.55 m away. Find the sensor distance S′, the magnification m, and the person's image height. Does the person fit on a 36 × 24 mm sensor? How far must the lens move from its infinity-focus position?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>S′ = fS/(S − f) = 50·2550/2500 = <strong>51 mm</strong>. m = S′/S = 51/2550 = <strong>1/50</strong> (check: (S′ − f)/f = 1/50). Image height = 1800/50 = <strong>36 mm</strong>. That is taller than the 24 mm sensor height, so the person only fits with the camera turned to portrait orientation (36 mm side vertical), and then exactly. At infinity focus S′ = f = 50 mm, so the lens moves out by <strong>1 mm</strong>.</p>
+<p>S′ = fS/(S − f) = 50·2550/2500 = <strong>51 mm</strong>. m = S′/S = 51/2550 = <strong>1/50</strong> (check: (S′ − f)/f = 1/50). Image height = 1800/50 = <strong>36 mm</strong>. That is taller than the 24 mm sensor height, so the person only fits with the camera turned to portrait orientation (36 mm side vertical), and then exactly. At infinity focus (subject infinitely far, so 1/S → 0 and the thin lens equation gives S′ = f), S′ = 50 mm. Focusing on the person needs S′ = 51 mm, so the lens moves out by <strong>1 mm</strong>.</p>
 </div></details></div>
 
-<div class="q" id="week2-q3"><div class="q-head"><span class="q-num">Q3</span><span class="chip calc">Calculation</span></div><p class="q-text">You go from f/2 to f/8 on a 50 mm lens. (a) Aperture diameters? (b) How many stops, and what light ratio? (c) If 1/1000 s was correct at f/2, what shutter time keeps the same brightness? (d) The next two third-stop f-numbers after f/8?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week2-q3"><div class="q-head"><span class="q-num">Q3</span><span class="chip calc">Calculation</span></div><p class="q-text">You go from f/2 to f/8 on a 50 mm lens (focal length f = 50 mm). (a) Aperture diameters? (b) How many stops, and what light ratio? (c) If 1/1000 s was correct at f/2, what shutter time keeps the same brightness? (d) The camera's aperture dial moves in third-stop clicks (1/3 of a stop each; three clicks = one full stop). Starting at f/8 and closing the aperture down (raising N), what f-numbers do the next two clicks show, before you reach the next full stop, f/11?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>(a) D = 50/2 = <strong>25 mm</strong>; 50/8 = <strong>6.25 mm</strong>.<br />
 (b) stops = 2·log₂(8/2) = 2·2 = <strong>4 stops less light</strong> (count: 2 → 2.8 → 4 → 5.6 → 8); ratio (8/2)² = <strong>16× less</strong>.<br />
 (c) Time × 16: 16/1000 s = 1/62.5 s ≈ <strong>1/60 s</strong> (the nominal 4-stop step 1/1000 → 1/500 → 1/250 → 1/125 → 1/60).<br />
-(d) 8 × 2^(1/6) ≈ 8 × 1.12 ≈ 9.0 → <strong>f/9</strong>; 8 × 2^(1/3) ≈ 8 × 1.26 ≈ 10.1 → <strong>f/10</strong>. The next full stop is f/11.</p>
+(d) One full stop multiplies N by √2 = 2^(1/2), so one third of a stop multiplies N by 2^(1/6) ≈ 1.12. First click: 8 × 2^(1/6) ≈ 8 × 1.12 ≈ 9.0 → <strong>f/9</strong>; second click: 8 × 2^(1/6) × 2^(1/6) = 8 × 2^(1/3) ≈ 8 × 1.26 ≈ 10.1 → <strong>f/10</strong>. The next full stop is f/11.</p>
 </div></details></div>
 
-<div class="q" id="week2-q4"><div class="q-head"><span class="q-num">Q4</span><span class="chip calc">Calculation</span></div><p class="q-text">A full-frame camera (36 × 24 mm, 7200 × 4800 px) has a 50 mm lens at f/8, focused at 2.55 m. Sharp means CoC ≤ 5 px. Find near, far, DoF, the compact-formula DoF, and the hyperfocal distance.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week2-q4"><div class="q-head"><span class="q-num">Q4</span><span class="chip calc">Calculation</span></div><p class="q-text">A full-frame camera (sensor 36 × 24 mm, the size of a 35 mm film frame; 7200 × 4800 px) has a 50 mm lens (focal length f = 50 mm) at f/8, focused at S = 2.55 m. Sharp means CoC ≤ 5 px. Find near, far, DoF, the compact-formula DoF, and the hyperfocal distance.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>Pitch = 36/7200 = 0.005 mm → ε = 5 × 0.005 = 0.025 mm. Use k = N·ε·(S − f)/f². Here N·ε = 8 × 0.025 = 0.2 mm, S − f = 2500 mm and f² = 2500 mm², so k = 0.2 × 2500/2500 = <strong>0.2</strong> (= 1/5).<br />
 O_near = S/(1 + k) = 2550/1.2 = <strong>2125 mm</strong>; O_far = S/(1 − k) = 2550/0.8 = <strong>3187.5 mm</strong>; DoF = <strong>1062.5 mm ≈ 1.06 m</strong>. The compact 2kS gives 2 × 0.2 × 2550 = 1020 mm, a slight underestimate. The edges are lopsided: 425 mm in front of S, 637.5 mm behind.<br />
@@ -1552,7 +1554,7 @@ H = f²/(Nε) = 2500/0.2 = <strong>12 500 mm = 12.5 m</strong> → focusing ther
 </tr>
 </tbody>
 </table></div>
-<p>λN = 4 µm at N = 4/0.5 = <strong>8</strong>. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the Airy diameter &gt; 2 px criterion instead, the limit is 1.22·N &gt; 8, i.e. N &gt; 8/1.22 ≈ <strong>f/6.6</strong>.</p>
+<p>λN = 4 µm at N = 4/0.5 = <strong>8</strong>. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the common rule that blur becomes visible once the Airy diameter exceeds 2 px, the limit is 1.22·N &gt; 8, i.e. N &gt; 8/1.22 ≈ <strong>f/6.6</strong>.</p>
 </div></details></div>
 
 <div class="q" id="week2-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">A pixel receives P = 2000 photons/s with Qe = 0.5, t = 0.1 s, dark current D = 50 e⁻/s and read noise Nr = 4 e⁻. (a) SNR, and in dB? (b) SNR at 4× the exposure time? (c) The sensor has a 16 384 e⁻ full well. Find its dynamic range in stops and dB. Does a 12-bit ADC limit it? A 10-bit one?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -1569,54 +1571,54 @@ H = f²/(Nε) = 2500/0.2 = <strong>12 500 mm = 12.5 m</strong> → focusing ther
 
 <div class="q" id="week2-q8"><div class="q-head"><span class="q-num">Q8</span><span class="chip concept">Conceptual</span></div><p class="q-text">Why is depth of field lopsided (more behind the subject than in front), and why does focusing at H give &quot;H/2 to ∞&quot;?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>c depends on |1 − S/O|, a reciprocal. Behind S, c rises toward a finite ceiling m·D. In front of S, it blows up as O → 0. So the threshold crossings O = S/(1 ± k) are asymmetric. At S = H, the ceiling m·D equals ε, i.e. k = 1, so O_far = S/0 = ∞ and O_near = H/(1+1) = H/2.</p>
+<p>Rewrite E5 as c = m·D·|1 − S/O|: c depends on 1/O. Behind S, c rises toward a finite ceiling m·D. In front of S, it blows up as O → 0. So the threshold crossings O = S/(1 ± k) are asymmetric. At S = H, the ceiling m·D equals ε, i.e. k = 1, so O_far = S/0 = ∞ and O_near = H/(1+1) = H/2.</p>
 </div></details></div>
 
-<div class="q" id="week2-q9"><div class="q-head"><span class="q-num">Q9</span><span class="chip concept">Conceptual</span></div><p class="q-text">Under 60 Hz mains lighting, a phone video shows horizontal dark bands but a global-shutter machine-vision camera does not. Why? And CCD vs CMOS: which one is usually rolling-shutter, and why?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week2-q9"><div class="q-head"><span class="q-num">Q9</span><span class="chip concept">Conceptual</span></div><p class="q-text">Under lighting powered by 60 Hz AC household (&quot;mains&quot;) electricity, a phone video shows horizontal dark bands but a global-shutter machine-vision camera does not. Why? And CCD vs CMOS: which one is usually rolling-shutter, and why?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>Lamps flicker at 120 Hz (temporal frequency: twice per AC cycle). A rolling shutter exposes rows at successive times, so each row catches a different flicker phase, which shows up as bands. A global shutter exposes all rows together, so the whole frame is uniformly brighter or darker with no bands. Most phone sensors are CMOS, reading rows out one at a time through per-pixel amplifiers. A global shutter needs extra per-pixel storage circuitry, which costs area and money.</p>
 </div></details></div>
 
 <div class="q" id="week2-q10"><div class="q-head"><span class="q-num">Q10</span><span class="chip concept">Conceptual</span></div><p class="q-text">Which noise sources average down when you combine several frames, which can be subtracted, and why does doubling exposure improve SNR by only about √2 in bright light?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>Shot, dark-current, read and quantization noise are fresh random draws each frame, so they average down. Fixed-pattern noise is the same every frame, so it doesn't average down; it can be calibrated out instead. The <em>mean</em> dark current can be subtracted with a dark frame, but its randomness cannot. In bright light shot noise dominates: it is Poisson, so σ = √N, and SNR = N/√N = √N. Doubling t doubles N, which raises SNR by √2.</p>
+<p>Shot, dark-current, read and quantization noise are fresh random draws each frame, so they average down. Fixed-pattern noise is the same every frame, so it doesn't average down; it can be calibrated out instead. The <em>mean</em> dark current can be subtracted with a dark frame (a shot taken with the lens capped), but its randomness cannot. In bright light shot noise dominates: it is Poisson, so σ = √N, and SNR = N/√N = √N. Doubling t doubles N, which raises SNR by √2.</p>
 </div></details></div>
 
 <aside class="callout summary"><div class="label">Summary</div><ul>
 <li>Image formation: a pinhole trades blur against diffraction (optimum d = 2√(fλ)). A lens fixes the light problem but brings focus: 1/S + 1/S′ = 1/f, m = S′/S, FOV = 2·arctan(d/2f).</li>
 <li>One knob, N = f/D, drives exposure (1/N², √2 per stop), CoC/DoF (k = ε/(mD), O = S/(1 ± k), H = f²/(Nc)) and diffraction (≈ λN).</li>
 <li>Always convert pixel thresholds to lengths with the pixel pitch, and compute S′ before m. HW2's official numbers used 1 px instead of 5 px.</li>
-<li>Sensor: photons → electrons → gain → ADC. SNR = signal/√(shot + dark + read variances). Dynamic range is capped by the noise floor or the bit depth.</li>
-<li>Sets up Week 3 (RAW → colour image via the ISP pipeline) and Week 4 (exposure, HDR, burst SNR).</li>
+<li>Sensor: photons → electrons → gain (amplification) → ADC. SNR = signal/√(shot + dark + read variances). Dynamic range is capped by the noise floor or the bit depth.</li>
+<li>Sets up Week 3 (RAW → colour image via the ISP, image signal processing, pipeline) and Week 4 (exposure, HDR, burst SNR).</li>
 </ul></aside>
 </section><section class="week" id="week3"><div class="eyebrow">Week 3 · 10 practice questions</div><h2>Color Science &amp; the Camera ISP</h2><p class="scope"><span class="scope-label">Scope</span> SSF and tristimulus (LMS) color, CIE color matching, CIE RGB vs XYZ, xy chromaticity, gamuts; the ISP pipeline (RAW → demosaic → denoise → gamut map → gamma → JPEG), image frequency and edges, Gaussian/median smoothing, MSE/PSNR, bilinear, chroma-filtered and Malvar–He–Cutler demosaicking, bilateral filter, non-local means, unsharp masking, gamut mapping, JPEG. Tested by HW2 Task 2 (simple ISP) and HW2 Task 3 (denoising).</p>
 <h3 id="week3-concepts">Key concepts</h3>
 <p><strong>Color</strong></p>
 <ul>
-<li><strong>Spectral sensitivity function (SSF), f(λ)</strong> — a sensor's response per wavelength. It turns a whole spectrum into one number.</li>
+<li><strong>Spectral sensitivity function (SSF), f(λ)</strong> — a sensor's response per wavelength λ (here λ = wavelength of light, and f is a function name, not focal length or frequency). It turns a whole spectrum into one number.</li>
 <li><strong>Spectral power distribution (SPD), Φ(λ)</strong> — the light's power per wavelength. It belongs to the scene, not to the sensor.</li>
-<li><strong>Tristimulus / LMS (= SML) space</strong> — three cone readings form a point in 3D. All real light falls inside a convex cone in the positive octant. Its cross-section is the &quot;horseshoe&quot;, traced by the spectral &quot;lasso curve&quot;.</li>
+<li><strong>Tristimulus / LMS (= SML) space</strong> — three cone readings form a point in 3D. All real light falls inside a convex cone (a geometric cone shape, unrelated to the eye's cone cells) in the positive octant (the region where all three readings are ≥ 0). Its cross-section is the &quot;horseshoe&quot;, traced by the spectral &quot;lasso curve&quot; (the path of the pure single-wavelength colors; L, M, S = long-, medium-, short-wavelength cones).</li>
 <li><strong>Metamers</strong> — different spectra that give the same three readings. This happens because spectrum → 3 numbers is many-to-one.</li>
-<li><strong>Color matching functions (CMFs)</strong> — how much of each of three primaries matches each pure wavelength. A negative value means that primary was added to the test side. The <strong>standard observer</strong> is the averaged set of CMFs.</li>
-<li><strong>CIE RGB vs CIE XYZ</strong> — CIE RGB uses real primaries but some colors need negative coordinates. CIE XYZ gives every real color non-negative coordinates but uses imaginary primaries. No basis can have both.</li>
+<li><strong>Color matching functions (CMFs)</strong> — how much of each of three primaries (fixed reference lights that get mixed) is needed to match each pure wavelength. A negative value means that primary was added to the test side (in the matching experiment, a viewer adjusts a primary mix on one side to match a test light on the other; a primary that can only help by being added to the test light counts as negative). The <strong>standard observer</strong> is the averaged set of CMFs.</li>
+<li><strong>CIE RGB vs CIE XYZ</strong> — CIE RGB uses real primaries but some colors need negative coordinates. CIE XYZ gives every real color non-negative coordinates but uses imaginary primaries (lights that cannot physically exist). No basis can have both.</li>
 <li><strong>Y = luminance</strong> — Y's matching function is the eye's brightness curve V(λ), so Y carries brightness.</li>
 <li><strong>Chromaticity (x, y)</strong> — XYZ with brightness divided out. It is a projection onto the plane X+Y+Z = 1.</li>
-<li><strong>Gamut</strong> — the colors a device can make. Three real primaries give a triangle in xy. A color is out of gamut when at least one barycentric weight (equivalently, one linear RGB value) is negative.</li>
-<li><strong>RGB numbers mean nothing without their primaries</strong> — (1,0,0) in sRGB and (1,0,0) in Display P3 are different colors.</li>
+<li><strong>Gamut</strong> — the colors a device can make. Three real primaries give a triangle in xy. A color is out of gamut when at least one barycentric weight (the mixing weight of a primary, with the three weights summing to 1) (equivalently, one linear RGB value) is negative.</li>
+<li><strong>RGB numbers mean nothing without their primaries</strong> — (1,0,0) in sRGB (the standard color space of most monitors and the web) and (1,0,0) in Display P3 (a wider-gamut space used on newer displays) are different colors.</li>
 </ul>
 <p><strong>Pipeline</strong></p>
 <ul>
-<li><strong>ISP (image signal processing) pipeline</strong> — RAW Bayer mosaic → demosaicking → denoising → gamut mapping → gamma → compression → JPEG. A real camera also does black-level subtraction, white balance (per-channel gains that make gray come out R = G = B) and dead-pixel fixes.</li>
-<li><strong>Gamma encoding</strong> — stores linear light as I^(1/2.2) so the 8-bit codes are evenly spaced in <em>perceived</em> brightness. The display decodes with ^2.2, so the chain as a whole stays linear. Linear ops (demosaicking, color matrices) belong <em>before</em> gamma.</li>
+<li><strong>ISP (image signal processing) pipeline</strong> — RAW (the sensor's unprocessed, linear values, one color per pixel) Bayer mosaic → demosaicking → denoising → gamut mapping → gamma → compression → JPEG. A real camera also does black-level subtraction (removing the nonzero value a pixel reads in total darkness), white balance (per-channel gains that make gray come out R = G = B) and dead-pixel fixes.</li>
+<li><strong>Gamma encoding</strong> — stores linear light as I^(1/2.2) so the 8-bit codes (the 256 stored integers 0–255; 2.2 is the &quot;gamma&quot; exponent γ) are evenly spaced in <em>perceived</em> brightness. The display decodes with ^2.2, so the chain as a whole stays linear. Linear ops (demosaicking, color matrices) belong <em>before</em> gamma.</li>
 <li><strong>Image frequency</strong> — &quot;frequency&quot; in Part 2 always means image frequency (spatial frequency measured in cycles/pixel), never the frequency of light. Red light has a <em>low</em> light frequency, but &quot;high-frequency red content&quot; means fine detail in the red channel. Temporal frequency (Hz) is not used this week.</li>
 <li><strong>Edges/texture = high image frequency; shading = low.</strong> A blur (low-pass filter) widens edges. Perceived sharpness lives in <strong>luminance</strong>, not chroma.</li>
-<li><strong>Aliasing / moiré (= false color)</strong> — red and blue sit on every 2nd column, so they can only represent up to 0.25 cycles/px. Finer detail folds back to a lower frequency. The <strong>OLPF (= optical anti-aliasing filter)</strong> pre-blurs the light optically to prevent this, at the cost of resolution.</li>
-<li><strong>Demosaicking (= demosaicing)</strong> — estimates the 2 missing channels at every pixel. <em>Bilinear (= naive / linear)</em> interpolation fills each channel independently, which causes zipper artifacts and colored fringes. <em>Chroma low-pass</em> converts to Y′CbCr and median-filters only Cb and Cr. <em>MHC</em> adds a cross-channel Laplacian correction and is still linear.</li>
-<li><strong>Y′CbCr</strong> — Y′ is luma (brightness). Cb and Cr are the blue-difference and red-difference chroma channels, with 128 meaning &quot;no color&quot;. Demosaicking errors are disagreements between channels, so they land mostly in Cb and Cr.</li>
-<li><strong>Denoising families</strong> — a Gaussian filter (linear, weights by spatial distance only), a median filter (nonlinear, robust to outliers), a <strong>bilateral filter</strong> (space × intensity weights, edge-aware, nonlinear), and <strong>non-local means (NLM)</strong> (weights by patch similarity across a search window, uses self-similarity). Spatial σ = σ_s; intensity σ_i = range σ_r.</li>
-<li><strong>Unsharp masking</strong> — sharpening: add back k × (I − blur(I)). A Gaussian blur gives halos at edges; a bilateral blur avoids them.</li>
+<li><strong>Aliasing / moiré (= false color)</strong> — red and blue sit on every 2nd column, so they can only represent up to 0.25 cycles/px (half of their 0.5 samples/px sampling rate, the Nyquist limit). Finer detail folds back to a lower frequency. The <strong>OLPF (optical low-pass filter; Same concept, different names: OLPF = optical anti-aliasing filter)</strong> pre-blurs the light optically to prevent this, at the cost of resolution.</li>
+<li><strong>Demosaicking (= demosaicing)</strong> — estimates the 2 missing channels at every pixel. <em>Bilinear (= naive / linear)</em> interpolation fills each channel independently, which causes zipper artifacts (alternating light/dark pixels along edges) and colored fringes. <em>Chroma low-pass</em> converts to Y′CbCr and median-filters only Cb and Cr. <em>MHC</em> (Malvar–He–Cutler) adds a cross-channel Laplacian (curvature: a sample minus the average of its neighbors) correction and is still linear.</li>
+<li><strong>Y′CbCr</strong> — Y′ is luma (brightness computed from gamma-encoded values; the prime ′ marks &quot;gamma-encoded&quot;, unlike linear luminance Y). Cb and Cr are the blue-difference and red-difference chroma channels, with 128 meaning &quot;no color&quot;. Demosaicking errors are disagreements between channels, so they land mostly in Cb and Cr.</li>
+<li><strong>Denoising families</strong> — a Gaussian filter (linear, weights by spatial distance only), a median filter (nonlinear, robust to outliers), a <strong>bilateral filter</strong> (space × intensity weights, edge-aware, nonlinear), and <strong>non-local means (NLM)</strong> (weights by patch similarity across a search window, uses self-similarity). Same concept, different names: spatial σ = σ_s; intensity σ_i = range σ_r (&quot;range&quot; here means the span of pixel values, not distance as in LiDAR range).</li>
+<li><strong>Unsharp masking</strong> — sharpening: add back k × (I − blur(I)), k = sharpening strength. A Gaussian blur gives halos (bright/dark fringes along edges) at edges; a bilateral blur avoids them.</li>
 <li><strong>Gamut mapping</strong> — camera RGB → XYZ (a calibrated 3×3 matrix C) → linear sRGB (a standard matrix). Out-of-gamut colors are then clipped (shifts hue, merges detail) or compressed (desaturates smoothly).</li>
-<li><strong>JPEG</strong> — Y′CbCr → chroma subsampling (4:4:4 / 4:2:2 / 4:2:0) → 8×8 DCT → quantization → lossless entropy coding. Information is lost only at subsampling and quantization.</li>
+<li><strong>JPEG</strong> — Y′CbCr → chroma subsampling (storing Cb/Cr at lower resolution: 4:4:4 = none, 4:2:2 = half horizontally, 4:2:0 = half in both directions) → 8×8 DCT (discrete cosine transform: a Fourier-like split of each block into frequency components) → quantization (rounding those components coarsely; not the ADC's quantization) → lossless entropy coding (packing the result into fewer bits). Information is lost only at subsampling and quantization.</li>
 </ul>
 <h3 id="week3-equations">Key equations</h3>
 <h4 class="eq-head" id="week3-e1"><span class="eq-num">E1</span> SSF response integral</h4>
@@ -1731,10 +1733,10 @@ C_sRGB = (1 + α) · C_lin^(1/2.4) − α    otherwise,  α = 0.055</pre>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> converting between linear and display values (HW2 applies <code>x^(1/2.2)</code> before PSNR). <em>Gotcha:</em> the two curves differ by about 1 code at mid-gray (0.18 → 117 vs 118). <em>By hand:</em> x^(1/2.2) cannot be done without a calculator, so estimate with γ = 2 (encode = √x, decode = x²). That gives slightly darker codes than true 2.2 (√0.25 → code 128 vs 136 with 2.2). Below the 0.0031308 threshold, exact sRGB is just ×12.92.</p>
+<p><em>Use it when:</em> converting between linear and display values (HW2 applies <code>x^(1/2.2)</code> before PSNR). <em>Gotcha:</em> the two curves differ by about 1 code at mid-gray (linear mid-gray 0.18 → 8-bit code 117 vs 118). <em>By hand:</em> x^(1/2.2) cannot be done without a calculator, so estimate with γ = 2 (encode = √x, decode = x²). That gives slightly darker codes than true 2.2 (√0.25 → code 128 vs 136 with 2.2). Below the 0.0031308 threshold, exact sRGB is just ×12.92.</p>
 <h4 class="eq-head" id="week3-e4"><span class="eq-num">E4</span> Weighted-average smoothing and Gaussian weight</h4>
 <pre class="formula">i_denoised(x) = (1 / Σ_{x'} w(x,x')) · Σ_{x'} w(x,x') · i_noisy(x')
-Gaussian:  w(x,x') = exp(−|x − x'|² / (2σ²))     H(f) = exp(−f² / (2σ_f²)),  σ_f = 1/(2πσ)</pre>
+Gaussian:  w(x,x') = exp(−|x − x'|² / (2σ²))     H(f) = exp(−f² / (2σ_f²)),  σ_f = 1/(2πσ)   (a Gaussian's Fourier transform is a Gaussian of reciprocal width; this H is a frequency response, not Week 2's hyperfocal H or Week 4's exposure H)</pre>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -1789,7 +1791,7 @@ Gaussian:  w(x,x') = exp(−|x − x'|² / (2σ²))     H(f) = exp(−f² / (2σ
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> building any kernel. <em>Gotcha:</em> larger σ → narrower σ_f → lower cutoff → more blur. A neighbor at distance σ gets e^(−1/2) ≈ 0.607 of the center weight. <em>By hand:</em> keep the weights as e^(−fraction), add exponents when weights multiply, and normalize at the end. The binomial kernel [1/4, 1/2, 1/4] is a calculator-free stand-in for a small Gaussian (σ² = 1/2).</p>
+<p><em>Use it when:</em> building any kernel. <em>Gotcha:</em> larger σ → narrower σ_f → lower cutoff → more blur. A neighbor at distance σ gets e^(−1/2) ≈ 0.607 of the center weight. <em>By hand:</em> keep the weights as e^(−fraction), add exponents when weights multiply, and normalize at the end. The binomial kernel [1/4, 1/2, 1/4] is a calculator-free stand-in for a small Gaussian (σ² = 1/2, its variance: ¼·1² + ¼·1²).</p>
 <h4 class="eq-head" id="week3-e5"><span class="eq-num">E5</span> MSE and PSNR</h4>
 <pre class="formula">MSE  = (1 / (3·m·n)) · Σ_i Σ_j Σ_c [I_est(i,j,c) − I_gt(i,j,c)]²
 PSNR = 10 · log₁₀( max(I_gt)² / MSE )      ⇔   MSE = max² · 10^(−PSNR/10)</pre>
@@ -1839,7 +1841,7 @@ PSNR = 10 · log₁₀( max(I_gt)² / MSE )      ⇔   MSE = max² · 10^(−PSN
 <h4 class="eq-head" id="week3-e6"><span class="eq-num">E6</span> Bilinear and Malvar–He–Cutler demosaicking</h4>
 <pre class="formula">ĝ_lin(x,y) = ¼ · Σ g(x+m, y+n),   (m,n) ∈ {(0,±1), (±1,0)}
 ĝ(x,y) = ĝ_lin(x,y) + α·D_R(x,y),   D_R(x,y) = r(x,y) − ¼ · Σ r(x+m, y+n),  (m,n) ∈ {(0,±2), (±2,0)}
-r̂ = r̂_lin + β·D_G (R at G),   r̂ = r̂_lin + γ·D_B (R at B);   α = 1/2, β = 5/8, γ = 3/4</pre>
+r̂ = r̂_lin + β·D_G (R at G),   r̂ = r̂_lin + γ·D_B (R at B);   α = 1/2, β = 5/8, γ = 3/4  (MHC gains, unrelated to the gamma exponent γ or sRGB's α in E3)</pre>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -1888,7 +1890,7 @@ r̂ = r̂_lin + β·D_G (R at G),   r̂ = r̂_lin + γ·D_B (R at B);   α = 1/2
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> filling Bayer gaps. In bilinear, R and B at a G pixel use the mean of 2 neighbors (horizontal or vertical); R at a B pixel (or B at R) uses the mean of 4 diagonals. <em>Gotcha:</em> this D is a gradient term, unrelated to Week 2's aperture D. MHC's G-at-R kernel is (4·center + 2·Σcross − Σouter-cross)/8.</p>
+<p><em>Use it when:</em> filling Bayer gaps. In bilinear, R and B at a G pixel use the mean of 2 neighbors (horizontal or vertical); R at a B pixel (or B at R) uses the mean of 4 diagonals. <em>Gotcha:</em> this D is a gradient term, unrelated to Week 2's aperture D. MHC's G-at-R kernel is (4·center + 2·Σcross − Σouter-cross)/8, where cross = the 4 G neighbors 1 px away and outer-cross = the 4 R samples 2 px away.</p>
 <h4 class="eq-head" id="week3-e7"><span class="eq-num">E7</span> Bilateral filter weight</h4>
 <pre class="formula">w(x,x') = exp(−|x − x'|² / (2σ²)) · exp(−|i_noisy(x') − i_noisy(x)|² / (2σ_i²))</pre>
 <div class="tbl-wrap"><table>
@@ -2063,9 +2065,9 @@ HW2 form:  w(i,j) = (1/Z(i)) · exp(−Σ_{m,n} k_mn (v(N_i)_mn − v(N_j)_mn)²
 <li>Gaussian blur crosses edges → detail layer contains the edges → unsharp mask amplifies them → so: halos. A bilateral blur keeps edges out of the detail layer.</li>
 </ol>
 <h3 id="week3-hw">HW tie-in</h3>
-<p><strong>HW2 Task 2 — Simple ISP.</strong> Input: the noisy lighthouse RAW (RGGB, σ = 0.01). (1) Bilinear demosaic: G at R/B = mean of the 4 cross neighbors; R/B at G = mean of the 2 horizontal or vertical neighbors; R at B and B at R = mean of the 4 diagonals. Then gamma x^(1/2.2) → <strong>27.15 dB</strong>. (2) Convert to Y′CbCr, apply a 9×9 median to Cb and Cr only (Y′ untouched), convert back → <strong>30.23 dB</strong>. (3) MHC 5×5 kernels /8 → <strong>28.66 dB</strong>. Ranking: bilinear 27.15 &lt; MHC 28.66 &lt; bilinear + chroma median 30.23. Takeaway: the fence's false color (zipper/moiré) is high-image-frequency <em>chroma</em> error, so removing it in Cb/Cr beats MHC's sharper but still per-pixel linear estimate. (MHC's gain over bilinear is +1.51 dB ≈ 1.42× lower MSE. The chroma median's gain is +3.08 dB ≈ 2.03× lower MSE.)</p>
+<p><strong>HW2 Task 2 — Simple ISP.</strong> Input: the noisy lighthouse RAW (RGGB, noise standard deviation σ = 0.01 on [0,1] intensities). (1) Bilinear demosaic: G at R/B = mean of the 4 cross neighbors; R/B at G = mean of the 2 horizontal or vertical neighbors; R at B and B at R = mean of the 4 diagonals. Then gamma x^(1/2.2) → <strong>27.15 dB</strong>. (2) Convert to Y′CbCr, apply a 9×9 median to Cb and Cr only (Y′ untouched), convert back → <strong>30.23 dB</strong>. (3) MHC 5×5 kernels /8 → <strong>28.66 dB</strong>. Ranking: bilinear 27.15 &lt; MHC 28.66 &lt; bilinear + chroma median 30.23. Takeaway: the fence's false color (zipper/moiré) is high-image-frequency <em>chroma</em> error, so removing it in Cb/Cr beats MHC's sharper but still per-pixel linear estimate. (MHC's gain over bilinear is +1.51 dB ≈ 1.42× lower MSE. The chroma median's gain is +3.08 dB ≈ 2.03× lower MSE.)</p>
 <aside class="callout warn"><div class="label">⚠ Correction</div><p>the solution code median-filtered Cb/Cr of the <em>gamma-corrected</em> image, not the linear demosaicked image the method describes. The method is conceptually the same, but the 30.23 dB comes from that variant. Also note that <code>scipy.interpolate.interp2d</code> (suggested by the HW) was removed in SciPy 1.14.</p></aside>
-<p><strong>HW2 Task 3 — Denoising.</strong> Input: the night image with noise σ = 0.0781. Methods: Gaussian (σ = 0.5, 1, 1.5), median (sizes 2, 3, 4), bilateral (w = spatial Gaussian × exp(−(I − I_c)²/(2σ_i²)), normalized, σ_i = 0.25 or 0.5), NLM (11×11 search window, Gaussian-weighted patch distance, h = 0.1; the center pixel is excluded and then re-added with the largest neighbor weight). No PSNRs were reported. Takeaway: Gaussian blurs edges; median handles outliers; bilateral keeps edges where the intensity step ≫ σ_i; NLM averages similar patches from anywhere.</p>
+<p><strong>HW2 Task 3 — Denoising.</strong> Input: the night image with noise σ = 0.0781. Methods: Gaussian (filter width σ = 0.5, 1, 1.5 px), median (window sizes 2, 3, 4 px), bilateral (w = spatial Gaussian × exp(−(I − I_c)²/(2σ_i²)), normalized, σ_i = 0.25 or 0.5), NLM (11×11 search window, Gaussian-weighted patch distance, h = 0.1; the center pixel is excluded and then re-added with the largest neighbor weight). No PSNRs were reported. Takeaway: Gaussian blurs edges; median handles outliers; bilateral keeps edges where the intensity step ≫ σ_i; NLM averages similar patches from anywhere.</p>
 <aside class="callout warn"><div class="label">⚠ Correction</div><p>two code quirks. (a) The bilateral window radius was int(σ), so σ = 0.5 gives a 1×1 window and the filter does nothing. (b) The NLM patch radius was 0, so it compares single pixels rather than patches, which throws away NLM's noise-robust patch comparison. Learn the concepts, not those settings.</p></aside>
 <div class="practice-head"><h3 id="week3-practice">Practice questions</h3><button type="button" class="reveal-week" id="reveal-week3" data-week="week3">Show all answers</button></div>
 <div class="q" id="week3-q1"><div class="q-head"><span class="q-num">Q1</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) A reconstruction on [0,1] data has MSE = 0.0004. What is its PSNR? (b) An 8-bit image scores 30 dB. What are its MSE and RMS error in code values? (c) Method B scores 3 dB higher than method A. By what factor is its MSE lower?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -2099,7 +2101,7 @@ B 0.16   G 0.42   B 0.28</pre>
 <p>(a) Sum = 0.80 → x = 0.25/0.80 = <strong>5/16 = 0.3125</strong>, y = 0.40/0.80 = <strong>1/2</strong> (z = 3/16).<br />
 (b) It is the same color at 2× brightness → <strong>(5/16, 1/2)</strong>.<br />
 (c) First color, rounded rows: R ≈ 3.2·0.25 − 1.5·0.40 − 0.5·0.15 = 0.8 − 0.6 − 0.075 = 0.125; G ≈ −0.25 + 1.9·0.40 + 0.04·0.15 ≈ 0.52; B ≈ 0.06·0.25 − 0.2·0.40 + 1.06·0.15 ≈ 0.09. All are in [0,1] → <strong>inside</strong> (full precision: 0.12, 0.51, 0.09).<br />
-Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.05 = <strong>−0.46</strong> &lt; 0 → <strong>out of gamut</strong>, without needing G or B (full precision: R = −0.48, G = 1.12 &gt; 1, B = −0.03). Its xy = (0.20, 0.70) lies beyond sRGB's green corner at (0.30, 0.60).</p>
+Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.05 = <strong>−0.46</strong> &lt; 0 → <strong>out of gamut</strong>, without needing G or B (full precision: R = −0.48, G = 1.12 &gt; 1, B = −0.03). Its xy = (0.20, 0.70) lies beyond sRGB's green corner (the xy of sRGB's green primary) at (0.30, 0.60).</p>
 </div></details></div>
 
 <div class="q" id="week3-q5"><div class="q-head"><span class="q-num">Q5</span><span class="chip calc">Calculation</span></div><p class="q-text">Bilateral filter with σ = 2 px and σ_i = 0.2. A neighbor sits diagonally at offset (1, 1). (a) Find its weight when its intensity differs from the center's by 0.1, and (b) when it differs by 0.5 (across an edge). (c) NLM with h = 0.1: the target patch is [0.20, 0.30, 0.25] and the candidate patch is [0.20, 0.30, 0.45]. Find the unnormalized weight using the plain squared distance and using k = [0.25, 0.5, 0.25]. Keep the answers as powers of e, then estimate.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -2110,7 +2112,7 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 (c) Squared differences: 0, 0, 0.2² = 0.04. Plain: sum 0.04, h² = 0.01 → e^(−4) ≈ <strong>0.018</strong>. Weighted: 0.25 × 0.04 = 0.01 → e^(−1) ≈ <strong>0.37</strong>. The k-weighting forgives a mismatch at the patch edge. (Both are normalized by Z(i) afterwards.)</p>
 </div></details></div>
 
-<div class="q" id="week3-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) Write the normalized 3-tap Gaussian kernel for σ = 1 px in exact form, then estimate it. (b) Unsharp-mask the 1D edge [0.3, 0.3, 0.3, 0.7, 0.7, 0.7] with k = 1.5, using the binomial blur [1/4, 1/2, 1/4] (replicate the borders).</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week3-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) Write the normalized 3-tap Gaussian kernel for σ = 1 px in exact form, then estimate it. (b) Unsharp-mask the 1D edge [0.3, 0.3, 0.3, 0.7, 0.7, 0.7] with k = 1.5, using the binomial blur [1/4, 1/2, 1/4] (replicate the borders: pad by repeating the edge values).</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>(a) Raw weights [e^(−1/2), 1, e^(−1/2)], so the kernel is <strong>[e^(−1/2), 1, e^(−1/2)] / (1 + 2e^(−1/2))</strong>. With e^(−1/2) ≈ 0.61, the sum is ≈ 2.22, giving ≈ <strong>[0.27, 0.45, 0.27]</strong>.<br />
 (b) The blur changes only the two edge pixels: 0.3 + ¼·0.4 = 0.4 and 0.7 − ¼·0.4 = 0.6. The detail layer I − blur is −0.1 and +0.1 there. Sharpened = I + 1.5·detail → <strong>[0.3, 0.3, 0.15, 0.85, 0.7, 0.7]</strong>. The undershoot and overshoot (the halo) make the edge contrast 0.7 instead of 0.4.</p>
@@ -2133,7 +2135,7 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 
 <div class="q" id="week3-q10"><div class="q-head"><span class="q-num">Q10</span><span class="chip concept">Conceptual</span></div><p class="q-text">A classmate says: &quot;Red has the lowest frequency of visible light, so the red channel can't show high-frequency aliasing.&quot; Correct them. What does a 0.35 cycles/px stripe pattern look like in the red channel?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>They are mixing up <em>light</em> frequency (wavelength, which determines color) with <em>image</em> frequency (cycles/px across the sensor). Red pixels sample every 2nd column (0.5 samples/px), so red's limit is 0.25 cycles/px. A 0.35 cycles/px pattern folds back to |0.35 − 0.5| = <strong>0.15 cycles/px</strong> (period 1/0.15 = 20/3 ≈ 6.7 px instead of 1/0.35 = 20/7 ≈ 2.9 px). Green still reports the true stripes, so the channels disagree, and that shows up as false color (moiré).</p>
+<p>They are mixing up <em>light</em> frequency (wavelength, which determines color) with <em>image</em> frequency (cycles/px across the sensor). Red pixels sample every 2nd column (0.5 samples/px), so red's limit is 0.25 cycles/px. A 0.35 cycles/px pattern folds back to |0.35 − 0.5| (an above-limit frequency reflects to |f − sampling rate|) = <strong>0.15 cycles/px</strong> (period 1/0.15 = 20/3 ≈ 6.7 px instead of 1/0.35 = 20/7 ≈ 2.9 px). Green still reports the true stripes, so the channels disagree, and that shows up as false color (moiré).</p>
 </div></details></div>
 
 <aside class="callout summary"><div class="label">Summary</div><ul>
@@ -2147,10 +2149,10 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 <h3 id="week4-concepts">Key concepts</h3>
 <p><strong>Exposure and noise</strong></p>
 <ul>
-<li><strong>Exposure (strict)</strong> — <em>H</em> = light energy per unit sensor area (lux·s). The loose sense, &quot;how bright the photo looks&quot;, also folds in ISO gain. Keep the two apart.</li>
+<li><strong>Exposure (strict)</strong> — <em>H</em> = light energy per unit sensor area (lux·s; lux = light power per area, weighted by the eye's sensitivity). The loose sense, &quot;how bright the photo looks&quot;, also folds in ISO gain. Keep the two apart.</li>
 <li><strong>Exposure time</strong> — how long the sensor collects light. (Same concept, different names: exposure time = shutter speed = shutter time = integration time, the ToF camera term.)</li>
-<li><strong>Stop</strong> — a factor of 2 in light. <strong>EV</strong> (exposure value) labels a whole family of equivalent (<em>N</em>, <em>t</em>) pairs; 1 EV = 1 stop.</li>
-<li><strong>ISO</strong> — analog gain applied before the ADC. It scales the recorded value but does <strong>not</strong> change <em>H</em>, and it amplifies noise along with signal. (ISO = gain = film speed.)</li>
+<li><strong>Stop</strong> — a factor of 2 in light. <strong>EV</strong> (exposure value) labels a whole family of equivalent (f-number <em>N</em>, exposure time <em>t</em>) pairs, EV = log₂(N²/t), so a higher EV means less light admitted (unlike Week 1's &quot;+1 EV&quot; compensation, which means one stop more light); 1 EV = 1 stop.</li>
+<li><strong>ISO</strong> — analog gain applied before the ADC (analog-to-digital converter: turns each pixel's voltage into an integer). It scales the recorded value but does <strong>not</strong> change <em>H</em>, and it amplifies noise along with signal. (Same concept, different names: ISO = gain = film speed.)</li>
 <li><strong>Saturation</strong> — the pixel's full well overflows, so the true value is lost for good. (Saturation = clipping = overexposure.)</li>
 <li><strong>Variances add</strong> — for independent noise, variances add and standard deviations do not. Averaging <em>K</em> aligned frames gives σ/√<em>K</em>.</li>
 <li><strong>Fixed-pattern noise</strong> — identical in every frame, so averaging never removes it. Read noise is paid once per readout.</li>
@@ -2159,24 +2161,24 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 </ul>
 <p><strong>HDR</strong></p>
 <ul>
-<li><strong>Dynamic range</strong> — brightest-to-darkest ratio. Real world ≈ 100,000:1, DSLR (12-bit) ≈ 2,000:1, LCD ≈ 1,000:1, print ≈ 10:1. Bit depth counts codes and is <strong>not</strong> dynamic range.</li>
-<li><strong>Exposure bracketing</strong> — several LDR shots of a static scene at different shutter times. The default is the metered time ±2 stops: 5 frames spanning 16×. (Bracket = exposure stack.)</li>
-<li><strong>Radiometric calibration</strong> — learn the camera's response curve <em>f</em> (pixel value vs. true light) from known truth, then invert it to linearize. (Same concept, different names: response curve = tone reproduction curve = camera response function (CRF).) Fallback: γ ≈ 1/2.2, so raise values to ≈ 2.2.</li>
+<li><strong>Dynamic range</strong> — brightest-to-darkest ratio. Real world ≈ 100,000:1, DSLR (digital single-lens reflex camera; 12-bit) ≈ 2,000:1, LCD ≈ 1,000:1, print ≈ 10:1. Bit depth counts codes and is <strong>not</strong> dynamic range.</li>
+<li><strong>Exposure bracketing</strong> — several LDR (low dynamic range: ordinary single-exposure) shots of a static scene at different shutter times. The default is the metered time ±2 stops in 1-stop steps (−2, −1, 0, +1, +2): 5 frames spanning 2⁴ = 16×. (Same concept, different names: bracket = exposure stack.)</li>
+<li><strong>Radiometric calibration</strong> — learn the camera's response curve <em>f</em> (pixel value vs. true light) from known truth (e.g. a bracket with known exposure times), then invert it to linearize (make values ∝ light). &quot;Radiometric&quot; = about measured light amounts. (Same concept, different names: response curve = tone reproduction curve = camera response function (CRF).) Fallback: assume the file was gamma-encoded with exponent 1/2.2 (Week 3's γ = 2.2), so raise the [0,1]-normalized pixel values to the power 2.2.</li>
 <li><strong>Confidence weight</strong> — trust in one pixel of one exposure. It peaks at mid-gray and falls toward black and white (Gaussian bump, or the Debevec triangle/&quot;hat&quot;).</li>
-<li><strong>HDR imaging vs. tonemapping</strong> — HDR imaging builds a radiometrically linear, unclipped image (fixes the <em>sensor</em> limit). Tonemapping squeezes it into display range (fixes the <em>display</em> limit).</li>
-<li><strong>Global vs. local tonemapping</strong> — a global operator applies one curve to every pixel. A local operator also uses neighbors: base/detail split, bilateral filter, gradient domain.</li>
-<li><strong>Color-aware tonemapping</strong> — per-channel curves wash out color. Tonemapping Y only (xyY) flattens detail. A Gaussian base/detail split adds halos. A bilateral (edge-aware) split fixes the halos.</li>
+<li><strong>HDR imaging vs. tonemapping</strong> — HDR imaging builds a radiometrically linear (pixel value ∝ scene light), unclipped image (fixes the <em>sensor</em> limit). Tonemapping squeezes it into display range (fixes the <em>display</em> limit).</li>
+<li><strong>Global vs. local tonemapping</strong> — a global operator applies one curve to every pixel. A local operator also uses neighbors: base/detail split (blur the image into a &quot;base&quot; layer, keep image − base as &quot;detail&quot;, compress only the base), bilateral filter, gradient domain (compress large brightness differences between neighbors).</li>
+<li><strong>Color-aware tonemapping</strong> — per-channel curves wash out color. Tonemapping Y only (xyY = Week 3's chromaticity x, y plus luminance Y) flattens detail. A Gaussian base/detail split adds halos. A bilateral (edge-aware) split fixes the halos.</li>
 </ul>
 <p><strong>Coded imaging</strong></p>
 <ul>
-<li><strong>PSF</strong> — the image of a single point; blur = image ∗ PSF. <strong>OTF</strong> = Fourier transform of the PSF = the fraction of each <em>image frequency</em> (spatial frequency in cycles/pixel) that survives.</li>
+<li><strong>PSF (point spread function)</strong> — the image of a single point; blur = image ∗ PSF. <strong>OTF</strong> = Fourier transform of the PSF = the fraction of each <em>image frequency</em> (spatial frequency in cycles/pixel) that survives.</li>
 <li><strong>Broadband</strong> — the OTF has no exact zeros, so the blur is invertible in principle.</li>
-<li><strong>Coded aperture</strong> — a patterned mask in the stop (attenuating) or modified optics (wavefront coding). Defocus PSF = a scaled copy of the aperture shape.</li>
-<li><strong>Extended DoF (EDOF)</strong> — make the PSF depth-invariant (focal sweep, wavefront coding), then deconvolve once.</li>
+<li><strong>Coded aperture</strong> — a patterned mask in the aperture stop (the lens's light-limiting opening, not the factor-of-2 &quot;stop&quot;) (attenuating) or modified optics (wavefront coding). Defocus PSF = a scaled copy of the aperture shape.</li>
+<li><strong>Extended DoF (EDOF)</strong> — make the PSF depth-invariant (focal sweep = moving focus through the whole depth range during one exposure; wavefront coding = a special lens element that makes the blur the same at all depths), then deconvolve once.</li>
 <li><strong>Coded-aperture depth</strong> — an asymmetric PSF tells near from far, which a circular aperture cannot. It is <em>passive</em> and is not ToF.</li>
 <li><strong>Flutter shutter</strong> — the shutter flickers open/closed in a code, giving a broadband motion kernel. (Flutter shutter = coded exposure.)</li>
-<li><strong>Motion-invariant photography</strong> — a parabolic camera sweep gives every object velocity the same blur kernel. (Motion-invariant = parabolic sweep.)</li>
-<li><strong>Active vs. passive</strong> — LiDAR/ToF supplies its own light: the echo is signal and ambient light is noise. <strong>Range gating</strong> = a nanosecond exposure timed to the expected echo.</li>
+<li><strong>Motion-invariant photography</strong> — a parabolic camera sweep (camera slides sideways with position ∝ time², i.e. at steadily changing speed) gives every object velocity the same blur kernel. (Motion-invariant = parabolic sweep.)</li>
+<li><strong>Active vs. passive</strong> — LiDAR (light detection and ranging) / ToF (time-of-flight: distance from how long light takes to return) supplies its own light: the echo is signal and ambient light is noise. <strong>Range gating</strong> = a nanosecond exposure timed to the expected echo.</li>
 </ul>
 <h3 id="week4-equations">Key equations</h3>
 <h4 class="eq-head" id="week4-e1"><span class="eq-num">E1</span> Exposure and exposure value</h4>
@@ -2193,7 +2195,7 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 <tbody>
 <tr>
   <td>H</td>
-  <td>exposure, light energy per unit area</td>
+  <td>exposure, light energy per unit area (not Week 2's hyperfocal H)</td>
   <td>lux·s</td>
   <td>result</td>
 </tr>
@@ -2211,8 +2213,8 @@ Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.
 </tr>
 <tr>
   <td>L</td>
-  <td>scene luminance</td>
-  <td>cd/m²</td>
+  <td>scene luminance (brightness of the scene surface)</td>
+  <td>cd/m² (candela per m², the luminance unit)</td>
   <td>fixed by scene</td>
 </tr>
 <tr>
@@ -2252,7 +2254,7 @@ Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂)</pre>
 <tr>
   <td>X₁…X_K</td>
   <td>independent per-frame pixel values</td>
-  <td>DN or photons</td>
+  <td>DN (digital numbers: the ADC's integer output) or photons</td>
   <td>measured</td>
 </tr>
 <tr>
@@ -2281,7 +2283,7 @@ Pois(λ₁) + Pois(λ₂) = Pois(λ₁ + λ₂)</pre>
 </tr>
 <tr>
   <td>λ, λ₁, λ₂</td>
-  <td>Poisson means (= variances)</td>
+  <td>Poisson means (= variances; mean photon counts, not wavelength)</td>
   <td>photons</td>
   <td>fixed by scene brightness</td>
 </tr>
@@ -2355,7 +2357,7 @@ shot noise only (Poisson λ):    SNR_K = √(K·λ)</pre>
 </tr>
 <tr>
   <td>d</td>
-  <td>duty cycle (open fraction)</td>
+  <td>duty cycle (open fraction; not distance d in E5)</td>
   <td>—</td>
   <td>set by the code (HW3: 0.5)</td>
 </tr>
@@ -2400,7 +2402,7 @@ shot noise only (Poisson λ):    SNR_K = √(K·λ)</pre>
 <tbody>
 <tr>
   <td>d</td>
-  <td>distance to object</td>
+  <td>distance to object (not E4's duty cycle d)</td>
   <td>m</td>
   <td>unknown, measured</td>
 </tr>
@@ -2482,8 +2484,8 @@ w(I) = exp( −4·(I − 0.5)² / 0.5² )          Debevec hat:  w(z) = 1 − |2
 </tr>
 <tr>
   <td>I</td>
-  <td>stored 8-bit code (in I/255)</td>
-  <td>DN</td>
+  <td>in I/255: the stored 8-bit code 0–255; in w(I): the [0,1] value being weighted (HW3 weights I_lin)</td>
+  <td>DN / [0,1]</td>
   <td>measured</td>
 </tr>
 <tr>
@@ -2500,13 +2502,13 @@ w(I) = exp( −4·(I − 0.5)² / 0.5² )          Debevec hat:  w(z) = 1 − |2
 </tr>
 <tr>
   <td>0.5, −4/0.5²</td>
-  <td>peak location; fall-off (σ ≈ 0.177)</td>
+  <td>peak location; fall-off (4/0.5² = 16 = 1/(2σ²), so σ = 1/√32 ≈ 0.177)</td>
   <td>—</td>
   <td>fixed</td>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> before any merge, since arithmetic needs values ∝ light. <em>Gotcha:</em> the hat weight is exactly 0 at the ends, so ln(0)·0 gives NaN. Add ε and floor Σw. <em>By hand:</em> the Gaussian simplifies to w(I) = e^(−16(I − 0.5)²), so I = 0.25 or 0.75 → e^(−1), I = 0.125 → e^(−2.25), and I = 0 or 1 → e^(−4) ≈ 0.018. The hat weight needs no exponentials at all.</p>
+<p><em>Use it when:</em> before any merge, since arithmetic needs values ∝ light. <em>Gotcha:</em> the hat weight is exactly 0 at the ends, so ln(0)·0 gives NaN. Add a tiny constant ε inside the log and keep Σw above a small minimum. <em>By hand:</em> the Gaussian simplifies to w(I) = e^(−16(I − 0.5)²), so I = 0.25 or 0.75 → e^(−1), I = 0.125 → e^(−2.25), and I = 0 or 1 → e^(−4) ≈ 0.018. The hat weight needs no exponentials at all.</p>
 <h4 class="eq-head" id="week4-e7"><span class="eq-num">E7</span> HDR log-domain weighted merge (HW3 Task 1)</h4>
 <pre class="formula">O(X) = Σᵢ wᵢ · ( ln I_lin,i − ln(tᵢ·X) )²
 X̂   = exp( Σᵢ wᵢ·(ln I_lin,i − ln tᵢ) / Σᵢ wᵢ )</pre>
@@ -2546,7 +2548,7 @@ X̂   = exp( Σᵢ wᵢ·(ln I_lin,i − ln tᵢ) / Σᵢ wᵢ )</pre>
 </tr>
 <tr>
   <td>X</td>
-  <td>true relative radiance at the pixel</td>
+  <td>true relative radiance (light coming from that scene point, up to an unknown overall scale) at the pixel</td>
   <td>relative</td>
   <td>unknown</td>
 </tr>
@@ -2598,7 +2600,7 @@ Two-knob gamma (HW3):                I_display = clip( (s · I_HDR)^γ , 0, 1 )<
 </tr>
 <tr>
   <td>γ</td>
-  <td>exponent (&lt;1 lifts shadows)</td>
+  <td>tonemapping exponent, a free knob (&lt;1 lifts shadows); not the fixed 2.2 encoding gamma</td>
   <td>—</td>
   <td>you choose</td>
 </tr>
@@ -2610,10 +2612,10 @@ Two-knob gamma (HW3):                I_display = clip( (s · I_HDR)^γ , 0, 1 )<
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> showing HDR on an LDR display. L/(1+L) has slope 1 near 0 and approaches 1 asymptotically. <em>Gotcha:</em> any <em>linear</em> scaling either crushes the shadows or blows out the highlights. Gamma does not approach 1 asymptotically, which is why it needs clip.</p>
+<p><em>Use it when:</em> showing HDR on an LDR display. L/(1+L) (L = I_HDR, not E1's scene luminance) has slope 1 near 0 and approaches 1 asymptotically. <em>Gotcha:</em> any <em>linear</em> scaling either crushes the shadows or blows out the highlights. Gamma does not approach 1 asymptotically, which is why it needs clip.</p>
 <h4 class="eq-head" id="week4-e9"><span class="eq-num">E9</span> PSF, OTF, and box-shutter zeros</h4>
 <pre class="formula">I_blurred = I_ideal ∗ PSF        OTF(u,v) = FT{PSF}(u,v)        Ĩ_blurred = Ĩ · OTF
-box (open) shutter: kernel width W → |OTF| = |sinc| with zeros at f = n / W,  n = ±1, ±2, …</pre>
+box (open) shutter: kernel width W → |OTF| = |sinc| (sinc(x) = sin(πx)/(πx), the Fourier transform of a box) with zeros at f = n / W,  n = ±1, ±2, …</pre>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -2692,9 +2694,9 @@ box (open) shutter: kernel width W → |OTF| = |sinc| with zeros at f = n / W,  
 <li>Nuisance parameter varies over the scene (depth, velocity) → sweep it during the exposure (focal sweep, parabolic motion) → one shared PSF → deconvolve once. So: &quot;make everything equally blurry, then undo it.&quot;</li>
 </ol>
 <h3 id="week4-hw">HW tie-in</h3>
-<p><strong>HW3 Task 1 — HDR fusion.</strong> 16 LDR sRGB exposures of Memorial Church (512×768), times 1/1024 s … 32 s in powers of 2, f/8. Steps: linearize I_lin = (I/255)^2.2 → Gaussian weight w = exp(−4(I_lin − 0.5)²/0.5²) per channel → log E = Σ w_k(ln I_lin,k − ln t_k)/Σ w_k (ε inside the log) → HDR = exp(log E). Display: clip((s·I_HDR)^γ, 0, 1) with s = 1, γ = 0.5, compared with OpenCV Drago (gamma 1/2.2, saturation 0.7, bias 0.85). Takeaway: weight images show short exposures trusted on highlights and long ones on shadows. No CRF estimation was needed because the curve is known.</p>
+<p><strong>HW3 Task 1 — HDR fusion.</strong> 16 LDR sRGB exposures of Memorial Church (512×768), times 1/1024 s … 32 s in powers of 2, f/8. Steps: linearize I_lin = (I/255)^2.2 → Gaussian weight w = exp(−4(I_lin − 0.5)²/0.5²) per channel → ln X̂ = Σ w_k(ln I_lin,k − ln t_k)/Σ w_k (ε inside the log) → HDR = X̂ = exp(ln X̂). Display: clip((s·I_HDR)^γ, 0, 1) with s = 1, γ = 0.5, compared with OpenCV Drago (gamma 1/2.2, saturation 0.7, bias 0.85). Takeaway: weight images show short exposures trusted on highlights and long ones on shadows. No CRF estimation was needed because the curve is known.</p>
 <p><strong>HW3 Task 2 — Burst-averaging SNR.</strong> Read noise only: the average of K has mean μ and variance σ²/K, so SNR = √K·μ/σ. Shot noise only: mean λ and variance λ/K, so SNR = √(Kλ). Takeaway: both scale as √K. The noise model only changes what σ is made of.</p>
-<p><strong>HW3 Task 3 — Flutter shutter vs. burst.</strong> 1 s exposure, 100 Hz flicker (10 ms slots), 50% duty. Flutter: signal 0.5n, 1 readout. Burst: 100 × 10 ms frames.</p>
+<p><strong>HW3 Task 3 — Flutter shutter vs. burst.</strong> 1 s exposure, 100 Hz shutter flicker (a temporal frequency: 100 open/closed slots per second, 10 ms each), 50% duty cycle. Flutter: signal 0.5n, 1 readout. Burst: 100 × 10 ms frames.</p>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -2706,13 +2708,13 @@ box (open) shutter: kernel width W → |OTF| = |sinc| with zeros at f = n / W,  
 </thead>
 <tbody>
 <tr>
-  <td>1: n = 10,000/s, read σ = 50 only</td>
+  <td>1: n = 10,000 photons/s, read σ = 50 only</td>
   <td>5000, 50, <strong>100</strong></td>
   <td>10,000, √(100·50²) = 500, <strong>20</strong></td>
   <td>flutter</td>
 </tr>
 <tr>
-  <td>2 (sCMOS): n = 1,000/s, Poisson only</td>
+  <td>2 (sCMOS = scientific CMOS, very low read noise): n = 1,000 photons/s, Poisson only</td>
   <td>500, √500, <strong>22.36</strong></td>
   <td>1000, √1000, <strong>31.62</strong></td>
   <td>burst (×√2)</td>
@@ -2754,10 +2756,10 @@ box (open) shutter: kernel width W → |OTF| = |sinc| with zeros at f = n / W,  
 <div class="q" id="week4-q5"><div class="q-head"><span class="q-num">Q5</span><span class="chip calc">Calculation</span></div><p class="q-text">A correct exposure is f/2.8, 1/250 s, ISO 400. You want f/8 at ISO 1600 with the same image brightness. (a) What exposure time? (b) What happens to the physical exposure H, and what is the EV of each (N, t) pair?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>(a) Count stops instead of dividing. Aperture f/2.8 → 4 → 5.6 → 8 = 3 stops less light. ISO 400 → 1600 = ×4 = 2 stops more brightness. Net: 1 stop short, so double the time: 1/250 → <strong>1/125 s</strong>. (Exact arithmetic, (1/250)·(400/1600)·(8/2.8)², gives 1/122.5 s, because the printed 2.8 is a rounded 2√2.)<br />
-(b) t/N² falls to <strong>¼</strong>, so H is 2 stops lower and ISO's 4× gain makes up the brightness, with more noise. With nominal values (2.8² = 8, 1/250 ≈ 1/2⁸, 1/125 ≈ 1/2⁷): EV₁ = log₂(8 × 256) = 3 + 8 = <strong>11</strong>, EV₂ = log₂(64 × 128) = 6 + 7 = <strong>13</strong>. They are 2 EV apart, matching the 2 stops of ISO.</p>
+(b) t/N² falls to <strong>¼</strong>, so H is 2 stops lower and ISO's 4× gain makes up the brightness, with more noise. With nominal values (2.8² = 8, 1/250 ≈ 1/2⁸, 1/125 ≈ 1/2⁷): EV₁ = log₂(8 × 256) = 3 + 8 = <strong>11</strong>, EV₂ = log₂(64 × 128) = 6 + 7 = <strong>13</strong>. They are 2 EV apart (the higher EV admits less light), matching the 2 stops of ISO.</p>
 </div></details></div>
 
-<div class="q" id="week4-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">A pulsed LiDAR (c = 3×10⁸ m/s) receives an echo 400 ns after firing. (a) What is the range? (b) What gate opens and closes to accept only 30–45 m, and how wide is it? (c) What range does 1 ns of timing jitter represent? (d) Relative to a 1 ms exposure, what fraction of ambient light does the gate admit?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
+<div class="q" id="week4-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">A pulsed LiDAR (c = 3×10⁸ m/s) receives an echo 400 ns after firing. (a) What is the range? (b) What gate opens and closes to accept only 30–45 m, and how wide is it? (c) What range does 1 ns of timing jitter (random error in the measured echo arrival time) represent? (d) Relative to a 1 ms exposure, what fraction of ambient light does the gate admit?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
 <p>(a) d = cτ/2 = 3×10⁸·400×10⁻⁹/2 = <strong>60 m</strong>.<br />
 (b) Open at 2·30/c = <strong>200 ns</strong>, close at 2·45/c = <strong>300 ns</strong> → width <strong>100 ns</strong>.<br />
@@ -2805,35 +2807,35 @@ box (open) shutter: kernel width W → |OTF| = |sinc| with zeros at f = n / W,  
 <li><strong>Convolution</strong> — slide a flipped kernel over the signal, multiply-and-sum at each position. (Kernel = filter = impulse response; for optics = point spread function (PSF) = blur kernel.)</li>
 <li><strong>Convolution theorem</strong> — convolution in one domain = point-wise multiplication in the other.</li>
 <li><strong>Scaling theorem</strong> — wide in space ⇔ narrow in frequency (bigger blur → narrower passband).</li>
-<li><strong>OTF / MTF</strong> — OTF = Fourier transform of the PSF (= transfer function = frequency response); MTF = |OTF|. Every physical PSF has OTF(0) = 1 and |OTF| ≤ 1 → every lens is a <strong>low-pass filter</strong>.</li>
+<li><strong>OTF / MTF</strong> — OTF = Fourier transform of the PSF (= transfer function = frequency response); MTF = |OTF|. Every physical PSF has OTF(0) = 1 (the value at zero frequency, i.e. the image mean, passes unchanged) and |OTF| ≤ 1 → every lens is a <strong>low-pass filter</strong>.</li>
 </ul>
 <p><strong>Sampling</strong></p>
 <ul>
-<li><strong>Sampling</strong> — multiply by an impulse train (comb, Dirac comb, Shah function) → spectrum is <strong>copied</strong> at every multiple of f_s. (Spectral copy = replica = spectral image.)</li>
-<li><strong>Nyquist frequency</strong> — f_s/2, belongs to the sampler (= folding frequency = Nyquist limit). <strong>Nyquist rate</strong> — 2·f_max, belongs to the signal. Do not mix them up.</li>
+<li><strong>Sampling</strong> (f_s = sampling rate: samples per second, or per mm / per pixel) — multiply by an impulse train (a row of evenly spaced spikes, one per sample) (comb, Dirac comb, Shah function) → spectrum is <strong>copied</strong> at every multiple of f_s. (Spectral copy = replica = spectral image.)</li>
+<li><strong>Nyquist frequency</strong> (f_max = the highest frequency present in the signal) — f_s/2, belongs to the sampler (= folding frequency = Nyquist limit). <strong>Nyquist rate</strong> — 2·f_max, belongs to the signal. Do not mix them up.</li>
 <li><strong>Aliasing</strong> — copies overlap → a high frequency masquerades as a low one; <strong>cannot be undone after sampling</strong>.</li>
 <li><strong>Anti-aliasing filter</strong> — low-pass <em>before</em> sampling (= AA filter = prefilter = optical low-pass filter (OLPF) in a camera).</li>
-<li><strong>Downsampling by D</strong> — low-pass to 1/(2D) cycles/original pixel first, then keep every D-th pixel. (Subsampling = discard without filtering; downsampling = decimation = filter first.) <strong>Upsampling by D</strong> — zero-stuff, then interpolate with a low-pass kernel of gain D.</li>
+<li><strong>Downsampling by D</strong> — low-pass to 1/(2D) cycles/original pixel first, then keep every D-th pixel. (Subsampling = discard without filtering; downsampling = decimation = filter first.) <strong>Upsampling by D</strong> — zero-stuff (insert D − 1 zeros between neighbouring pixels), then interpolate with a low-pass kernel of gain D (its weights sum to D, making up for the inserted zeros).</li>
 <li><strong>Temporal aliasing</strong> — wagon-wheel effect; in <strong>LiDAR</strong>, range ambiguity: a return arriving after the next pulse is assigned to the wrong pulse.</li>
 </ul>
 <p><strong>DFT / FFT and code</strong></p>
 <ul>
-<li><strong>DFT</strong> — N samples → N coefficients, treating the samples as one period of a repeating signal → filtering by DFT = <strong>circular convolution</strong> (wrap-around at borders).</li>
-<li><strong>FFT</strong> — an <em>algorithm</em> computing the DFT exactly in ~N log₂ N instead of N² operations.</li>
-<li><strong><code>psf2otf(k, shape)</code></strong> — zero-pad kernel to image size → circularly shift its center to index (0,0) → FFT. Without the shift, the output image is translated.</li>
+<li><strong>DFT</strong> (discrete Fourier transform: the Fourier transform of a finite list of samples) — N samples → N coefficients, treating the samples as one period of a repeating signal → filtering by DFT = <strong>circular convolution</strong> (wrap-around at borders).</li>
+<li><strong>FFT</strong> (fast Fourier transform) — an <em>algorithm</em> computing the DFT exactly in ~N log₂ N instead of N² operations.</li>
+<li><strong><code>psf2otf(k, shape)</code></strong> — zero-pad kernel to image size → circularly shift (shift with wrap-around) its center to index (0,0) (the top-left array entry, where the DFT puts the origin) → FFT. Without the shift, the output image is translated.</li>
 </ul>
 <p><strong>Optics as low-pass</strong></p>
 <ul>
-<li><strong>Diffraction</strong> — aperture → coherent PSF = F{aperture}; incoherent PSF = |F{aperture}|²; OTF = autocorrelation of aperture, zero beyond a cutoff. Bigger aperture → smaller blur.</li>
-<li><strong>Pixel integration</strong> — each pixel box-averages light over its area (sinc MTF) before the grid samples at pitch p (sensor Nyquist 1/(2p)).</li>
+<li><strong>Diffraction</strong> — aperture → coherent PSF (laser-like light whose waves stay in step) = F{aperture} (F = Fourier transform); incoherent PSF (ordinary light) = |F{aperture}|²; OTF = autocorrelation of aperture (how much the aperture overlaps a shifted copy of itself, for each shift), zero beyond a cutoff spatial frequency. Bigger aperture → smaller blur.</li>
+<li><strong>Pixel integration</strong> — each pixel box-averages light over its area (sinc MTF: sinc(f) = sin(πf)/(πf), a ripple that shrinks with frequency and has exact zeros; MTF = |OTF|) before the grid samples at pitch p (sensor Nyquist 1/(2p)).</li>
 </ul>
 <p><strong>Inverse problems</strong></p>
 <ul>
 <li><strong>Deconvolution</strong> — undo a known blur (= deblurring = image restoration; non-blind = PSF known). <strong>Inverse filter</strong> — divide spectrum by OTF; blows up noise where |OTF| ≈ 0.</li>
-<li><strong>Wiener filter</strong> — inverse filter × damping factor |K|²/(|K|² + 1/SNR). (Wiener filter = Wiener deconvolution; damping factor = regularizing factor = filter factor.)</li>
-<li><strong>b = Ax</strong> — any linear imaging process; <strong>rank/null space</strong> = lost information; <strong>condition number</strong> s_max/s_min = noise amplification.</li>
-<li><strong>Least squares</strong> — minimize ½‖Ax − b‖² (= ℓ₂ fitting = data term); <strong>normal equations</strong> AᵀAx = Aᵀb. <strong>Tikhonov regularization</strong> adds λ‖x‖²/2 → stable, unique.</li>
-<li><strong>Gradient descent (GD)</strong> — step downhill along −∇f; (= full-batch/vanilla GD; step size = learning rate α). <strong>SGD</strong> — same step using a random batch of rows.</li>
+<li><strong>Wiener filter</strong> — inverse filter × damping factor |K|²/(|K|² + 1/SNR) (K = the blur's OTF; SNR here = signal power ÷ noise power, not Week 2's mean ÷ std; see E6). (Wiener filter = Wiener deconvolution; damping factor = regularizing factor = filter factor.)</li>
+<li><strong>b = Ax</strong> — any linear imaging process (x = unknown image as one long column of numbers, A = matrix describing the camera/blur, b = measurements); <strong>null space</strong> = inputs x that A maps to zero (invisible to the camera), <strong>rank</strong> = how many independent pieces of information survive; <strong>condition number</strong> s_max/s_min (s = singular values: the gains A applies along its independent directions) = noise amplification.</li>
+<li><strong>Least squares</strong> — minimize ½‖Ax − b‖² (‖v‖² = sum of squared entries of v) (= ℓ₂ fitting = data term); <strong>normal equations</strong> AᵀAx = Aᵀb (Aᵀ = transpose of A: rows and columns swapped). <strong>Tikhonov regularization</strong> adds λ‖x‖²/2 (λ = regularization weight, a dial you set; not a wavelength) → stable, unique.</li>
+<li><strong>Gradient descent (GD)</strong> — step downhill along −∇f (∇f = gradient: the vector of partial derivatives of the cost f, pointing uphill); (= full-batch/vanilla GD; step size = learning rate α). <strong>SGD</strong> (stochastic, i.e. random, gradient descent) — same step using a random batch of rows (each row of A = one measurement).</li>
 </ul>
 <h3 id="week5-equations">Key equations</h3>
 <h4 class="eq-head" id="week5-e1"><span class="eq-num">E1</span> Convolution theorem</h4>
@@ -2953,9 +2955,9 @@ f_apparent = | f − f_s · round(f / f_s) |</pre>
 </tr>
 <tr>
   <td>K</td>
-  <td>Kernel side length (K×K kernel)</td>
+  <td>Kernel side length (K×K kernel); not the OTF K of E5</td>
   <td>pixels</td>
-  <td>you (e.g. ceil(9σ))</td>
+  <td>you (e.g. ceil(9σ): σ = the Gaussian's width in pixels, ceil = round up)</td>
 </tr>
 <tr>
   <td>2 P log₂ P</td>
@@ -3005,7 +3007,7 @@ CW ToF:   R_amb = c / (2 · f_mod)        d_reported = d_true mod R_amb</pre>
 </tr>
 <tr>
   <td>f_mod</td>
-  <td>Modulation frequency of a continuous-wave sensor</td>
+  <td>Modulation frequency of a continuous-wave (CW) ToF sensor, whose light brightness oscillates as a sine wave and reads distance from the echo's phase delay (a temporal frequency: brightness oscillations per second, not the light's own frequency)</td>
   <td>Hz</td>
   <td>designer</td>
 </tr>
@@ -3057,7 +3059,7 @@ i_est = F⁻¹( B / K )   ⇒   B / K = I + N / K</pre>
 </tr>
 <tr>
   <td>k, K</td>
-  <td>Blur PSF and OTF</td>
+  <td>Blur PSF and OTF (this K is not E3's kernel side length)</td>
   <td>unitless</td>
   <td>known (non-blind)</td>
 </tr>
@@ -3104,7 +3106,7 @@ SNR(ω) = signal power at ω / noise power at ω     (constant approx: 1/SNR ≈
 <tbody>
 <tr>
   <td>K, K*</td>
-  <td>OTF of the known blur, and its complex conjugate</td>
+  <td>OTF of the known blur, and its complex conjugate (same magnitude, opposite phase: flip the sign of the imaginary part)</td>
   <td>unitless</td>
   <td>known</td>
 </tr>
@@ -3148,7 +3150,7 @@ SNR(ω) = signal power at ω / noise power at ω     (constant approx: 1/SNR ≈
 </table></div>
 <p><em>Use it when:</em> deblurring with noise. <em>Gotcha:</em> SNR → ∞ gives the inverse filter; small |K| → gain ≈ |K|·SNR → 0 instead of ∞.</p>
 <h4 class="eq-head" id="week5-e7"><span class="eq-num">E7</span> Least squares, gradient, normal equations</h4>
-<pre class="formula">x̂ = argmin_x ½ ‖A x − b‖₂²
+<pre class="formula">x̂ = argmin_x ½ ‖A x − b‖₂²        (argmin_x = &quot;the x that makes this smallest&quot;)
 ∇ₓ ½‖Ax − b‖₂² = Aᵀ(Ax − b) = AᵀA x − Aᵀb
 AᵀA x̂ = Aᵀb</pre>
 <div class="tbl-wrap"><table>
@@ -3181,13 +3183,13 @@ AᵀA x̂ = Aᵀb</pre>
 </tr>
 <tr>
   <td>Aᵀ</td>
-  <td>Transpose of A (for a blur: convolve with flipped kernel)</td>
+  <td>Transpose of A (rows and columns swapped; for a blur: convolve with flipped kernel)</td>
   <td>—</td>
   <td>—</td>
 </tr>
 <tr>
   <td>‖·‖₂</td>
-  <td>Euclidean (ℓ₂) norm</td>
+  <td>Euclidean (ℓ₂) norm = a vector's length √(Σ vᵢ²)</td>
   <td>—</td>
   <td>—</td>
 </tr>
@@ -3199,7 +3201,7 @@ AᵀA x̂ = Aᵀb</pre>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> over-determined fits; deriving GD. <em>Gotcha:</em> AᵀA is singular if A has a null space → add λI (Tikhonov: (AᵀA + λI)x = Aᵀb).</p>
+<p><em>Use it when:</em> over-determined fits (more measurements than unknowns); deriving GD. <em>Gotcha:</em> AᵀA is singular (has no inverse) if A has a null space → add λI (I = identity matrix: 1s on the diagonal, 0 elsewhere) (Tikhonov: (AᵀA + λI)x = Aᵀb).</p>
 <h4 class="eq-head" id="week5-e8"><span class="eq-num">E8</span> Gradient descent and its step-size limit</h4>
 <pre class="formula">x^(k+1) = x^(k) − α Aᵀ( A x^(k) − b )
 converges if 0 &lt; α &lt; 2 / μ_max</pre>
@@ -3239,7 +3241,7 @@ converges if 0 &lt; α &lt; 2 / μ_max</pre>
 </tr>
 <tr>
   <td>μ_max</td>
-  <td>Largest eigenvalue of AᵀA (= s_max²)</td>
+  <td>Largest eigenvalue of AᵀA (= s_max²; an eigenvalue μ is a stretch factor: AᵀA v = μ v for some direction v)</td>
   <td>—</td>
   <td>fixed by A</td>
 </tr>
@@ -3266,7 +3268,7 @@ converges if 0 &lt; α &lt; 2 / μ_max</pre>
 </tr>
 <tr>
   <td>B</td>
-  <td>Batch size</td>
+  <td>Batch size (not the spectrum B of E5)</td>
   <td>rows</td>
   <td>you</td>
 </tr>
@@ -3284,7 +3286,7 @@ converges if 0 &lt; α &lt; 2 / μ_max</pre>
 </tr>
 <tr>
   <td>E[·]</td>
-  <td>Expectation over the random batch (exactly ∇f with an m/B scale)</td>
+  <td>Expectation = average over all possible random batches; E[g] = (B/m)·∇f exactly, with m = total rows of A</td>
   <td>—</td>
   <td>—</td>
 </tr>
@@ -3305,11 +3307,11 @@ converges if 0 &lt; α &lt; 2 / μ_max</pre>
 <li>Lens/pixel PSF ≥ 0 and sums to 1 → |OTF| ≤ 1 with zeros/small values at high frequency → information attenuated or lost. <strong>So:</strong> every camera is a low-pass filter, and undoing it means amplifying.</li>
 <li>Inverse filter divides by small |K| → noise term N/K explodes → PSNR collapses. <strong>So:</strong> Wiener damps each frequency by |K|²/(|K|²+1/SNR), trading leftover blur for less noise.</li>
 <li>DFT treats image as periodic → FFT filtering = circular convolution → borders wrap; <code>psf2otf</code> must centre the kernel at (0,0). <strong>So:</strong> FFT and <code>convolve2d</code> match in the interior, differ at edges.</li>
-<li>AᵀA has large eigenvalue spread (ill-conditioned) → GD step capped by 2/μ_max but slow along small-eigenvalue directions; SGD batch gradient is a noisy, scaled-down estimate. <strong>So:</strong> pick α from μ_max; smaller batch → cheaper but more iterations.</li>
+<li>AᵀA has large eigenvalue spread (ill-conditioned = large condition number, so small noise causes big errors) → GD step capped by 2/μ_max but slow along small-eigenvalue directions; SGD batch gradient is a noisy, scaled-down estimate. <strong>So:</strong> pick α from μ_max; smaller batch → cheaper but more iterations.</li>
 </ol>
 <h3 id="week5-hw">HW tie-in</h3>
-<p><strong>HW4 Task 1 — Spatial vs Fourier filtering.</strong> Gaussian LPF σ = 0.1, 1, 10 (kernel ceil(9σ): 1×1, 9×9, 90×90) and HPF = δ − Gaussian (101×101), filtered by <code>convolve2d(..., 'same', symmetric)</code> vs <code>real(ifft2(fft2(img)·psf2otf(k, shape)))</code> · cost E3 · timings ≈ 0.01 s, 0.1 s, ~12 s for LPF direct and ~15.5 s for the 101×101 HPF; FFT ≈ 0.03–0.05 s regardless of kernel; for the 1×1 kernel direct is slightly faster · <strong>Takeaway:</strong> direct ∝ N·k², FFT ∝ N log N independent of k.</p>
-<p><strong>HW4 Task 2 — Inverse vs Wiener deconvolution.</strong> Birds image blurred with Gaussian PSF σ = 5 (35×35), circular via FFT; noise σ_n = 0, 0.001, 0.01, 0.1 · E5 vs E6 · PSNR (dB):</p>
+<p><strong>HW4 Task 1 — Spatial vs Fourier filtering.</strong> Gaussian LPF σ = 0.1, 1, 10 (kernel ceil(9σ): 1×1, 9×9, 90×90) and HPF = δ − Gaussian (101×101; δ = a kernel with a single 1 at its centre, which leaves the image unchanged), filtered by <code>convolve2d(..., 'same', symmetric)</code> (output same size as input; borders filled by mirroring) vs <code>real(ifft2(fft2(img)·psf2otf(k, shape)))</code> · cost E3 · timings ≈ 0.01 s, 0.1 s, ~12 s for LPF direct and ~15.5 s for the 101×101 HPF; FFT ≈ 0.03–0.05 s regardless of kernel; for the 1×1 kernel direct is slightly faster · <strong>Takeaway:</strong> direct ∝ P·K², FFT ∝ P log P independent of K (E3's symbols).</p>
+<p><strong>HW4 Task 2 — Inverse vs Wiener deconvolution.</strong> Birds image blurred with Gaussian PSF σ = 5 px (35×35), circular via FFT; noise std. dev. σ_n = 0, 0.001, 0.01, 0.1 (intensities on a 0–1 scale) · E5 vs E6 · PSNR (dB):</p>
 <div class="tbl-wrap"><table>
 <thead>
 <tr>
@@ -3338,8 +3340,8 @@ converges if 0 &lt; α &lt; 2 / μ_max</pre>
 </tbody>
 </table></div>
 <p>· <strong>Takeaway:</strong> any noise destroys the inverse filter (N/K where |K| ≈ 0); Wiener degrades gracefully. At σ_n = 0 Wiener &lt; inverse because its finite 1/SNR still damps small-|K| frequencies.</p>
-<aside class="callout warn"><div class="label">⚠ Correction</div><p>the HW code set SNR = Ī/σ_n (mean over std — an <strong>amplitude</strong> ratio). The textbook Wiener filter uses a <strong>power</strong> ratio: H = K*/(|K|² + 1/SNR) with SNR = S_x/S_n, constant approx 1/SNR = σ_n²/(signal power). They differ by a square, so the code's damping knob is not the textbook value; state E6 on the exam.</p></aside>
-<p><strong>HW4 Task 3 — GD vs SGD for least squares.</strong> min ½‖Ax − b‖², A 16384×128, gradient Aᵀ(Ax − b), α = 1e-4, 1500 iterations, x₀ = 0; SGD batches of 10, 100, 1000 rows, same α · E8, E9 · residual ≈ 1e6 → ≈ 8e-3 (matches <code>lstsq</code>); GD converges in ~100 iterations (~0.15 s); SGD-1000 ~110 iterations, ~0.08 s (fastest wall time); SGD-100 ~1100 iterations; SGD-10 does not converge (~5e4) · <strong>Takeaway:</strong> smaller batch → cheaper iteration but noisier, smaller effective step → more iterations.</p>
+<aside class="callout warn"><div class="label">⚠ Correction</div><p>the HW code set SNR = Ī/σ_n (mean over std — an <strong>amplitude</strong> ratio). The textbook Wiener filter uses a <strong>power</strong> ratio: H = K*/(|K|² + 1/SNR) with SNR = S_x/S_n (signal power ÷ noise power at each frequency), constant approx 1/SNR = σ_n²/(signal power). They differ by a square, so the code's damping knob is not the textbook value; state E6 on the exam.</p></aside>
+<p><strong>HW4 Task 3 — GD vs SGD for least squares.</strong> min ½‖Ax − b‖², A 16384×128, gradient Aᵀ(Ax − b), α = 1e-4, 1500 iterations, x₀ = 0; SGD batches of 10, 100, 1000 rows, same α · E8, E9 · residual (here the objective value ½‖Ax − b‖²) ≈ 1e6 → ≈ 8e-3 (1e6 = 10⁶; matches <code>lstsq</code>, NumPy's direct least-squares solver); GD converges in ~100 iterations (~0.15 s); SGD-1000 ~110 iterations, ~0.08 s (fastest wall time); SGD-100 ~1100 iterations; SGD-10 does not converge (~5e4) · <strong>Takeaway:</strong> smaller batch → cheaper iteration but noisier, smaller effective step → more iterations.</p>
 <div class="practice-head"><h3 id="week5-practice">Practice questions</h3><button type="button" class="reveal-week" id="reveal-week5" data-week="week5">Show all answers</button></div>
 <div class="q" id="week5-q1"><div class="q-head"><span class="q-num">Q1</span><span class="chip calc">Calculation</span></div><p class="q-text">A signal contains a 130 Hz (temporal) tone and is sampled at f_s = 100 Hz. (a) What is the Nyquist frequency of the sampler, and the Nyquist rate the signal needs? (b) At what frequency does the tone appear?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
@@ -3363,7 +3365,7 @@ Break-even: K² = 2·18 + 1 = 37 → K ≈ 6 (6² = 36), so FFT wins for <strong
 
 <div class="q" id="week5-q4"><div class="q-head"><span class="q-num">Q4</span><span class="chip calc">Calculation</span></div><p class="q-text">At one frequency the OTF magnitude is |K| = 0.05 and the (power) SNR is 100. Compare the gain of the inverse filter and the Wiener filter. Repeat for |K| = 0.9.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>Wiener gain magnitude = |K|/(|K|² + 1/SNR), 1/SNR = 0.01.
+<p>Wiener gain magnitude = |K|/(|K|² + 1/SNR) (from E6, since |K*| = |K|), 1/SNR = 0.01.
 |K| = 0.05: inverse 1/0.05 = <strong>20</strong>; Wiener 0.05/(0.0025 + 0.01) = <strong>4</strong> (damping factor 0.2).
 |K| = 0.9: inverse 1/0.9 = <strong>10/9 ≈ 1.11</strong>; Wiener 0.9/(0.81 + 0.01) = 0.9/0.82 = <strong>45/41 ≈ 1.10</strong> (damping 0.81/0.82 = 81/82 ≈ 0.99) — nearly identical where signal dominates.</p>
 </div></details></div>
@@ -3372,12 +3374,12 @@ Break-even: K² = 2·18 + 1 = 37 → K ≈ 6 (6² = 36), so FFT wins for <strong
 
 <p>(a) Ax⁽⁰⁾ − b = [−3, −1, −2]; ∇f = Aᵀ(Ax − b) = [−3 − 2, −3 − 1] = <strong>[−5, −4]ᵀ</strong>.<br />
 (b) x⁽¹⁾ = [0, 0] − 0.2·[−5, −4] = <strong>[1, 0.8]ᵀ</strong>; f drops from 7.0 to 1.24. (Exact solution is [2, 1], where f = 0.)<br />
-(c) AᵀA = [[2, 1], [1, 2]], eigenvalues 1 and 3 → α &lt; 2/3 ≈ <strong>0.667</strong>.</p>
+(c) AᵀA = [[2, 1], [1, 2]], eigenvalues 1 and 3 (for [[a, b], [b, a]] they are a − b and a + b; check: [1, 1] → [3, 3], [1, −1] → [1, −1]) → α &lt; 2/3 ≈ <strong>0.667</strong>.</p>
 </div></details></div>
 
 <div class="q" id="week5-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">Fit y = c₀ + c₁t to the points (0, 1), (1, 2), (2, 2), (3, 4) by least squares using the normal equations.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>A rows [1, t]: AᵀA = [[4, 6], [6, 14]], Aᵀy = [9, 18]ᵀ. det = 4·14 − 36 = 20.<br />
+<p>A rows [1, t]: AᵀA = [[4, 6], [6, 14]], Aᵀy = [9, 18]ᵀ. det = 4·14 − 36 = 20 (2×2 inverse: [[a, b], [c, d]]⁻¹ = [[d, −b], [−c, a]] / (ad − bc)).<br />
 c₀ = (14·9 − 6·18)/20 = 0.9; c₁ = (4·18 − 6·9)/20 = 0.9 → <strong>y = 0.9 + 0.9t</strong>.</p>
 </div></details></div>
 
@@ -3393,7 +3395,7 @@ c₀ = (14·9 − 6·18)/20 = 0.9; c₁ = (4·18 − 6·9)/20 = 0.9 → <strong>
 
 <div class="q" id="week5-q9"><div class="q-head"><span class="q-num">Q9</span><span class="chip concept">Conceptual</span></div><p class="q-text">Filtering by FFT with <code>psf2otf</code> and by <code>convolve2d</code> gives matching interiors but different borders. If you skipped the circular shift inside <code>psf2otf</code>, what would go wrong?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>The DFT assumes periodicity → FFT filtering is circular convolution (borders wrap from the opposite edge), while <code>convolve2d</code> pads (zeros or symmetric). Without centring the kernel at index (0,0), the output is <strong>translated</strong> by half the kernel size (shift theorem: a shift = a phase ramp in the OTF).</p>
+<p>The DFT assumes periodicity → FFT filtering is circular convolution (borders wrap from the opposite edge), while <code>convolve2d</code> pads (zeros or symmetric). Without centring the kernel at index (0,0), the output is <strong>translated</strong> by half the kernel size (shift theorem: shifting a signal leaves each frequency's magnitude alone and adds a phase that grows steadily with frequency, a &quot;phase ramp&quot;).</p>
 </div></details></div>
 
 <div class="q" id="week5-q10"><div class="q-head"><span class="q-num">Q10</span><span class="chip concept">Conceptual</span></div><p class="q-text">In HW4 Task 3, with the same α, SGD with 1000-row batches beat full GD in wall time, but 10-row batches never converged. Explain both.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -3412,38 +3414,38 @@ c₀ = (14·9 − 6·18)/20 = 0.9; c₁ = (4·18 − 6·9)/20 = 0.9 → <strong>
 <h3 id="week6-concepts">Key concepts</h3>
 <p><strong>Bayesian view</strong></p>
 <ul>
-<li><strong>Inverse problem / ill-posed</strong> — recover x from b = Ax + η; many x fit b (and small divisors amplify noise), so a prior must pick one.</li>
-<li><strong>Likelihood</strong> p(b | x) — how well image x explains the data; Gaussian noise → squared-error data term. (= image formation model.)</li>
+<li><strong>Inverse problem / ill-posed</strong> — recover x from b = Ax + η (η = measurement noise); many x fit b (and small divisors amplify noise), so a prior must pick one.</li>
+<li><strong>Likelihood</strong> p(b | x) (read &quot;probability of b given x&quot;) — how well image x explains the data; Gaussian noise → squared-error data term. (= image formation model.)</li>
 <li><strong>Prior</strong> p(x) — how plausible x is before any data. (Same concept, different names: prior ↔ regularizer = regularization term = penalty, Ψ(x) = −log p(x); some slides write Γ.)</li>
-<li><strong>Posterior / MAP</strong> — posterior ∝ likelihood × prior; MAP = argmax posterior = argmin (−log). (MAP = maximum a posteriori = posterior mode.) <strong>Data fidelity term</strong> = data term.</li>
-<li><strong>λ (regularization weight)</strong> — dial between &quot;believe the data&quot; (small) and &quot;believe the prior&quot; (large); ≈ σ² × prior strength, so more noise → larger λ.</li>
+<li><strong>Posterior / MAP</strong> — posterior ∝ likelihood × prior; MAP = argmax posterior (the x that makes the posterior p(x | b) largest) = argmin (−log). (MAP = maximum a posteriori = posterior mode.) <strong>Data fidelity term</strong> = data term.</li>
+<li><strong>λ (regularization weight)</strong> — dial between &quot;believe the data&quot; (small) and &quot;believe the prior&quot; (large); ≈ σ² × prior strength (σ = noise standard deviation), so more noise → larger λ. (λ here is a weight, not a wavelength.)</li>
 </ul>
 <p><strong>Norms and priors</strong></p>
 <ul>
 <li><strong>ℓ₂ / ℓ₁ / &quot;ℓ₀&quot;</strong> — length / sum of |entries| (Manhattan = taxicab) / count of nonzeros (&quot;ℓ₀&quot; is not a true norm; impractical to optimize).</li>
-<li><strong>Sparse</strong> — mostly exact zeros. Minimizing ℓ₁ gives sparse answers (diamond ball touches the solution set at a corner on an axis); ℓ₂ spreads values out. ℓ₂² ↔ Gaussian prior; ℓ₁ ↔ Laplace prior (sharp peak at 0, heavy tails).</li>
+<li><strong>Sparse</strong> — mostly exact zeros. Minimizing ℓ₁ gives sparse answers (the ℓ₁ &quot;ball&quot;, all vectors with ‖v‖₁ ≤ r, is a diamond in 2D; it touches the solution set, i.e. the x's that fit the data, at a corner on an axis); ℓ₂ spreads values out. ℓ₂² ↔ Gaussian prior; ℓ₁ ↔ Laplace prior (sharp peak at 0, heavy tails).</li>
 <li><strong>Three priors</strong> — smooth images → ‖Δx‖₂² (Laplacian = curvature); stars → ‖x‖₁ (sparse pixels); natural photos → TV(x) (sparse <strong>image</strong> gradients).</li>
-<li><strong>&quot;Gradient&quot; is overloaded</strong> — <em>image gradient</em> = pixel-to-pixel brightness change (finite differences D_x, D_y) vs. <em>objective gradient</em> ∇f = partial derivatives of the cost (what Adam / <code>.backward()</code> uses).</li>
+<li><strong>&quot;Gradient&quot; is overloaded</strong> — <em>image gradient</em> = pixel-to-pixel brightness change (finite differences D_x, D_y) vs. <em>objective gradient</em> ∇f = partial derivatives of the cost (what Adam / PyTorch's <code>.backward()</code>, which computes ∇f automatically, uses).</li>
 <li><strong>Total variation (TV)</strong> — sum of image-gradient sizes = &quot;total climb&quot;: a sharp step costs the same as a ramp, noise costs a lot → edges kept, noise removed. Pseudo-norm (= semi-norm): 0 for any constant image. Side effect: <strong>staircasing</strong> (ramps → terraces); contrast loss.</li>
 <li><strong>Isotropic vs anisotropic TV</strong> — isotropic (ℓ₂,₁, &quot;same in every direction&quot;) = true gradient length per pixel; anisotropic (ℓ₁) = |D_x|+|D_y|, overcharges diagonal edges by up to √2. &quot;Better: isotropic; easier: anisotropic.&quot;</li>
 </ul>
 <p><strong>Solvers</strong></p>
 <ul>
-<li><strong>Adam</strong> — gradient descent with momentum + per-pixel step normalized by typical gradient size → step ≈ α regardless of scale.</li>
-<li><strong>Splitting</strong> — give the prior its own copy z with constraint Kx − z = 0 (K = D for TV, K = I for a denoiser); data part and prior part each become easy.</li>
-<li><strong>Lagrange multiplier y</strong> (= dual variable = shadow price) → <strong>augmented Lagrangian</strong> (adds (ρ/2)‖Kx − z‖², ρ = penalty parameter) → <strong>scaled form</strong> u = y/ρ.</li>
+<li><strong>Adam</strong> — gradient descent with momentum (each step follows a running average of past gradients, like a rolling ball) + per-pixel step normalized by typical gradient size → step ≈ α regardless of scale.</li>
+<li><strong>Splitting</strong> — give the prior its own copy z with constraint Kx − z = 0 (K = D, the finite-difference operator of E3, for TV; K = I, the identity, for a denoiser; this K is not Week 5's OTF K); data part and prior part each become easy.</li>
+<li><strong>Lagrange multiplier y</strong> (= dual variable = shadow price: a price charged per unit of constraint violation Kx − z) → Lagrangian (cost + y·violation) → <strong>augmented Lagrangian</strong> (adds (ρ/2)‖Kx − z‖², ρ = penalty parameter) → <strong>scaled form</strong> u = y/ρ.</li>
 <li><strong>ADMM</strong> (= alternating direction method of multipliers) — data step (x), prior step (z), price step (u = running sum of mismatches Kx − z; drives them to 0).</li>
-<li><strong>Proximal operator</strong> — &quot;dog on a leash&quot;: best point for f near v. Prox of ℓ₁ = <strong>soft thresholding</strong> (shrink by κ, stop at 0); isotropic TV → <strong>block</strong> soft thresholding (shrink arrow length, keep direction).</li>
-<li><strong>Plug-and-play (PnP) ADMM</strong> — z-step with K = I is MAP denoising at σ² = λ/ρ → plug in any denoiser (DnCNN, NLM). Slide 98 ranking: Wiener worst; Adam+TV ≈ ADMM+TV; ADMM+DnCNN best.</li>
+<li><strong>Proximal operator</strong> — &quot;dog on a leash&quot;: best point for f near v. Prox of ℓ₁ = <strong>soft thresholding</strong> (shrink by the threshold κ = λ/ρ, stop at 0); isotropic TV → <strong>block</strong> soft thresholding (shrink arrow length, keep direction).</li>
+<li><strong>Plug-and-play (PnP) ADMM</strong> — z-step with K = I is MAP denoising at σ² = λ/ρ → plug in any denoiser (DnCNN = a trained neural-network denoiser; NLM = non-local means, Week 3). Slide 98 ranking: Wiener worst; Adam+TV ≈ ADMM+TV; ADMM+DnCNN best.</li>
 <li><strong>HQS</strong> (= half-quadratic splitting = quadratic penalty method) — ADMM without u; exact only as ρ → ∞, very ρ-sensitive. <strong>Unrolled optimization</strong> (= algorithm unrolling = deep unfolding) — K iterations as network layers, learn λ⁽ᵏ⁾, ρ⁽ᵏ⁾.</li>
 </ul>
 <p><strong>Compressive imaging</strong></p>
 <ul>
-<li><strong>Single-pixel camera</strong> — DMD shows M patterns, one photodiode sums light through each: b = Ax + η. <strong>Compressive</strong> = under-determined = M &lt; N; compression factor N/M. (Measurement matrix = sensing matrix = A.)</li>
-<li><strong>Least-norm solution</strong> (= minimum-norm = pseudoinverse A⁺b) — shortest exact fit; weighted sum of patterns, zero null-space part → looks like speckle. Computed via CG on (AAᵀ)w = b, then x = Aᵀw.</li>
-<li><strong>Conjugate gradients (CG)</strong> — solves SPD systems with one matrix-vector product per step (works with function handles <code>Afun</code>/<code>Atfun</code>; no matrix inverse).</li>
-<li><strong>Compressive LiDAR</strong> (= single-pixel LiDAR) — single-pixel camera + timing detector; histogram per pattern; one single-pixel problem per <strong>time bin</strong> (= range bin). Poisson photon counts change the data term; TV on depth avoids <strong>flying pixels</strong> (= mixed pixels).</li>
-<li><strong>CT / MRI / hyperspectral</strong> — same objective, different A: CT projections = slices of the 2D spectrum (Fourier slice = projection-slice theorem); MRI samples k-space (Fourier coefficients) directly; CASSI = mask + disperser + sum onto one sensor. Priors can <strong>hallucinate</strong>.</li>
+<li><strong>Single-pixel camera</strong> — DMD (digital micromirror device: a chip of tiny tilting mirrors that displays a pattern) shows M patterns, one photodiode sums light through each: b = Ax + η. <strong>Compressive</strong> = under-determined = M &lt; N (fewer measurements than the N scene pixels); compression factor N/M. (Measurement matrix = sensing matrix = A.)</li>
+<li><strong>Least-norm solution</strong> (= minimum-norm = pseudoinverse A⁺b, the generalized &quot;inverse&quot; for a non-square A) — shortest exact fit; weighted sum of patterns, zero null-space part → looks like speckle. Computed via CG on (AAᵀ)w = b, then x = Aᵀw.</li>
+<li><strong>Conjugate gradients (CG)</strong> — solves SPD (symmetric positive definite: symmetric, with all eigenvalues &gt; 0; not Week 3's spectral power distribution) systems with one matrix-vector product per step (works with function handles <code>Afun</code>/<code>Atfun</code>, functions that compute Ax and Aᵀy without storing A; no matrix inverse).</li>
+<li><strong>Compressive LiDAR</strong> (= single-pixel LiDAR) — single-pixel camera + timing detector; histogram per pattern; one single-pixel problem per <strong>time bin</strong> (= range bin). Poisson photon counts change the data term; TV on depth avoids <strong>flying pixels</strong> (= mixed pixels: pixels on an object's edge that get a false depth between foreground and background).</li>
+<li><strong>CT / MRI / hyperspectral</strong> (CT = X-ray computed tomography; MRI = magnetic resonance imaging; hyperspectral = an image with many narrow wavelength bands per pixel, not just RGB) — same objective, different A: CT projections = slices of the 2D spectrum (Fourier slice = projection-slice theorem); MRI samples k-space (Fourier coefficients) directly; CASSI (coded aperture snapshot spectral imager) = mask + disperser (a prism that spreads wavelengths sideways) + sum onto one sensor. Priors can <strong>hallucinate</strong>.</li>
 <li><strong>&quot;Frequency&quot; this week</strong> always = <strong>image frequency</strong> (cycles/pixel) in the FFT formulas; LiDAR uses time (ns), not frequency.</li>
 </ul>
 <h3 id="week6-equations">Key equations</h3>
@@ -3503,7 +3505,7 @@ c₀ = (14·9 − 6·18)/20 = 0.9; c₁ = (4·18 − 6·9)/20 = 0.9 → <strong>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> turning any noise model + belief into an objective. <em>Gotcha:</em> Gaussian prior x ∼ 𝒩(0, τ²) gives Tikhonov with λ = σ²/τ²; HW-style code may drop the ½ (then λ means half as much).</p>
+<p><em>Use it when:</em> turning any noise model + belief into an objective. <em>Gotcha:</em> Gaussian prior x ∼ 𝒩(0, τ²) (x drawn from a bell curve with mean 0 and standard deviation τ) gives Tikhonov with λ = σ²/τ²; HW-style code may drop the ½ (then λ means half as much).</p>
 <h4 class="eq-head" id="week6-e2"><span class="eq-num">E2</span> Norms</h4>
 <pre class="formula">‖v‖₂ = √(Σ vᵢ²)      ‖v‖₁ = Σ |vᵢ|      &quot;ℓ₀&quot; = number of nonzero entries</pre>
 <div class="tbl-wrap"><table>
@@ -3530,7 +3532,7 @@ c₀ = (14·9 − 6·18)/20 = 0.9; c₁ = (4·18 − 6·9)/20 = 0.9 → <strong>
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> choosing a prior: ℓ₁ → sparse, ℓ₂ → spread out. <em>Gotcha:</em> &quot;ℓ₀&quot; is not a norm (not scale-homogeneous); TV is only a pseudo-norm.</p>
+<p><em>Use it when:</em> choosing a prior: ℓ₁ → sparse, ℓ₂ → spread out. <em>Gotcha:</em> &quot;ℓ₀&quot; is not a norm (not scale-homogeneous: doubling v doesn't double its count); TV is only a pseudo-norm.</p>
 <h4 class="eq-head" id="week6-e3"><span class="eq-num">E3</span> Finite differences and total variation</h4>
 <pre class="formula">(D_x x)[r,s] = x[r,s+1] − x[r,s]        (D_y x)[r,s] = x[r+1,s] − x[r,s]
 TV_aniso(x) = Σᵢ ( |(D_x x)ᵢ| + |(D_y x)ᵢ| )        TV_iso(x) = ‖D x‖₂,₁ = Σᵢ √( (D_x x)ᵢ² + (D_y x)ᵢ² )</pre>
@@ -3576,7 +3578,7 @@ TV_aniso(x) = Σᵢ ( |(D_x x)ᵢ| + |(D_y x)ᵢ| )        TV_iso(x) = ‖D x‖
 </tr>
 </tbody>
 </table></div>
-<p><em>Use it when:</em> scoring &quot;flat regions + sharp edges.&quot; <em>Gotcha:</em> FFT version wraps around (circular boundary); in PyTorch avoid <code>torch.sqrt</code> (NaN gradient at 0).</p>
+<p><em>Use it when:</em> scoring &quot;flat regions + sharp edges.&quot; <em>Gotcha:</em> FFT version wraps around (circular boundary); in PyTorch avoid <code>torch.sqrt</code> (NaN = &quot;not a number&quot; gradient at 0, because √'s slope is infinite there).</p>
 <h4 class="eq-head" id="week6-e4"><span class="eq-num">E4</span> Augmented Lagrangian, scaled form</h4>
 <pre class="formula">L_ρ(x, z, y) = f(x) + g(z) + yᵀ(K x − z) + (ρ/2) ‖K x − z‖₂²
             = f(x) + g(z) + (ρ/2) ‖K x − z + u‖₂² − (ρ/2) ‖u‖₂²,     u = y/ρ</pre>
@@ -3684,7 +3686,7 @@ u ← u + K x − z                                           (price step)</pre>
 <p><em>Use it when:</em> any &quot;data term + λΨ&quot; problem where each part alone is easy. <em>Gotcha:</em> z-step uses the <em>new</em> x; HQS = same loop with u ≡ 0.</p>
 <h4 class="eq-head" id="week6-e6"><span class="eq-num">E6</span> Proximal operator and soft thresholding</h4>
 <pre class="formula">prox_{λf}(v) = argmin_x f(x) + (1/(2λ)) ‖x − v‖₂²
-S_κ(v) = v − κ (v &gt; κ);  0 (|v| ≤ κ);  v + κ (v &lt; −κ)  = max(1 − κ/|v|, 0)·v,    κ = λ/ρ
+S_κ(v) = v − κ if v &gt; κ;  0 if |v| ≤ κ;  v + κ if v &lt; −κ  = max(1 − κ/|v|, 0)·v,    κ = λ/ρ
 block (isotropic TV):  zᵢ = max(1 − κ/‖vᵢ‖₂, 0) · vᵢ</pre>
 <div class="tbl-wrap"><table>
 <thead>
@@ -3750,7 +3752,7 @@ x = F⁻¹{ [F{c}*·F{b} + ρ(F{d_x}*·F{v₁} + F{d_y}*·F{v₂})] / [ |F{c}|²
 <tbody>
 <tr>
   <td>C, c</td>
-  <td>blur matrix (circulant) and its PSF kernel</td>
+  <td>blur matrix (circulant: each row is the row above shifted by one with wrap-around, i.e. circular convolution as a matrix) and its PSF kernel</td>
   <td>—</td>
   <td>known, fixed</td>
 </tr>
@@ -3786,7 +3788,7 @@ x = F⁻¹{ [F{c}*·F{b} + ρ(F{d_x}*·F{v₁} + F{d_y}*·F{v₂})] / [ |F{c}|²
 </tr>
 <tr>
   <td>k, N</td>
-  <td>image-frequency index (cycles/N px) and row length</td>
+  <td>image-frequency index (cycles/N px) and row length in pixels (here N = image width, not the total pixel count N of E8)</td>
   <td>—</td>
   <td>—</td>
 </tr>
@@ -3794,7 +3796,7 @@ x = F⁻¹{ [F{c}*·F{b} + ρ(F{d_x}*·F{v₁} + F{d_y}*·F{v₂})] / [ |F{c}|²
 </table></div>
 <p><em>Use it when:</em> data step for circulant blur — element-wise division per image frequency. <em>Gotcha:</em> denominator is constant → precompute once; PnP (K = I) replaces ρ|F{d}|² with ρ.</p>
 <h4 class="eq-head" id="week6-e8"><span class="eq-num">E8</span> Single-pixel model and least-norm solution</h4>
-<pre class="formula">b = A x + η,  A ∈ ℝ^(M×N),  compression factor = N/M
+<pre class="formula">b = A x + η,  A ∈ ℝ^(M×N)  (A is a real-valued M×N matrix),  compression factor = N/M
 x̃_ln = Aᵀ (A Aᵀ)⁻¹ b      (solve (A Aᵀ) w = b by CG, then x = Aᵀ w)</pre>
 <div class="tbl-wrap"><table>
 <thead>
@@ -3929,8 +3931,8 @@ Anisotropic = 3 + 3 + 2 + 0 = <strong>8</strong>. Isotropic = √5 + 3 + 2 + 0 =
 
 <div class="q" id="week6-q3"><div class="q-head"><span class="q-num">Q3</span><span class="chip calc">Calculation</span></div><p class="q-text">One pixel, b = x + η with σ = 0.05, measured b = 0.6. (a) Gaussian prior x ∼ 𝒩(0, τ²), τ = 0.1: find λ in the form ½(b − x)² + (λ/2)x², and x_MAP. (b) Laplace prior p(x) ∝ exp(−|x|/β), β = 0.02: find λ in ½(b − x)² + λ|x|, and x_MAP.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>(a) Multiply (1/(2σ²))(b − x)² + x²/(2τ²) by σ²: λ = σ²/τ² = 0.0025/0.01 = <strong>0.25</strong>; x = b/(1 + λ) = 0.6/1.25 = <strong>0.48</strong>.<br />
-(b) Ψ = |x|/β; × σ²: λ = σ²/β = 0.0025/0.02 = <strong>0.125</strong>; x_MAP = S_{0.125}(0.6) = <strong>0.475</strong> (soft threshold: shifts by λ instead of scaling).</p>
+<p>(a) Multiply (1/(2σ²))(b − x)² + x²/(2τ²) by σ²: λ = σ²/τ² = 0.0025/0.01 = <strong>0.25</strong>; setting the derivative −(b − x) + λx to 0 gives x = b/(1 + λ) = 0.6/1.25 = <strong>0.48</strong>.<br />
+(b) Ψ = |x|/β; × σ²: λ = σ²/β = 0.0025/0.02 = <strong>0.125</strong>; x_MAP = S_{0.125}(0.6) (minimizing ½(b − x)² + λ|x| is exactly the ℓ₁ prox, i.e. soft thresholding by κ = λ) = <strong>0.475</strong> (soft threshold: shifts by λ instead of scaling).</p>
 </div></details></div>
 
 <div class="q" id="week6-q4"><div class="q-head"><span class="q-num">Q4</span><span class="chip calc">Calculation</span></div><p class="q-text">(a) Least-norm solution of A = [[1, 1, 0], [0, 1, 1]], b = [3, 5]. Check it against the exact solution [0, 3, 2]. (b) A single-pixel camera images 128×128 pixels at compression factor 8: M, null-space dimension, fraction measured?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
@@ -3941,7 +3943,7 @@ Anisotropic = 3 + 3 + 2 + 0 = <strong>8</strong>. Isotropic = √5 + 3 + 2 + 0 =
 
 <div class="q" id="week6-q5"><div class="q-head"><span class="q-num">Q5</span><span class="chip calc">Calculation</span></div><p class="q-text">ADMM on a scalar: minimize ½(x − 5)² + 2|x| with K = 1, ρ = 1, starting x = z = u = 0. Give x, z, u after iterations 1 and 2, and the exact minimizer.</p><details class="answer"><summary>Show answer</summary><div class="answer-body">
 
-<p>x-step: x = (5 + v)/2, v = z − u. z-step: z = S_{λ/ρ = 2}(x + u). u ← u + x − z.<br />
+<p>x-step: minimizing ½(x − 5)² + ½(x − v)² (derivative = 0) gives x = (5 + v)/2, v = z − u. z-step: z = S_{λ/ρ = 2}(x + u). u ← u + x − z.<br />
 It 1: x = (5 + 0)/2 = 2.5; z = S₂(2.5) = 0.5; u = 0 + 2.5 − 0.5 = 2.0.<br />
 It 2: v = 0.5 − 2 = −1.5, x = 1.75; z = S₂(3.75) = 1.75; u = 2 + 0 = 2.0.<br />
 (It 3: 2.375, it 4: 2.6875 — gap to the answer halves each step.) Exact: S₂(5) = <strong>3</strong>; u settles at λ/ρ = <strong>2</strong>.</p>
