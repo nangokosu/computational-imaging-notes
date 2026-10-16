@@ -1336,7 +1336,7 @@ DOF ≈ 2·ε·S / (m·D)                     ε (length) = ε (pixels) × pixel
 </tr>
 </tbody>
 </table></div>
-<p><em>By hand:</em> NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). <em>Use it when:</em> comparing the best possible spot with the pixel pitch. Stopping down (raising N, i.e. shrinking the opening) too far gives diffraction blur bigger than a pixel. <em>Gotcha:</em> the Airy-disk <em>diameter</em> to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.</p>
+<p><em>By hand:</em> NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). <em>Use it when:</em> comparing the best possible spot with the pixel pitch. Stopping down (raising N, i.e. shrinking the opening) too far gives diffraction blur bigger than a pixel. <em>When does that blur start to matter?</em> There is no exact cut-off: softening grows gradually as N rises, so people use one of two rules of thumb, and an exam question should say which one it means. (1) <strong>λN &gt; pixel pitch:</strong> the smallest detail the lens can resolve (≈ λN) is now bigger than one pixel, so the lens, not the pixel grid, limits sharpness. (2) <strong>Airy diameter 2.44·λN &gt; 2 pixels:</strong> the finest pattern a pixel grid can record is one light pixel next to one dark pixel, i.e. one cycle per 2 px (the Nyquist limit, 0.5 cycles/px). Once the blur disc is wider than that 2 px cycle, light from each bright pixel spills across its dark neighbour, so the finest stripes the sensor could record lose contrast. Rule (2) uses the full Airy disk (out to its first dark ring) instead of the smaller ≈ λN spot, which is why its threshold is 2 px rather than 1 px. <em>Gotcha:</em> the Airy-disk <em>diameter</em> to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.</p>
 <h4 class="eq-head" id="week2-e9"><span class="eq-num">E9</span> Signal-to-noise ratio</h4>
 <pre class="formula">SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)        shot noise: σ = √N</pre>
 <div class="tbl-wrap"><table>
@@ -1554,7 +1554,7 @@ H = f²/(Nε) = 2500/0.2 = <strong>12 500 mm = 12.5 m</strong> → focusing ther
 </tr>
 </tbody>
 </table></div>
-<p>λN = 4 µm at N = 4/0.5 = <strong>8</strong>. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the common rule that blur becomes visible once the Airy diameter exceeds 2 px, the limit is 1.22·N &gt; 8, i.e. N &gt; 8/1.22 ≈ <strong>f/6.6</strong>.</p>
+<p>λN = 4 µm at N = 4/0.5 = <strong>8</strong>. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the other rule of thumb from E8 instead (diffraction starts to hide the finest pattern the pixels can record, one cycle per 2 px, once the Airy diameter exceeds 2 px), the limit is 1.22·N &gt; 8, i.e. N &gt; 8/1.22 ≈ <strong>f/6.6</strong>.</p>
 </div></details></div>
 
 <div class="q" id="week2-q6"><div class="q-head"><span class="q-num">Q6</span><span class="chip calc">Calculation</span></div><p class="q-text">A pixel receives P = 2000 photons/s with Qe = 0.5, t = 0.1 s, dark current D = 50 e⁻/s and read noise Nr = 4 e⁻. (a) SNR, and in dB? (b) SNR at 4× the exposure time? (c) The sensor has a 16 384 e⁻ full well. Find its dynamic range in stops and dB. Does a 12-bit ADC limit it? A 10-bit one?</p><details class="answer"><summary>Show answer</summary><div class="answer-body">

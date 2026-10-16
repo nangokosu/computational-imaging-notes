@@ -537,7 +537,7 @@ d = λ / (2·n·sinθ) = λ / (2·NA) ≈ λ·N
 | NA | numerical aperture = n·sinθ ≈ 1/(2N) | — | set by the aperture |
 | N | f-number | — | you |
 
-*By hand:* NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). *Use it when:* comparing the best possible spot with the pixel pitch. Stopping down (raising N, i.e. shrinking the opening) too far gives diffraction blur bigger than a pixel. *Gotcha:* the Airy-disk *diameter* to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.
+*By hand:* NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). *Use it when:* comparing the best possible spot with the pixel pitch. Stopping down (raising N, i.e. shrinking the opening) too far gives diffraction blur bigger than a pixel. *When does that blur start to matter?* There is no exact cut-off: softening grows gradually as N rises, so people use one of two rules of thumb, and an exam question should say which one it means. (1) **λN > pixel pitch:** the smallest detail the lens can resolve (≈ λN) is now bigger than one pixel, so the lens, not the pixel grid, limits sharpness. (2) **Airy diameter 2.44·λN > 2 pixels:** the finest pattern a pixel grid can record is one light pixel next to one dark pixel, i.e. one cycle per 2 px (the Nyquist limit, 0.5 cycles/px). Once the blur disc is wider than that 2 px cycle, light from each bright pixel spills across its dark neighbour, so the finest stripes the sensor could record lose contrast. Rule (2) uses the full Airy disk (out to its first dark ring) instead of the smaller ≈ λN spot, which is why its threshold is 2 px rather than 1 px. *Gotcha:* the Airy-disk *diameter* to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.
 
 #### E9. Signal-to-noise ratio
 ```
@@ -644,7 +644,7 @@ H = f²/(Nε) = 2500/0.2 = **12 500 mm = 12.5 m** → focusing there makes **6.2
 | f/8 | 4 µm | 9.76 µm |
 | f/16 | 8 µm | 19.5 µm |
 
-λN = 4 µm at N = 4/0.5 = **8**. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the common rule that blur becomes visible once the Airy diameter exceeds 2 px, the limit is 1.22·N > 8, i.e. N > 8/1.22 ≈ **f/6.6**.
+λN = 4 µm at N = 4/0.5 = **8**. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the other rule of thumb from E8 instead (diffraction starts to hide the finest pattern the pixels can record, one cycle per 2 px, once the Airy diameter exceeds 2 px), the limit is 1.22·N > 8, i.e. N > 8/1.22 ≈ **f/6.6**.
 
 </details>
 
