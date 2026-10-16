@@ -1,8 +1,61 @@
 # CSC2529 Computational Imaging — Midterm Review (Weeks 1–6, HW1–4)
 
-> **Scope:** Weeks 1–6 lecture content and Homeworks 1–4. This is a condensed exam sheet: key concepts, key equations (every symbol defined), causal chains, a recap of what each homework asked and its answer, and 10 practice questions per week (calculation + conceptual) with worked answers. For diagrams and first-principles explanations, use the running notes artifact (linked in the README) or the `weekN-study-notes.md` files.
+> **Scope:** Weeks 1–6 lecture content and Homeworks 1–4. This is a condensed exam sheet: key concepts, key equations (every symbol defined), causal chains, a recap of what each homework asked and its answer, and 10 practice questions per week (calculation + conceptual, all doable without a calculator) with worked answers. For diagrams and first-principles explanations, use the running notes artifact (linked in the README) or the `weekN-study-notes.md` files.
 
 **How to use it:** read a week's concepts → equations → chains, then do its 10 questions with the answers hidden. Practice calculations use *fresh numbers* modeled on the homework problem types; the HW tie-in boxes quote the homework's actual numbers. Where Khai's solution source contains an error, the tie-in flags it with **⚠ Correction**.
+
+**No calculator assumed.** The professor has not confirmed whether calculators are allowed, so every practice calculation is built to be done by hand: numbers are chosen to cancel, angles use the small-angle approximation, and answers keep exact fractions (and π, √, e^(…), log symbols) until the last step, then give a rough decimal. If calculators turn out to be allowed, every answer still holds. The toolkit below collects the tricks; each equation also lists its by-hand form.
+
+## No-calculator toolkit
+
+**Habits**
+- Keep fractions and symbols (π, √5, e^(−1)) until the very end. Cancel common factors before multiplying anything out.
+- Write very big or very small numbers in scientific notation: c = 3×10⁸ m/s, λ = 500 nm = 5×10⁻⁷ m.
+- Compare without dividing or rooting: to decide whether 326 < 1080/π, check whether 326·π (≈ 1024) < 1080. To compare two SNRs, compare their squares.
+- Finish with an order-of-magnitude sanity check.
+
+**Small-angle approximation.** Picture an angle θ opening from your eye. At distance d, it spans an arc of length d·θ (θ in **radians**). When θ is small, that arc, the straight chord across it and the tangent segment are almost the same length. So, for small θ in radians:
+```
+sin θ ≈ tan θ ≈ θ          ⇒   2·d·tan(α/2) ≈ d·α        (size ≈ distance × angle)
+```
+- How good it is: tan θ ≈ θ + θ³/3, so for small θ the relative error is about θ²/3: 0.01% at 1° and 1% at 10°. By 45° the error has grown to 27%.
+- Safe for visual acuity (arcminutes), pixels per degree (1°), diffraction angles, and narrow (telephoto) fields of view.
+- **Not** safe for wide FOV. The exact 2·arctan(1) is 90°, but the small-angle form would give 2 rad ≈ 115°. Use the special angles below instead.
+
+**Angle conversions (keep them as fractions)**
+
+| Angle | Degrees | Radians, exact | Rough decimal |
+|---|---|---|---|
+| 1 degree | 1 | π/180 | ≈ 0.0175 |
+| 1 arcmin | 1/60 | π/10800 | ≈ 2.9×10⁻⁴ |
+| 0.5 arcmin | 1/120 | π/21600 | ≈ 1.45×10⁻⁴ |
+| 1 arcsec | 1/3600 | π/648000 | ≈ 4.8×10⁻⁶ |
+| 1 radian | 180/π ≈ 57.3 | 1 | — |
+
+**π:** π ≈ 3.14, 1/π ≈ 0.318, π² ≈ 10. Check a division by multiplying back: 1080/π ≈ 344 because 344 × 3.14 ≈ 1080.
+
+**Special angles (exact):** tan 30° = 1/√3 ≈ 0.577, tan 45° = 1, tan 60° = √3 ≈ 1.732. So FOV = 2·arctan(ratio) is exactly 60°, 90° or 120° when the ratio is 1/√3, 1 or √3. Also sin²(π/6) = 1/4, sin²(π/4) = 1/2, sin²(π/2) = 1.
+
+**Powers of 2 and logs**
+- 2¹⁰ = 1024 ≈ 10³. So log₂(1000) ≈ 10, log₂(10⁶) ≈ 20, and log₂(10) ≈ 10/3 ≈ 3.32.
+- Know these: 2⁸ = 256, 2¹² = 4096, 2¹⁴ = 16 384, 2¹⁶ = 65 536, 2¹⁸ = 262 144.
+- log₁₀ 2 ≈ 0.301 and log₁₀ 3 ≈ 0.477. So ×2 in power = +3 dB (10·log₁₀ 2), ×2 in amplitude = +6 dB (20·log₁₀ 2), and log₁₀ 11 ≈ 1.04.
+- ln 2 ≈ 0.693 and ln 10 ≈ 2.303.
+- Fractional powers of 2: 2^(1/2) ≈ 1.41, 2^(1/3) ≈ 1.26, 2^(1/6) ≈ 1.12.
+
+**Camera number sequences (memorize; each step = 1 stop)**
+- f-numbers go up by ×√2: 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22. The printed values are rounded: f/2.8 means 2√2 (N² = 8), f/5.6 means 4√2 (N² = 32), f/11 means 8√2 (N² = 128).
+- Shutter times halve: 1, 1/2, 1/4, 1/8, 1/15, 1/30, 1/60, 1/125, 1/250, 1/500, 1/1000 s. Again rounded: 1/125 means 1/128, 1/250 means 1/256.
+
+**Exponentials (Gaussian weights):** e^(−1/8) ≈ 0.88, e^(−1/4) ≈ 0.78, e^(−1/2) ≈ 0.61, e^(−1) ≈ 0.37, e^(−2) ≈ 0.14, e^(−3) ≈ 0.05, e^(−4) ≈ 0.018. For small x, e^(−x) ≈ 1 − x + x²/2. Multiply exponentials by adding exponents: e^(−a)·e^(−b) = e^(−(a+b)).
+
+**Square roots:** √2 ≈ 1.414, √3 ≈ 1.732, √5 ≈ 2.236, √10 ≈ 3.162. Pull out perfect squares: √2000 = √(400·5) = 20√5 ≈ 44.7. Near a perfect square, √(n² + δ) ≈ n + δ/(2n), e.g. √1025 ≈ 32 + 1/64.
+
+> **Summary**
+> - Keep exact fractions and symbols; convert to a rough decimal only at the end.
+> - Rule to remember: for small angles in radians, **sin θ ≈ tan θ ≈ θ**, and **1 arcmin = π/10800 rad**, **1° = π/180 rad**. Don't use it for wide fields of view.
+> - Logs come from 2¹⁰ ≈ 10³ and log₁₀ 2 ≈ 0.3; f-numbers and shutter times are powers of √2 and 2 in disguise.
+> - Every practice calculation below uses only these tricks.
 
 ## Homework → week map
 
@@ -81,6 +134,7 @@ The six weeks form a few long chains. Knowing these makes most conceptual questi
 ```
 p = 2 · d · tan(α / 2)
 dpi = 1 inch / p
+by hand (small angle, α in rad):   p ≈ d · α,   α = 1 arcmin = π/10800   ⇒   dpi ≈ 10800 / (π · d)   (d in inches)
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
@@ -89,11 +143,12 @@ dpi = 1 inch / p
 | α | minimum resolvable visual angle (≈ 1 arcmin) | degrees/arcmin | fixed by acuity |
 | dpi | pixel density | pixels/inch | computed |
 
-*Use it when:* "how dense must a screen be to look smooth at distance d?" *Gotcha:* convert α to radians/degrees correctly; 1 arcmin = 1/60°.
+*Use it when:* "how dense must a screen be to look smooth at distance d?" *Gotcha:* α must be in **radians** for the small-angle form: 1 arcmin = 1/60° = π/10800 rad. At 1 arcmin the small-angle error is far below 0.01%, so p ≈ d·α is effectively exact.
 
 #### E2. Stops ↔ ratio
 ```
 stops = log₂(ratio)          ratio = 2^stops
+by hand:  2¹⁰ ≈ 10³  ⇒  stops ≈ (10/3) × (orders of magnitude)
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
@@ -120,6 +175,7 @@ physical spatial frequency (cycles/inch) = image frequency (cycles/pixel) × dpi
 width of 1° = 2 · D · tan(0.5°)
 px/deg = (width of 1°) / pixel pitch,     pixel pitch = 2.54 cm / dpi
 image frequency (cycles/px) = cpd / (px/deg)
+by hand (small angle):  width of 1° ≈ D · π/180   ⇒   px/deg ≈ π · D · dpi / (180 · 2.54)   (D in cm)
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
@@ -131,7 +187,7 @@ image frequency (cycles/px) = cpd / (px/deg)
 | cpd | target spatial frequency (e.g. CSF peak) | cycles/degree | chosen from CSF |
 | image frequency | the same frequency on the pixel grid | cycles/pixel | computed |
 
-*Use it when:* picking a hybrid-image cutoff. *Gotcha:* farther D → more px/deg → lower cycles/px for the same cpd.
+*Use it when:* picking a hybrid-image cutoff. *Gotcha:* farther D → more px/deg → lower cycles/px for the same cpd. By hand, keep π in the answer (e.g. px/deg = 20π) and divide it out only at the end. A dpi of 254 makes the pitch exactly 0.01 cm, because 2.54/254 = 0.01.
 
 #### E5. Contrast
 ```
@@ -202,7 +258,7 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 ### Causal chains
 1. Step back from a print → each cycle subtends a smaller angle → more cycles per degree (cpd ↑) → fine detail passes the ~60 cpd cutoff. *So:* distance, not the print, decides what is visible.
 2. Cone spacing 0.5 arcmin → ≥ 2 samples per cycle → smallest cycle ≈ 1 arcmin → 60 cpd cutoff = 20/20 acuity. *So:* acuity, CSF cutoff and sampling are one fact.
-3. Acuity 1 arcmin at d = 12 in → p ≈ 0.0035 in → ≈ 286 dpi → 300 dpi "retina" claim holds. *So:* "retina" only means retina at a stated distance.
+3. Acuity 1 arcmin at d = 12 in → p ≈ 12 · π/10800 = π/900 in ≈ 0.0035 in → dpi = 900/π ≈ 286 → 300 dpi "retina" claim holds. *So:* "retina" only means retina at a stated distance.
 4. Stereo display → vergence at simulated depth, accommodation at the screen → conflicting cues → VAC discomfort. *So:* displays that give correct focus per pixel (light field/holographic) are needed.
 5. Eye ~46.5 stops vs. display ~10 stops → scenes cannot be shown as-is → HDR capture + tonemapping (Week 4). *So:* dynamic range gaps drive HDR.
 6. Mask on shifted spectrum = multiplying by DFT{h} → convolution theorem → same as blurring (LPF) or original − blur (HPF). *So:* frequency masking gives an exact cutoff radius for the same operation.
@@ -218,18 +274,21 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 
 > **Note (rounding):** the solution rounds px/deg to 82 and 412 before dividing. With unrounded 82.46 and 412.29, the cycles/px are 0.0606 and 0.0121, mean 0.0364, radius ≈ 36.4 px (vs. 36.59). Either is fine in practice; just be consistent.
 
+> **Note (by hand):** the small-angle form px/deg = π·D·dpi/(180·2.54) gives the same 82.46 and 412.29: tan(0.5°) and 0.5° in radians differ by about 0.003%. In fraction form, 40 cm and 300 dpi give px/deg = 12000π/457.2.
+
 ### Practice questions
 **Q1. [Calc]** A phone is held 10 inches from the eye. Assuming 20/20 acuity (α = 1 arcmin), what pixel size and dpi make it a "retina" display? Does a 326 dpi phone qualify at this distance?
 <details><summary>Answer</summary>
 
-α/2 = 0.5 arcmin = 1/120°. p = 2 × 10 × tan(1/120°) = 0.00291 in. dpi = 1/p ≈ **344 dpi**, pixel ≈ **0.0029 in**. A 326 dpi phone is below 344, so it is **not** quite retina at 10 in (it is at 12 in, where the threshold is ≈ 286 dpi).
+Small angle: α = 1 arcmin = π/10800 rad, so p ≈ d·α = 10 · π/10800 = **π/1080 in** (≈ 0.0029 in). dpi = 1/p = **1080/π ≈ 344 dpi** (check: 344 × 3.14 ≈ 1080).  
+Does 326 dpi qualify? Compare without dividing: 326·π ≈ 326 × 3.14 ≈ 1024 < 1080, so 326 < 1080/π. The phone's pixels are slightly too big, so it is **not** quite retina at 10 in. At 12 in the threshold is 10800/(π·12) = 900/π ≈ 286 dpi, which 326 beats.
 
 </details>
 
 **Q2. [Calc]** (a) A display has a 1000:1 contrast ratio. How many stops is that? (b) You take one shot at +2 EV exposure compensation and another at −3 EV. What is the light ratio between them? (c) The meter suggests f/8 at 1/250 s; you open to f/4. What shutter time keeps the same exposure?
 <details><summary>Answer</summary>
 
-(a) log₂(1000) = **9.97 ≈ 10 stops** (3 orders × 3.32).  
+(a) 2¹⁰ = 1024 ≈ 1000, so log₂(1000) ≈ **10 stops** (just under; 3 orders × 10/3).  
 (b) Difference = 2 − (−3) = 5 stops → 2⁵ = **32×** more light in the +2 shot.  
 (c) f/8 → f/4: N halves, area ×4 → 2·log₂(8/4) = 2 stops more light. Pay back with 2 stops less time: 1/250 → 1/500 → **1/1000 s**.
 
@@ -244,22 +303,22 @@ F_hybrid(u, v) = H_A(u, v) + L_B(u, v)
 
 </details>
 
-**Q4. [Calc]** HW1-style: two 801×801 px images printed at 200 dpi, viewed at 50 cm and 2.5 m; target the CSF peak at 4 cpd. Find (a) print size, (b) px/deg at each distance, (c) cycles/px at each distance and their mean, (d) the FFT mask radius.
+**Q4. [Calc]** HW1-style: two 1000×1000 px images printed at 254 dpi, viewed at 36 cm and 1.8 m; target the CSF peak at 4 cpd. Find (a) the pixel pitch and print size, (b) px/deg at each distance (small-angle approximation), (c) cycles/px at each distance and their mean, (d) the FFT mask radius.
 <details><summary>Answer</summary>
 
-(a) 801/200 = 4.005 in = **10.17 cm**. Pitch = 2.54/200 = 0.0127 cm.  
-(b) Width of 1° = 2·D·tan(0.5°): 50 cm → 0.8727 cm → 0.8727/0.0127 = **68.7 px/deg**; 250 cm → 4.363 cm → **343.6 px/deg**.  
-(c) 4/68.7 = **0.0582 cycles/px** (50 cm); 4/343.6 = **0.0116 cycles/px** (2.5 m). Mean = **0.0349 cycles/px**.  
-(d) Radius = 0.03493 × 801 = **28.0 px** (LPF r ≤ 28 on the far image, HPF r ≥ 28 on the near image).
+(a) Pitch = 2.54 cm/254 = **0.01 cm**. Print size = 1000 × 0.01 = **10 cm** (= 1000/254 ≈ 3.94 in).  
+(b) Width of 1° ≈ D·π/180. At 36 cm: 36π/180 = π/5 cm, so px/deg = (π/5)/0.01 = **20π ≈ 63 px/deg**. At 180 cm: 180π/180 = π cm, so px/deg = π/0.01 = **100π ≈ 314 px/deg**.  
+(c) cycles/px = cpd/(px/deg). At 36 cm: 4/(20π) = **1/(5π) ≈ 0.064**. At 1.8 m: 4/(100π) = **1/(25π) ≈ 0.013**. Mean = ½(5/(25π) + 1/(25π)) = 6/(50π) = **3/(25π) ≈ 0.038 cycles/px**.  
+(d) Radius = cycles/px × N = 1000 · 3/(25π) = **120/π ≈ 38 px** (120/3.14 ≈ 38.2). Use LPF r ≤ 38 on the far image and HPF r ≥ 38 on the near image.
 
 </details>
 
-**Q5. [Calc]** A 512-px-wide image's `fft2` has a strong peak at k_u = 16. (a) Image frequency? Period in pixels? (b) Printed at 150 dpi, physical frequency? (c) Viewed from 60 cm, cpd? Where on the CSF?
+**Q5. [Calc]** A 512-px-wide image's `fft2` has a strong peak at k_u = 16. (a) Image frequency? Period in pixels? (b) Printed at 160 dpi, physical frequency? (c) Viewed from 36 inches, cpd (small-angle approximation)? Where on the CSF?
 <details><summary>Answer</summary>
 
-(a) u = 16/512 = **0.03125 cycles/px**, period **32 px**.  
-(b) 0.03125 × 150 = **4.69 cycles/inch** = 1.85 cycles/cm.  
-(c) Width of 1° at 60 cm = 2 × 60 × tan(0.5°) = 1.047 cm → 1.85 × 1.047 = **1.93 cpd**: below the 4–6 cpd peak, on the rising low-frequency side; clearly visible, and becomes more visible (toward the peak) as you step back.
+(a) u = 16/512 = **1/32 cycles/px**, period **32 px**.  
+(b) (1/32) × 160 = **5 cycles/inch**.  
+(c) Width of 1° at 36 in ≈ 36 · π/180 = π/5 in. cpd = 5 cycles/in × π/5 in/degree = **π ≈ 3.1 cpd**. That is just below the 4–6 cpd peak, on the rising low-frequency side. It is clearly visible and becomes more visible (toward the peak) as you step back.
 
 </details>
 
@@ -302,7 +361,7 @@ Inverse filter divides by DFT{h}, so noise at that frequency is multiplied by 1/
 
 > **Summary**
 > - The eye is an optical instrument (pupil = aperture, retina = sensor) whose limits are angles (1 arcmin acuity, 60 cpd cutoff) and ratios (stops, dynamic range).
-> - Rules to remember: **p = 2·d·tan(α/2)**, **stops = log₂(ratio)**, and the chain **cycles/px = cpd / (px/deg)** with radius = cycles/px × N.
+> - Rules to remember: **p = 2·d·tan(α/2) ≈ d·α** (α in rad, 1 arcmin = π/10800), **stops = log₂(ratio)**, and the chain **cycles/px = cpd / (px/deg)** with radius = cycles/px × N.
 > - CSF is band-pass (peak 4–6 cpd); cpd depends on distance, which is why hybrid images work.
 > - Fourier transform + convolution theorem: masking spectra = convolving; deconvolution reverses it but is ill-posed.
 > - Sets up Week 2 (lens/aperture optics, pinhole FOV) and Week 5 (sampling, Wiener deconvolution).
@@ -351,11 +410,12 @@ blur(d) ≈ d + f·λ/d        d = 2·√(f·λ)
 | λ | wavelength of light | m (e.g. 550 nm) | fixed by the light |
 | blur(d) | total blur: geometric (d) + diffraction (fλ/d) | m | result |
 
-*Use it when:* sizing a pinhole for a given box depth. *Gotcha:* setting the derivative of blur(d) to zero gives d = √(fλ). The course form has the factor 2, and Wikipedia's version uses 1.9.
+*Use it when:* sizing a pinhole for a given box depth. *Gotcha:* setting the derivative of blur(d) to zero gives d = √(fλ). The course form has the factor 2, and Wikipedia's version uses 1.9. *By hand:* write f·λ as (perfect square) × 10^(even power), e.g. 0.1 m × 4×10⁻⁷ m = 4×10⁻⁸ m², whose root is 2×10⁻⁴ m. At d = 2√(fλ), fλ/d = d/4, so blur = 5d/4.
 
 #### E2. Field of view
 ```
 FOV = 2 · arctan(d / (2f))
+by hand:  d/(2f) = 1/√3, 1, √3  ⇒  FOV = 60°, 90°, 120° exactly;   narrow view (d ≪ f):  FOV ≈ d/f rad
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
@@ -363,7 +423,7 @@ FOV = 2 · arctan(d / (2f))
 | d | sensor (or screen) width, height or diagonal | mm | fixed by the body |
 | f | focal length (pinhole-to-screen distance for a pinhole camera) | mm | intrinsic to the lens / box |
 
-*Use it when:* you need the horizontal, vertical or diagonal angle. Use the matching sensor dimension for d. *Gotcha:* this d is a sensor size, not E1's pinhole diameter.
+*Use it when:* you need the horizontal, vertical or diagonal angle. Use the matching sensor dimension for d. *Gotcha:* this d is a sensor size, not E1's pinhole diameter. The small-angle form overestimates wide views (it gives 2 rad ≈ 115° where the truth is 90°), so use it only when d is much smaller than f. Convert radians to degrees with × 180/π.
 
 #### E3. Thin lens equation and magnification
 ```
@@ -382,6 +442,7 @@ FOV = 2 · arctan(d / (2f))
 #### E4. F-number and stops
 ```
 N = f / D        stops = 2 · log₂(N₂ / N₁)        N_k = N₀ · 2^(k/2)
+by hand:  count steps along 1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22 (each step = 1 stop);  third stops: × 2^(1/6) ≈ 1.12
 ```
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
@@ -455,7 +516,7 @@ d = λ / (2·n·sinθ) = λ / (2·NA) ≈ λ·N
 | NA | numerical aperture = n·sinθ ≈ 1/(2N) | — | set by the aperture |
 | N | f-number | — | you |
 
-*Use it when:* comparing the best possible spot with the pixel pitch. Stopping down too far gives diffraction blur bigger than a pixel. *Gotcha:* the Airy-disk *diameter* to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.
+*By hand:* NA ≈ 1/(2N) is itself the small-angle approximation: sin θ ≈ tan θ = (D/2)/f = 1/(2N). *Use it when:* comparing the best possible spot with the pixel pitch. Stopping down too far gives diffraction blur bigger than a pixel. *Gotcha:* the Airy-disk *diameter* to its first dark ring is 2.44·λ·N (Week 5: radius 1.22·λ·N), so it is bigger than λN.
 
 #### E9. Signal-to-noise ratio
 ```
@@ -471,7 +532,7 @@ SNR = P·Qe·t / √(P·Qe·t + D·t + Nr²)        shot noise: σ = √N
 | Nr | RMS read noise, paid once per readout | e⁻ | sensor |
 | N | mean collected electrons (= P·Qe·t) | e⁻ | result |
 
-*Use it when:* predicting image quality. Independent variances add under the √. *Gotcha:* when shot noise dominates, SNR ∝ √t (×2 exposure → ×√2 SNR). When read noise dominates, SNR ∝ t.
+*Use it when:* predicting image quality. Independent variances add under the √. *By hand:* get the dB with 20·log₁₀(a/b) = 20·log₁₀ a − 20·log₁₀ b, e.g. 20·log₁₀(100/11) = 40 − 20.8. To compare two SNRs, compare SNR² (no roots needed). *Gotcha:* when shot noise dominates, SNR ∝ √t (×2 exposure → ×√2 SNR). When read noise dominates, SNR ∝ t.
 
 #### E10. Dynamic range and bit depth
 ```
@@ -485,7 +546,7 @@ DR = max signal / noise floor      DR_stops = log₂(DR)      DR_dB = 20·log₁
 | b | ADC bit depth | bits | sensor / RAW format |
 | levels | number of integer output values | — | result |
 
-*Use it when:* deciding whether the noise or the ADC limits range. A b-bit ADC caps it at about b stops. *Gotcha:* use 20·log₁₀ for amplitude ratios (electrons) and 10·log₁₀ for power ratios.
+*Use it when:* deciding whether the noise or the ADC limits range. A b-bit ADC caps it at about b stops. *By hand:* each stop is ×2 in amplitude, i.e. 20·log₁₀ 2 ≈ 6 dB, so DR_dB ≈ 6 × DR_stops. *Gotcha:* use 20·log₁₀ for amplitude ratios (electrons) and 10·log₁₀ for power ratios.
 
 ### Causal chains
 1. Pinhole shrinks → geometric blur ↓ but diffraction (fλ/d) ↑ and light ↓ (∝ d²) → **so:** there is one optimal d = 2√(fλ); smaller is not always sharper.
@@ -516,66 +577,69 @@ Hyperfocal H = f²/(Nc): **26.0 m at f/3**, **4.875 m at f/16**. Takeaways: DoF 
 > **⚠ Correction:** HW2_Solutions.pdf used **c = 1 px = 0.0064 mm** instead of the required 5 px = 0.032 mm, so every DoF it reports is about 5× too small (e.g. f/3 @ 2.5 m: 2.45–2.55 m, DoF 0.094 m; f/16: 2.27–2.78 m, 0.50 m; f/3 @ 0.5 m: 3.4 mm; f/3 @ 20 m: 17.34–23.62 m). Its "6.12 m" at 20 m does not even match its own edges (they give 6.29 m). Its "ninefold" f/3 → f/16 claim is ≈ 5.3× by its own numbers and ≈ 7.1× with the correct c. Use the table above.
 
 ### Practice questions
-**Q1. [Calc]** A pinhole box has its screen 12 cm behind the hole. The screen is 16 cm wide × 12 cm tall. (a) Horizontal and vertical FOV? (b) Optimal pinhole diameter for λ = 600 nm, and the predicted blur there?
+**Q1. [Calc]** A pinhole box has its screen 10 cm behind the hole. The screen is 20 cm wide. (a) Horizontal FOV, and why not use the small-angle approximation here? (b) A second, deep box has f = 50 cm and a 5 cm wide screen: estimate its FOV. (c) Optimal pinhole diameter for the 10 cm box at λ = 400 nm, and the predicted blur there?
 <details><summary>Answer</summary>
 
-(a) FOV_h = 2·arctan(8/12) = **67.4°**; FOV_v = 2·arctan(6/12) = **53.1°**.  
-(b) d = 2√(0.12 m × 600×10⁻⁹ m) = **0.537 mm**. blur(d) ≈ d + fλ/d = 0.537 + 0.134 = **≈ 0.67 mm**. For comparison, a 1 mm hole gives ≈ 1.07 mm and a 0.1 mm hole ≈ 0.82 mm.
+(a) d/(2f) = 20/20 = 1, and arctan(1) = 45°, so FOV = **90°** exactly. The small-angle form would give d/f = 2 rad ≈ 115°, far off, because 45° is not a small angle.  
+(b) d/(2f) = 2.5/50 = 1/20 is small, so FOV ≈ d/f = 5/50 = **1/10 rad** = 18/π degrees ≈ **5.7°** (exact: 5.72°).  
+(c) fλ = 0.1 m × 4×10⁻⁷ m = 4×10⁻⁸ m², so √(fλ) = 2×10⁻⁴ m and d = 2√(fλ) = **4×10⁻⁴ m = 0.4 mm**. blur ≈ d + fλ/d = 0.4 mm + (4×10⁻⁸)/(4×10⁻⁴) m = 0.4 + 0.1 = **0.5 mm** (= 5d/4). For comparison, a 1 mm hole gives 1 + 0.04 = 1.04 mm, and a 0.05 mm hole gives 0.05 + 0.8 = 0.85 mm.
 
 </details>
 
-**Q2. [Calc]** An 85 mm lens is focused on a person 1.8 m tall standing 1.7 m away. Find the sensor distance S′, the magnification m, and the person's image height. How far must the lens move from its infinity-focus position?
+**Q2. [Calc]** A 50 mm lens is focused on a person 1.8 m tall standing 2.55 m away. Find the sensor distance S′, the magnification m, and the person's image height. Does the person fit on a 36 × 24 mm sensor? How far must the lens move from its infinity-focus position?
 <details><summary>Answer</summary>
 
-S′ = fS/(S − f) = 85·1700/1615 = **89.47 mm**. m = S′/S = 89.47/1700 = **0.0526** (check: (S′ − f)/f = 4.47/85 = 0.0526). Image height = 1800 × 0.0526 = **94.7 mm**, which is taller than a 24 mm sensor, so the person won't fit vertically. At infinity focus S′ = f = 85 mm, so the lens moves out by **4.47 mm**.
+S′ = fS/(S − f) = 50·2550/2500 = **51 mm**. m = S′/S = 51/2550 = **1/50** (check: (S′ − f)/f = 1/50). Image height = 1800/50 = **36 mm**. That is taller than the 24 mm sensor height, so the person only fits with the camera turned to portrait orientation (36 mm side vertical), and then exactly. At infinity focus S′ = f = 50 mm, so the lens moves out by **1 mm**.
 
 </details>
 
-**Q3. [Calc]** You go from f/2 to f/5.6 on an 85 mm lens. (a) Aperture diameters? (b) How many stops, and what light ratio? (c) If 1/1000 s was correct at f/2, what shutter time keeps the same brightness? (d) The next two third-stop f-numbers after f/5.6?
+**Q3. [Calc]** You go from f/2 to f/8 on a 50 mm lens. (a) Aperture diameters? (b) How many stops, and what light ratio? (c) If 1/1000 s was correct at f/2, what shutter time keeps the same brightness? (d) The next two third-stop f-numbers after f/8?
 <details><summary>Answer</summary>
 
-(a) D = 85/2 = **42.5 mm**; 85/5.6 = **15.2 mm**.  
-(b) stops = 2·log₂(5.6/2) = **+2.97 ≈ 3 stops less light**; ratio (5.6/2)² = **7.84× less** (≈ 2³).  
-(c) Time × 7.84 → 0.00784 s ≈ **1/125 s**.  
-(d) 5.6·2^(1/6) = 6.29 → **f/6.3**; 5.6·2^(1/3) = 7.06 → **f/7.1**.
+(a) D = 50/2 = **25 mm**; 50/8 = **6.25 mm**.  
+(b) stops = 2·log₂(8/2) = 2·2 = **4 stops less light** (count: 2 → 2.8 → 4 → 5.6 → 8); ratio (8/2)² = **16× less**.  
+(c) Time × 16: 16/1000 s = 1/62.5 s ≈ **1/60 s** (the nominal 4-stop step 1/1000 → 1/500 → 1/250 → 1/125 → 1/60).  
+(d) 8 × 2^(1/6) ≈ 8 × 1.12 ≈ 9.0 → **f/9**; 8 × 2^(1/3) ≈ 8 × 1.26 ≈ 10.1 → **f/10**. The next full stop is f/11.
 
 </details>
 
-**Q4. [Calc]** A full-frame camera (36 × 24 mm, 6000 × 4000 px) has a 35 mm lens at f/8, focused at 3 m. Sharp means CoC ≤ 4 px. Find near, far, DoF, the compact-formula DoF, and the hyperfocal distance.
+**Q4. [Calc]** A full-frame camera (36 × 24 mm, 7200 × 4800 px) has a 50 mm lens at f/8, focused at 2.55 m. Sharp means CoC ≤ 5 px. Find near, far, DoF, the compact-formula DoF, and the hyperfocal distance.
 <details><summary>Answer</summary>
 
-Pitch = 36/6000 = 0.006 mm → ε = 0.024 mm. S′ = 35·3000/2965 = 35.41 mm, m = 0.01180, D = 35/8 = 4.375 mm → k = ε/(mD) = **0.465**.  
-O_near = 3000/1.465 = **2.05 m**; O_far = 3000/0.535 = **5.60 m**; DoF = **3.56 m**. The compact 2kS gives 2.79 m, which underestimates because k is not small. The edges are lopsided (0.95 m in front of S, 2.60 m behind).  
-H = 35²/(8·0.024) = **6.38 m** → focusing there makes **3.19 m to ∞** sharp.
+Pitch = 36/7200 = 0.005 mm → ε = 5 × 0.005 = 0.025 mm. Use k = N·ε·(S − f)/f². Here N·ε = 8 × 0.025 = 0.2 mm, S − f = 2500 mm and f² = 2500 mm², so k = 0.2 × 2500/2500 = **0.2** (= 1/5).  
+O_near = S/(1 + k) = 2550/1.2 = **2125 mm**; O_far = S/(1 − k) = 2550/0.8 = **3187.5 mm**; DoF = **1062.5 mm ≈ 1.06 m**. The compact 2kS gives 2 × 0.2 × 2550 = 1020 mm, a slight underestimate. The edges are lopsided: 425 mm in front of S, 637.5 mm behind.  
+H = f²/(Nε) = 2500/0.2 = **12 500 mm = 12.5 m** → focusing there makes **6.25 m to ∞** sharp.
 
 </details>
 
-**Q5. [Calc]** A sensor has a 4 µm pixel pitch. For λ = 550 nm, find the diffraction spot λN and the Airy-disk diameter 2.44λN at f/2.8, f/8 and f/16. Above what f-number does λN exceed one pixel?
+**Q5. [Calc]** A sensor has a 4 µm pixel pitch. For λ = 500 nm, find the diffraction spot λN and the Airy-disk diameter 2.44λN at f/2.8, f/8 and f/16. Above what f-number does λN exceed one pixel?
 <details><summary>Answer</summary>
+
+λ = 0.5 µm, so λN is just N/2 µm, and 2.44·λN = 1.22·N µm.
 
 | N | λN | 2.44·λN |
 |---|---|---|
-| f/2.8 | 1.54 µm | 3.76 µm |
-| f/8 | 4.40 µm | 10.7 µm |
-| f/16 | 8.80 µm | 21.5 µm |
+| f/2.8 | 1.4 µm | 3.4 µm |
+| f/8 | 4 µm | 9.76 µm |
+| f/16 | 8 µm | 19.5 µm |
 
-λN = 4 µm at N = 4/0.55 = **7.3**. Beyond ≈ f/7.3 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans more than 5 pixels. Using the Airy diameter > 2 px criterion instead, the limit is already ≈ f/6.
+λN = 4 µm at N = 4/0.5 = **8**. Beyond f/8 the diffraction spot is bigger than a pixel, and at f/16 the Airy disk spans about 5 pixels (19.5/4). Using the Airy diameter > 2 px criterion instead, the limit is 1.22·N > 8, i.e. N > 8/1.22 ≈ **f/6.6**.
 
 </details>
 
-**Q6. [Calc]** A pixel receives P = 2000 photons/s with Qe = 0.5, t = 0.1 s, dark current D = 10 e⁻/s and read noise Nr = 5 e⁻. (a) SNR, and in dB? (b) SNR at 4× the exposure time? (c) The sensor has a 30 000 e⁻ full well. Find its dynamic range in stops and dB. Does a 12-bit ADC limit it?
+**Q6. [Calc]** A pixel receives P = 2000 photons/s with Qe = 0.5, t = 0.1 s, dark current D = 50 e⁻/s and read noise Nr = 4 e⁻. (a) SNR, and in dB? (b) SNR at 4× the exposure time? (c) The sensor has a 16 384 e⁻ full well. Find its dynamic range in stops and dB. Does a 12-bit ADC limit it? A 10-bit one?
 <details><summary>Answer</summary>
 
-(a) Signal = 2000·0.5·0.1 = 100 e⁻; variance = 100 + 1 + 25 = 126 → σ = 11.2 → **SNR = 8.91 ≈ 19.0 dB** (20·log₁₀).  
-(b) Signal 400, variance 400 + 4 + 25 = 429 → **SNR = 19.3**, a gain of 2.17×. That is a bit more than √4 = 2, because the fixed read noise matters less as the signal grows.  
-(c) DR = 30000/5 = 6000 → log₂ = **12.6 stops**, 20·log₁₀ = **75.6 dB**. A 12-bit ADC has 4096 levels ≈ **12 stops**, so it slightly caps the range. A 14-bit ADC (16 384 levels) would not.
+(a) Signal = 2000·0.5·0.1 = 100 e⁻. Variance = shot 100 + dark 50·0.1 = 5 + read 4² = 16 → 121, so σ = 11 → **SNR = 100/11 ≈ 9.1**. In dB: 20·log₁₀(100/11) = 40 − 20·log₁₀ 11 ≈ 40 − 20.8 = **≈ 19.2 dB**.  
+(b) Signal 400, variance 400 + 20 + 16 = 436. Since 21² = 441, σ ≈ 20.9 → **SNR ≈ 19.1**, a gain of about 2.1×. That is a bit more than √4 = 2, because the fixed read noise matters less as the signal grows.  
+(c) DR = 16 384/4 = 4096 = 2¹² → **12 stops**, and 20·log₁₀(2¹²) = 12 × 6.02 ≈ **72 dB**. A 12-bit ADC has exactly 4096 levels = 12 stops, so it just matches and does not limit. A 10-bit ADC (1024 levels) would cap it at **10 stops**.
 
 </details>
 
 **Q7. [Concept]** Using "circle of confusion", "f-number" and "diffraction", explain why opening the aperture from f/16 to f/2.8 gives more light, shallower DoF, *and* a smaller diffraction spot.
 <details><summary>Answer</summary>
 
-Light ∝ 1/N², so f/2.8 gives ≈ 32× more light (5 stops). D = f/N grows, so the CoC c = m·D·|O−S|/O grows for every out-of-focus point, which shrinks the range where c ≤ ε (shallower DoF). A wider cone of rays (bigger NA ≈ 1/(2N)) focuses to a narrower diffraction spot ≈ λN. Wide apertures trade DoF for light and resolution.
+Light ∝ 1/N², so f/2.8 gives ≈ 32× more light (5 stops: f/16 → 11 → 8 → 5.6 → 4 → 2.8, and 2⁵ = 32). D = f/N grows, so the CoC c = m·D·|O−S|/O grows for every out-of-focus point, which shrinks the range where c ≤ ε (shallower DoF). A wider cone of rays (bigger NA ≈ 1/(2N)) focuses to a narrower diffraction spot ≈ λN. Wide apertures trade DoF for light and resolution.
 
 </details>
 
@@ -675,7 +739,7 @@ C_sRGB = (1 + α) · C_lin^(1/2.4) − α    otherwise,  α = 0.055
 | 1/2.2, 1/2.4 | encoding exponents | — | fixed by standard |
 | 12.92, 0.0031308 | slope / threshold of the linear piece near black | — | fixed |
 | α | offset constant for the power piece | — | fixed (0.055) |
-*Use it when:* converting between linear and display values (HW2 applies `x^(1/2.2)` before PSNR). *Gotcha:* the two curves differ by about 1 code at mid-gray (0.18 → 117 vs 118).
+*Use it when:* converting between linear and display values (HW2 applies `x^(1/2.2)` before PSNR). *Gotcha:* the two curves differ by about 1 code at mid-gray (0.18 → 117 vs 118). *By hand:* x^(1/2.2) cannot be done without a calculator, so estimate with γ = 2 (encode = √x, decode = x²). That gives slightly darker codes than true 2.2 (√0.25 → code 128 vs 136 with 2.2). Below the 0.0031308 threshold, exact sRGB is just ×12.92.
 
 #### E4. Weighted-average smoothing and Gaussian weight
 ```
@@ -691,7 +755,7 @@ Gaussian:  w(x,x') = exp(−|x − x'|² / (2σ²))     H(f) = exp(−f² / (2σ
 | f | image frequency | cycles/px | — |
 | H(f) | fraction of frequency f that survives | — | result |
 | σ_f | frequency-domain width | cycles/px | fixed by σ |
-*Use it when:* building any kernel. *Gotcha:* larger σ → narrower σ_f → lower cutoff → more blur. A neighbor at distance σ gets e^(−1/2) ≈ 0.607 of the center weight.
+*Use it when:* building any kernel. *Gotcha:* larger σ → narrower σ_f → lower cutoff → more blur. A neighbor at distance σ gets e^(−1/2) ≈ 0.607 of the center weight. *By hand:* keep the weights as e^(−fraction), add exponents when weights multiply, and normalize at the end. The binomial kernel [1/4, 1/2, 1/4] is a calculator-free stand-in for a small Gaussian (σ² = 1/2).
 
 #### E5. MSE and PSNR
 ```
@@ -705,7 +769,7 @@ PSNR = 10 · log₁₀( max(I_gt)² / MSE )      ⇔   MSE = max² · 10^(−PSN
 | I_est, I_gt | estimate, ground truth | intensity | — |
 | max(I_gt) | peak value: 1 for [0,1] data, 255 for 8-bit | intensity | fixed by data format |
 | PSNR | quality score, higher = better | dB | result |
-*Use it when:* ranking reconstructions. *Gotcha:* max and MSE must be on the same scale. +3 dB ≈ half the MSE; +10 dB = 1/10 the MSE.
+*Use it when:* ranking reconstructions. *Gotcha:* max and MSE must be on the same scale. +3 dB ≈ half the MSE; +10 dB = 1/10 the MSE. *By hand:* split the log, e.g. 10·log₁₀(1/0.0004) = 10·log₁₀(10⁴/4) = 10·(4 − 2·0.301) ≈ 34 dB. For 8-bit data, 255² = (256 − 1)² = 65 025.
 
 #### E6. Bilinear and Malvar–He–Cutler demosaicking
 ```
@@ -771,7 +835,7 @@ sharpened = I + k · (I − blur(I))
 | X, Y, Z | CIE tristimulus values (white Y = 1) | relative | from calibration (C · camera RGB) |
 | R, G, B (lin) | linear sRGB | [0,1] if displayable | result |
 | matrix | inverse of sRGB→XYZ (whose middle row 0.2126/0.7152/0.0722 is luminance) | — | fixed (IEC 61966-2-1) |
-*Gotcha:* any output below 0 or above 1 means the color is out of the sRGB gamut. Apply gamma only *after* this step.
+*Gotcha:* any output below 0 or above 1 means the color is out of the sRGB gamut. Apply gamma only *after* this step. *By hand:* for a gamut test only the signs matter, so round the matrix to about [3.2 −1.5 −0.5; −1.0 1.9 0.04; 0.06 −0.2 1.06]. Redo a row with full precision only if its result lands close to 0 or 1.
 
 ### Causal chains
 1. Sensor gives one number per filter → spectrum collapses to 3 values → metamers exist → so: cameras and eyes can be fooled the same way, and three primaries are enough for display.
@@ -790,12 +854,12 @@ sharpened = I + k · (I − blur(I))
 > **⚠ Correction:** two code quirks. (a) The bilateral window radius was int(σ), so σ = 0.5 gives a 1×1 window and the filter does nothing. (b) The NLM patch radius was 0, so it compares single pixels rather than patches, which throws away NLM's noise-robust patch comparison. Learn the concepts, not those settings.
 
 ### Practice questions
-**Q1. [Calc]** (a) A reconstruction on [0,1] data has MSE = 0.0016. What is its PSNR? (b) An 8-bit image scores 32 dB. What are its MSE and RMS error in code values? (c) Method B scores 3 dB higher than method A. By what factor is its MSE lower?
+**Q1. [Calc]** (a) A reconstruction on [0,1] data has MSE = 0.0004. What is its PSNR? (b) An 8-bit image scores 30 dB. What are its MSE and RMS error in code values? (c) Method B scores 3 dB higher than method A. By what factor is its MSE lower?
 <details><summary>Answer</summary>
 
-(a) PSNR = 10·log₁₀(1²/0.0016) = 10·log₁₀(625) → **27.96 dB**.  
-(b) MSE = 255²·10^(−3.2) = 65025 × 6.31×10⁻⁴ → **MSE ≈ 41.03**, RMSE = √41.03 → **≈ 6.41 code values**.  
-(c) 10^(3/10) → **≈ 2.00× lower MSE** (+3 dB ≈ halves the error power).
+(a) PSNR = 10·log₁₀(1²/0.0004) = 10·log₁₀(10⁴/4) = 10·(4 − log₁₀ 4) = 10·(4 − 0.602) ≈ **34 dB** (33.98).  
+(b) MSE = 255² · 10^(−30/10) = 65 025 × 10⁻³ ≈ **65 code values²**. RMSE = √65 ≈ **8.1 code values** (8² = 64).  
+(c) MSE ratio = 10^(3/10) = 10^0.3 ≈ **2× lower MSE**, because log₁₀ 2 ≈ 0.3 (+3 dB ≈ halves the error power).
 
 </details>
 
@@ -814,39 +878,41 @@ B 0.16   G 0.42   B 0.28
 
 </details>
 
-**Q3. [Calc]** (a) Encode the linear value 0.05 with the simple power law and with exact sRGB, and give the 8-bit codes. (b) Decode the 8-bit code 200 with γ = 2.2. (c) Code 128 is "half" the code range. What linear value does it represent?
+**Q3. [Calc]** Use the by-hand gamma γ = 2 (encode √x, decode x²). (a) Encode the linear values 0.25 and 0.04 and give the 8-bit codes. (b) Decode the 8-bit code 204 (= 0.8 × 255). (c) Code 128 is "half" the code range. What linear value does it represent, and what does the true γ = 2.2 change? (d) Encode the linear value 0.002 with exact sRGB.
 <details><summary>Answer</summary>
 
-(a) Power law: 0.05^(1/2.2) = 0.2562 → ×255 = 65.34 → **code 65**. sRGB: 0.05 > 0.0031308, so 1.055·0.05^(1/2.4) − 0.055 = 0.2478 → 63.19 → **code 63**.  
-(b) (200/255)^2.2 = 0.7843^2.2 → **0.586 linear**.  
-(c) (128/255)^2.2 → **≈ 0.22 linear**. Half the codes cover only the darkest ~22% of the light, which is the point of gamma encoding.
+(a) √0.25 = 0.5 → 0.5 × 255 = 127.5 → **code 128**. √0.04 = 0.2 → 0.2 × 255 = **code 51**. (With true γ = 2.2 the codes are ≈ 136 and 59, slightly brighter.)  
+(b) 0.8² = **0.64 linear** (true γ = 2.2 gives ≈ 0.61).  
+(c) Code 128 ≈ 0.5 → 0.5² = **0.25 linear**. With γ = 2.2 it is 0.5^2.2 = 0.25 × 0.5^0.2, a bit less, ≈ 0.22. Either way, half the codes cover only the darkest ~¼ of the light, which is the point of gamma encoding.  
+(d) 0.002 < 0.0031308, so use the linear piece: 12.92 × 0.002 = 0.02584 → × 255 ≈ 6.6 → **code 7**.
 
 </details>
 
-**Q4. [Calc]** A color has XYZ = (0.25, 0.40, 0.15). (a) Find (x, y). (b) What is (x, y) for XYZ = (0.50, 0.80, 0.30)? (c) Using E10, is the first color inside the sRGB gamut? What about XYZ = (0.20, 0.70, 0.10)?
+**Q4. [Calc]** A color has XYZ = (0.25, 0.40, 0.15). (a) Find (x, y). (b) What is (x, y) for XYZ = (0.50, 0.80, 0.30)? (c) Using E10 with the by-hand rounded matrix, is the first color inside the sRGB gamut? What about XYZ = (0.20, 0.70, 0.10)?
 <details><summary>Answer</summary>
 
-(a) Sum = 0.80 → x = 0.25/0.80 = **0.3125**, y = 0.40/0.80 = **0.500** (z = 0.1875).  
-(b) It is the same color at 2× brightness → **(0.3125, 0.500)**.  
-(c) First color: linear sRGB = (0.120, 0.514, 0.091), all in [0,1] → **inside**. Second color: (−0.478, 1.123, −0.026) → R and B are negative and G > 1 → **out of gamut** (xy = (0.20, 0.70), beyond sRGB's green corner at (0.30, 0.60)).
+(a) Sum = 0.80 → x = 0.25/0.80 = **5/16 = 0.3125**, y = 0.40/0.80 = **1/2** (z = 3/16).  
+(b) It is the same color at 2× brightness → **(5/16, 1/2)**.  
+(c) First color, rounded rows: R ≈ 3.2·0.25 − 1.5·0.40 − 0.5·0.15 = 0.8 − 0.6 − 0.075 = 0.125; G ≈ −0.25 + 1.9·0.40 + 0.04·0.15 ≈ 0.52; B ≈ 0.06·0.25 − 0.2·0.40 + 1.06·0.15 ≈ 0.09. All are in [0,1] → **inside** (full precision: 0.12, 0.51, 0.09).  
+Second color: R ≈ 3.2·0.20 − 1.5·0.70 − 0.5·0.10 = 0.64 − 1.05 − 0.05 = **−0.46** < 0 → **out of gamut**, without needing G or B (full precision: R = −0.48, G = 1.12 > 1, B = −0.03). Its xy = (0.20, 0.70) lies beyond sRGB's green corner at (0.30, 0.60).
 
 </details>
 
-**Q5. [Calc]** Bilateral filter with σ = 2 px and σ_i = 0.2. A neighbor sits diagonally at offset (1, 1). (a) Find its weight when its intensity differs from the center's by 0.1, and (b) when it differs by 0.5 (across an edge). (c) NLM with h = 0.1: the target patch is [0.20, 0.30, 0.25] and the candidate patch is [0.22, 0.28, 0.35]. Find the unnormalized weight using the plain squared distance and using k = [0.25, 0.5, 0.25].
+**Q5. [Calc]** Bilateral filter with σ = 2 px and σ_i = 0.2. A neighbor sits diagonally at offset (1, 1). (a) Find its weight when its intensity differs from the center's by 0.1, and (b) when it differs by 0.5 (across an edge). (c) NLM with h = 0.1: the target patch is [0.20, 0.30, 0.25] and the candidate patch is [0.20, 0.30, 0.45]. Find the unnormalized weight using the plain squared distance and using k = [0.25, 0.5, 0.25]. Keep the answers as powers of e, then estimate.
 <details><summary>Answer</summary>
 
-Spatial factor: |Δx|² = 2 → exp(−2/8) = 0.7788.  
-(a) Intensity factor exp(−0.01/0.08) = 0.8825 → **w ≈ 0.687**.  
-(b) exp(−0.25/0.08) = 0.0439 → **w ≈ 0.034**, about 20× smaller. The edge is preserved.  
-(c) Squared differences are 0.0004, 0.0004, 0.0100 → sum 0.0108 → exp(−0.0108/0.01) = **0.340**. Weighted: 0.25·0.0004 + 0.5·0.0004 + 0.25·0.01 = 0.0028 → exp(−0.28) = **0.756**. The k-weighting forgives the mismatch at the patch edge. (Both are normalized by Z(i) afterwards.)
+Spatial factor: |Δx|² = 1² + 1² = 2 and 2σ² = 8 → e^(−2/8) = e^(−1/4).  
+(a) Intensity factor: 0.1² = 0.01 and 2σ_i² = 0.08 → e^(−1/8). Total w = e^(−1/4 − 1/8) = **e^(−3/8) ≈ 0.69** (1 − 0.375 + 0.375²/2 ≈ 0.70; exact 0.687).  
+(b) Intensity factor: 0.5² = 0.25 → e^(−0.25/0.08) = e^(−25/8). Total w = e^(−2/8 − 25/8) = **e^(−27/8) ≈ 0.034**. The ratio to (a) is e^(−24/8) = e^(−3) ≈ 0.05, so it is about **20× smaller**. The edge is preserved.  
+(c) Squared differences: 0, 0, 0.2² = 0.04. Plain: sum 0.04, h² = 0.01 → e^(−4) ≈ **0.018**. Weighted: 0.25 × 0.04 = 0.01 → e^(−1) ≈ **0.37**. The k-weighting forgives a mismatch at the patch edge. (Both are normalized by Z(i) afterwards.)
 
 </details>
 
-**Q6. [Calc]** (a) Find the normalized 3-tap Gaussian kernel for σ = 1 px. (b) Use it to unsharp-mask the 1D edge [0.3, 0.3, 0.3, 0.7, 0.7, 0.7] with k = 1.5 (replicate the borders).
+**Q6. [Calc]** (a) Write the normalized 3-tap Gaussian kernel for σ = 1 px in exact form, then estimate it. (b) Unsharp-mask the 1D edge [0.3, 0.3, 0.3, 0.7, 0.7, 0.7] with k = 1.5, using the binomial blur [1/4, 1/2, 1/4] (replicate the borders).
 <details><summary>Answer</summary>
 
-(a) Raw weights [e^(−½), 1, e^(−½)] = [0.6065, 1, 0.6065], sum 2.2131 → **[0.2741, 0.4519, 0.2741]**. (The 3×3 separable kernel has center 0.2042 and corners 0.0751.)  
-(b) The blur changes only the two edge pixels: 0.3 + 0.2741·0.4 = 0.4096 and 0.7 − 0.2741·0.4 = 0.5904. The detail layer is ∓0.1096 there. Sharpened = I + 1.5·detail → **[0.3, 0.3, 0.1356, 0.8644, 0.7, 0.7]**. The undershoot and overshoot (the halo) make the edge contrast 0.73 instead of 0.4.
+(a) Raw weights [e^(−1/2), 1, e^(−1/2)], so the kernel is **[e^(−1/2), 1, e^(−1/2)] / (1 + 2e^(−1/2))**. With e^(−1/2) ≈ 0.61, the sum is ≈ 2.22, giving ≈ **[0.27, 0.45, 0.27]**.  
+(b) The blur changes only the two edge pixels: 0.3 + ¼·0.4 = 0.4 and 0.7 − ¼·0.4 = 0.6. The detail layer I − blur is −0.1 and +0.1 there. Sharpened = I + 1.5·detail → **[0.3, 0.3, 0.15, 0.85, 0.7, 0.7]**. The undershoot and overshoot (the halo) make the edge contrast 0.7 instead of 0.4.
 
 </details>
 
@@ -874,7 +940,7 @@ Real colors fill a curved convex cone. Three *real* primaries span a triangular 
 **Q10. [Concept]** A classmate says: "Red has the lowest frequency of visible light, so the red channel can't show high-frequency aliasing." Correct them. What does a 0.35 cycles/px stripe pattern look like in the red channel?
 <details><summary>Answer</summary>
 
-They are mixing up *light* frequency (wavelength, which determines color) with *image* frequency (cycles/px across the sensor). Red pixels sample every 2nd column (0.5 samples/px), so red's limit is 0.25 cycles/px. A 0.35 cycles/px pattern folds back to |0.35 − 0.5| = **0.15 cycles/px** (period ≈ 6.67 px instead of 2.86 px). Green still reports the true stripes, so the channels disagree, and that shows up as false color (moiré).
+They are mixing up *light* frequency (wavelength, which determines color) with *image* frequency (cycles/px across the sensor). Red pixels sample every 2nd column (0.5 samples/px), so red's limit is 0.25 cycles/px. A 0.35 cycles/px pattern folds back to |0.35 − 0.5| = **0.15 cycles/px** (period 1/0.15 = 20/3 ≈ 6.7 px instead of 1/0.35 = 20/7 ≈ 2.9 px). Green still reports the true stripes, so the channels disagree, and that shows up as false color (moiré).
 
 </details>
 
@@ -937,7 +1003,7 @@ H = E · t        E ≈ (π/4) · L / N²        H ∝ L · t / N²        EV = 
 | π/4 | geometric constant for a circular aperture | — | fixed |
 | EV | exposure value; 1 EV = 1 stop | stops | result |
 
-*Use it when:* trading aperture against time at equal brightness; ISO multiplies the recorded brightness (∝ ISO·t/N²) but not H. *Gotcha:* aperture enters squared, so f/2.8 → f/8 is ≈ 3 stops, not 2.9×.
+*Use it when:* trading aperture against time at equal brightness; ISO multiplies the recorded brightness (∝ ISO·t/N²) but not H. *Gotcha:* aperture enters squared, so f/2.8 → f/8 is ≈ 3 stops, not 2.9×. *By hand:* use the nominal values behind the printed ones, N² = 2^(steps from f/1) and t = 2^(−steps from 1 s). Then EV is a sum of integers, e.g. f/2.8 at 1/250 s: log₂(8 × 256) = 3 + 8 = 11.
 
 #### E2. Sum / average of K independent frames
 ```
@@ -1018,7 +1084,7 @@ w(I) = exp( −4·(I − 0.5)² / 0.5² )          Debevec hat:  w(z) = 1 − |2
 | z | pixel value for the hat weight | [0,1] | measured |
 | 0.5, −4/0.5² | peak location; fall-off (σ ≈ 0.177) | — | fixed |
 
-*Use it when:* before any merge, since arithmetic needs values ∝ light. *Gotcha:* the hat weight is exactly 0 at the ends, so ln(0)·0 gives NaN. Add ε and floor Σw.
+*Use it when:* before any merge, since arithmetic needs values ∝ light. *Gotcha:* the hat weight is exactly 0 at the ends, so ln(0)·0 gives NaN. Add ε and floor Σw. *By hand:* the Gaussian simplifies to w(I) = e^(−16(I − 0.5)²), so I = 0.25 or 0.75 → e^(−1), I = 0.125 → e^(−2.25), and I = 0 or 1 → e^(−4) ≈ 0.018. The hat weight needs no exponentials at all.
 
 #### E7. HDR log-domain weighted merge (HW3 Task 1)
 ```
@@ -1035,7 +1101,7 @@ X̂   = exp( Σᵢ wᵢ·(ln I_lin,i − ln tᵢ) / Σᵢ wᵢ )
 | O(X) | weighted least-squares objective | — | minimized |
 | X̂ | merged HDR value | relative (global scale unknown) | result |
 
-*Use it when:* fusing a bracket. Each frame "votes" ln(I/t), and the result is the weighted mean in the log domain. *Gotcha:* it gives relative radiance only, and it assumes a static, aligned stack.
+*Use it when:* fusing a bracket. Each frame "votes" ln(I/t), and the result is the weighted mean in the log domain. *By hand:* the same formula is a weighted *geometric* mean, X̂ = Π (Iᵢ/tᵢ)^(wᵢ/Σw). So if every frame with nonzero weight votes the same value I/t, X̂ is exactly that value and no logs are needed. *Gotcha:* it gives relative radiance only, and it assumes a static, aligned stack.
 
 #### E8. Tonemapping curves
 ```
@@ -1100,36 +1166,35 @@ Takeaway: read-noise-limited → flutter wins, because the burst pays read noise
 
 (a) One frame: 40/8 = 5. Average of 16: σ/√16 = 2 → 40/2 = **20** (= √16·5).  
 (b) K = (30/5)² = **36 frames**.  
-(c) One frame: √25 = 5. Average of 9: variance 25/9 = 2.78, σ = 1.667 → 25/1.667 = **15** (= √(9·25)). The sum of 9 (mean 225, σ = 15) has the same SNR of 15.
+(c) One frame: √25 = 5. Average of 9: variance 25/9, σ = 5/3 → 25/(5/3) = **15** (= √(9·25)). The sum of 9 (mean 225, σ = 15) has the same SNR of 15.
 
 </details>
 
 **Q2. [Calc]** A 0.5 s exposure uses a flutter shutter with 5 ms slots (M = 100) at d = 0.5, compared with a 100-frame burst of 5 ms frames (summed). (a) Camera A: n = 40,000 photons, read σ = 30 only. (b) Camera B: n = 2,000 photons, Poisson only. (c) Camera B with Poisson **plus** read σ = 5. (d) What read σ makes them tie for camera B?
 <details><summary>Answer</summary>
 
-(a) Flutter 20,000/30 = **666.7**. Burst 40,000/√(100·900) = 40,000/300 = **133.3** → flutter.  
-(b) Flutter 1000/√1000 = **31.62**. Burst 2000/√2000 = **44.72** → burst (√2 ×).  
-(c) Flutter: variance 1000 + 25 = 1025 → **31.23**. Burst: variance 2000 + 100·25 = 4500 → **29.81** → flutter, narrowly.  
-(d) Set d²n²/(dn + σ²) = n²/(n + Mσ²) → σ² = (dn − d²n)/(d²M − 1) = 500/24 = 20.83 → **σ ≈ 4.56 e⁻**. Below that the burst wins, above it the flutter shutter wins.
+(a) Flutter 20 000/30 = **2000/3 ≈ 667**. Burst 40 000/√(100·900) = 40 000/300 = **400/3 ≈ 133** → flutter (5× better).  
+(b) Poisson only, SNR = √(signal). Flutter √1000 = 10√10 ≈ **31.6**. Burst √2000 = 20√5 ≈ **44.7** → burst (√2 ×).  
+(c) Compare SNR² to skip the roots. Flutter: 1000²/(1000 + 25) = 10⁶/1025 ≈ **976** (SNR ≈ 1000/32 ≈ 31.2, since √1025 ≈ 32). Burst: 2000²/(2000 + 100·25) = 4×10⁶/4500 ≈ **889** (SNR ≈ 29.8) → flutter, narrowly.  
+(d) Set d²n²/(dn + σ²) = n²/(n + Mσ²) → σ² = (dn − d²n)/(d²M − 1) = 500/24 = **125/6 ≈ 20.8** → σ ≈ **4.6 e⁻** (4.5² = 20.25, 4.6² = 21.16). Below that the burst wins, above it the flutter shutter wins.
 
 </details>
 
-**Q3. [Calc]** One pixel is captured at t = 0.01, 0.04, 0.32 s with linearized values 0.06, 0.25, 1.00 (the last is clipped). Use the Gaussian weight w(I) = exp(−4(I−0.5)²/0.5²) and the log-domain merge to find X̂. Compare it with a naive average of I/t.
+**Q3. [Calc]** One pixel is captured at t = 1/16, 1/4, 1 s with linearized values 0.125, 0.5, 1.0 (the last is clipped). (a) Use the Debevec hat weight w(z) = 1 − |2z − 1| and the log-domain merge to find X̂. (b) Repeat the reasoning with the Gaussian weight w(I) = e^(−16(I − 0.5)²): is X̂ above or below your answer to (a), and roughly by how much? (c) Compare with a naive average of I/t.
 <details><summary>Answer</summary>
 
-Weights: w = 0.0452, 0.3679, 0.0183.  
-Per-frame ln(I/t): ln 6 = 1.7918, ln 6.25 = 1.8326, ln 3.125 = 1.1394.  
-Weighted mean: (0.0452·1.7918 + 0.3679·1.8326 + 0.0183·1.1394)/0.4314 = 0.7759/0.4314 = 1.7989.  
-X̂ = e^1.7989 ≈ **6.04** (relative units).  
-Naive mean of I/t = (6 + 6.25 + 3.125)/3 = **5.13**, dragged down by the clipped frame. The weight suppresses that frame (0.018).
+Per-frame votes I/t: 0.125 × 16 = **2**, 0.5 × 4 = **2**, 1.0/1 = **1** (the clipped frame under-reports).  
+(a) Hat weights: 1 − |0.25 − 1| = 0.25, 1 − 0 = 1, 1 − |2 − 1| = 0. The clipped frame gets zero weight, and the other two both vote 2, so X̂ = exp((0.25·ln 2 + 1·ln 2)/1.25) = e^(ln 2) = **2 exactly** (relative units). No log values were needed.  
+(b) Gaussian weights: e^(−16·(0.375)²) = e^(−2.25) ≈ 0.11, e^0 = 1, e^(−16·0.25) = e^(−4) ≈ 0.018. Now the clipped frame's vote of 1 gets a small nonzero weight, so X̂ = 2^(1.11/1.128) × 1^(0.018/1.128) ≈ 2^0.984. That is slightly **below 2**: 2^(−0.016) ≈ 1 − 0.016 × 0.69 ≈ 0.99, so X̂ ≈ 1.98, about 1% low.  
+(c) Naive mean of I/t = (2 + 2 + 1)/3 = **5/3 ≈ 1.67**, dragged down by the clipped frame. The weights suppress that frame.
 
 </details>
 
 **Q4. [Calc]** A scene spans 1,000,000:1. One exposure usefully records 1,000:1, and brackets are spaced 2 stops apart. (a) How many exposures are needed? (b) After merging, tonemap with L/(1+L). What display values and 8-bit codes result for L = 0.05, 1, 3, 19, 99? (c) What L maps to 0.9?
 <details><summary>Answer</summary>
 
-(a) Scene log₂(10⁶) = 19.93 stops. One shot covers log₂(1000) = 9.97 stops. That leaves 9.97 stops to add → 9.97/2 = 4.98 → 5 extra steps → **6 exposures**.  
-(b) 0.0476, 0.5, 0.75, 0.95, 0.99 → codes ≈ **12, 128, 191, 242, 252**. Highlights are compressed hard and shadows stay ≈ linear.  
+(a) With 2¹⁰ ≈ 10³: the scene is log₂(10⁶) ≈ 20 stops and one shot covers log₂(1000) ≈ 10 stops. That leaves ≈ 10 stops to add → 10/2 = 5 extra steps → **6 exposures**. (The exact 19.93 and 9.97 give the same count.)  
+(b) L/(1+L) = 1/21, 1/2, 3/4, 19/20, 99/100 ≈ 0.048, 0.5, 0.75, 0.95, 0.99 → × 255 → codes ≈ **12, 128, 191, 242, 252**. Highlights are compressed hard and shadows stay ≈ linear.  
 (c) L/(1+L) = 0.9 → L = 0.9/0.1 = **9**.
 
 </details>
@@ -1137,8 +1202,8 @@ Naive mean of I/t = (6 + 6.25 + 3.125)/3 = **5.13**, dragged down by the clipped
 **Q5. [Calc]** A correct exposure is f/2.8, 1/250 s, ISO 400. You want f/8 at ISO 1600 with the same image brightness. (a) What exposure time? (b) What happens to the physical exposure H, and what is the EV of each (N, t) pair?
 <details><summary>Answer</summary>
 
-(a) Brightness ∝ ISO·t/N² → t₂ = (1/250)·(400/1600)·(8/2.8)² = 0.00816 s ≈ **1/122.5 s → 1/125 nominal**. The aperture gives −3.03 stops, ISO gives +2, and time gives +1.  
-(b) t/N² falls to **0.25×**, so H is 2 stops lower and ISO's 4× gain makes up the brightness, with more noise. EV₁ = log₂(2.8²·250) = **10.94**, EV₂ = log₂(64·122.5) = **12.94**: 2 EV apart, matching the 2 stops of ISO.
+(a) Count stops instead of dividing. Aperture f/2.8 → 4 → 5.6 → 8 = 3 stops less light. ISO 400 → 1600 = ×4 = 2 stops more brightness. Net: 1 stop short, so double the time: 1/250 → **1/125 s**. (Exact arithmetic, (1/250)·(400/1600)·(8/2.8)², gives 1/122.5 s, because the printed 2.8 is a rounded 2√2.)  
+(b) t/N² falls to **¼**, so H is 2 stops lower and ISO's 4× gain makes up the brightness, with more noise. With nominal values (2.8² = 8, 1/250 ≈ 1/2⁸, 1/125 ≈ 1/2⁷): EV₁ = log₂(8 × 256) = 3 + 8 = **11**, EV₂ = log₂(64 × 128) = 6 + 7 = **13**. They are 2 EV apart, matching the 2 stops of ISO.
 
 </details>
 
@@ -1269,7 +1334,7 @@ primal ≈ P · K²          Fourier ≈ 2 P log₂ P + P
 | K | Kernel side length (K×K kernel) | pixels | you (e.g. ceil(9σ)) |
 | 2 P log₂ P | One forward + one inverse FFT | operations | — |
 | + P | Per-frequency multiply | operations | — |
-*Use it when:* deciding which route is faster. *Gotcha:* FFT cost ignores K; for tiny kernels direct convolution wins (break-even K² ≈ 2 log₂ P + 1).
+*Use it when:* deciding which route is faster. *Gotcha:* FFT cost ignores K; for tiny kernels direct convolution wins (break-even K² ≈ 2 log₂ P + 1). *By hand:* write P and K as powers of 2 (512² = 2¹⁸, 32² = 2¹⁰), so products are exponent sums and log₂ P is just the exponent.
 
 #### E4. LiDAR range ambiguity (temporal aliasing)
 ```
@@ -1406,13 +1471,13 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )          E[ g(x) ]
 
 </details>
 
-**Q3. [Calc]** A 512×512 image is filtered with a 41×41 kernel. Estimate operation counts for direct convolution and the FFT route (E3). Above what kernel size K does FFT win?
+**Q3. [Calc]** A 512×512 image is filtered with a 32×32 kernel. Estimate operation counts for direct convolution and the FFT route (E3). Above what kernel size K does FFT win?
 <details><summary>Answer</summary>
 
-P = 262,144; log₂ P = 18.  
-Direct: P·K² = 262,144 · 1681 ≈ **4.41 × 10⁸**.  
-FFT: 2·P·18 + P ≈ **9.70 × 10⁶** → ~**45× fewer**.  
-Break-even: K² = 2·18 + 1 = 37 → K ≈ 6.1, so FFT wins for **K ≳ 7**.
+P = 512² = 2¹⁸ (≈ 2.6×10⁵); log₂ P = 18. K² = 32² = 2¹⁰.  
+Direct: P·K² = 2¹⁸ · 2¹⁰ = **2²⁸ ≈ 2.7 × 10⁸** (2⁸ × 2²⁰ ≈ 256 × 10⁶).  
+FFT: 2·P·18 + P = 37·P = 37 × 2¹⁸ ≈ **9.7 × 10⁶**. Ratio = 2¹⁰/37 ≈ 1024/37 → ~**28× fewer**.  
+Break-even: K² = 2·18 + 1 = 37 → K ≈ 6 (6² = 36), so FFT wins for **K ≳ 7**.
 
 </details>
 
@@ -1421,7 +1486,7 @@ Break-even: K² = 2·18 + 1 = 37 → K ≈ 6.1, so FFT wins for **K ≳ 7**.
 
 Wiener gain magnitude = |K|/(|K|² + 1/SNR), 1/SNR = 0.01.
 |K| = 0.05: inverse 1/0.05 = **20**; Wiener 0.05/(0.0025 + 0.01) = **4** (damping factor 0.2).
-|K| = 0.9: inverse **1.111**; Wiener 0.9/(0.81 + 0.01) = **1.098** (damping 0.988) — nearly identical where signal dominates.
+|K| = 0.9: inverse 1/0.9 = **10/9 ≈ 1.11**; Wiener 0.9/(0.81 + 0.01) = 0.9/0.82 = **45/41 ≈ 1.10** (damping 0.81/0.82 = 81/82 ≈ 0.99) — nearly identical where signal dominates.
 
 </details>
 
@@ -1659,11 +1724,11 @@ x̃_ln = Aᵀ (A Aᵀ)⁻¹ b      (solve (A Aᵀ) w = b by CG, then x = Aᵀ w)
 7. M < N → infinite exact solutions (null space) → least norm sets null-space part to 0 → speckle → so: compressive imaging needs a prior; same recipe covers LiDAR (per time bin), CT, MRI, CASSI.
 
 ### Practice questions
-**Q1. [Calc]** For v = [2.5, −0.4, 0, −1.8, 0.9]: (a) compute ‖v‖₂, ‖v‖₁, "ℓ₀". (b) Soft-threshold with κ = 1 and recompute all three. (c) Block soft-threshold the 2-vector (3, 4) with κ = 2.
+**Q1. [Calc]** For v = [2.2, −0.7, 0, −2.6, 0.4]: (a) compute ‖v‖₂, ‖v‖₁, "ℓ₀". (b) Soft-threshold with κ = 1 and recompute all three. (c) Block soft-threshold the 2-vector (3, 4) with κ = 2.
 <details><summary>Answer</summary>
 
-(a) ‖v‖₂ = √(6.25 + 0.16 + 3.24 + 0.81) = √10.46 ≈ 3.234; ‖v‖₁ = 5.6; ℓ₀ = 4.  
-(b) S₁(v): 2.5 → 1.5; −0.4 → 0 (|v| ≤ 1); 0 → 0; −1.8 → −0.8; 0.9 → 0 ⇒ **[1.5, 0, 0, −0.8, 0]**; ‖·‖₂ = 1.7, ‖·‖₁ = 2.3, ℓ₀ = 2 (sparser).  
+(a) ‖v‖₂ = √(4.84 + 0.49 + 0 + 6.76 + 0.16) = √12.25 = **3.5**; ‖v‖₁ = 2.2 + 0.7 + 2.6 + 0.4 = **5.9**; ℓ₀ = **4**.  
+(b) S₁(v): 2.2 → 1.2; −0.7 → 0 (|v| ≤ 1); 0 → 0; −2.6 → −1.6; 0.4 → 0 ⇒ **[1.2, 0, 0, −1.6, 0]**; ‖·‖₂ = √(1.44 + 2.56) = √4 = 2, ‖·‖₁ = 2.8, ℓ₀ = 2 (sparser).  
 (c) ‖(3,4)‖ = 5; factor max(1 − 2/5, 0) = 0.6 ⇒ **(1.8, 2.4)** (length 3, same direction).
 
 </details>
@@ -1673,7 +1738,7 @@ x̃_ln = Aᵀ (A Aᵀ)⁻¹ b      (solve (A Aᵀ) w = b by CG, then x = Aᵀ w)
 
 D_x x = [[1, 0], [2, 0]], D_y x = [[2, 3], [0, 0]].  
 Per pixel (D_x, D_y): (1,2), (0,3), (2,0), (0,0).  
-Anisotropic = 3 + 3 + 2 + 0 = **8**. Isotropic = √5 + 3 + 2 + 0 ≈ **7.236**. They differ only at the pixel with a diagonal gradient (1,2): 3 vs 2.236.
+Anisotropic = 3 + 3 + 2 + 0 = **8**. Isotropic = √5 + 3 + 2 + 0 = **5 + √5 ≈ 7.24**. They differ only at the pixel with a diagonal gradient (1,2): 1 + 2 = 3 vs √(1 + 4) = √5 ≈ 2.24.
 
 </details>
 
@@ -1688,7 +1753,7 @@ Anisotropic = 3 + 3 + 2 + 0 = **8**. Isotropic = √5 + 3 + 2 + 0 ≈ **7.236**.
 **Q4. [Calc]** (a) Least-norm solution of A = [[1, 1, 0], [0, 1, 1]], b = [3, 5]. Check it against the exact solution [0, 3, 2]. (b) A single-pixel camera images 128×128 pixels at compression factor 8: M, null-space dimension, fraction measured?
 <details><summary>Answer</summary>
 
-(a) AAᵀ = [[2, 1], [1, 2]]; solve for w: w = [1/3, 7/3] ≈ [0.333, 2.333]; x = Aᵀw = **[0.333, 2.667, 2.333]**. Check Ax = [3, 5] ✓. ‖x‖ ≈ 3.559 < ‖[0, 3, 2]‖ ≈ 3.606 (shortest exact fit).  
+(a) AAᵀ = [[2, 1], [1, 2]]; solve 2w₁ + w₂ = 3, w₁ + 2w₂ = 5 → w = [1/3, 7/3]; x = Aᵀw = [w₁, w₁ + w₂, w₂] = **[1/3, 8/3, 7/3]**. Check Ax = [9/3, 15/3] = [3, 5] ✓. Compare squared norms (no roots needed): ‖x‖² = (1 + 64 + 49)/9 = 114/9 ≈ 12.7 < ‖[0, 3, 2]‖² = 13, so it is the shortest exact fit.  
 (b) N = 16384; M = 16384/8 = **2048**; null space ≥ N − M = **14336** dims; measured fraction **12.5%**.
 
 </details>
@@ -1703,12 +1768,12 @@ It 2: v = 0.5 − 2 = −1.5, x = 1.75; z = S₂(3.75) = 1.75; u = 2 + 0 = 2.0.
 
 </details>
 
-**Q6. [Calc]** TV-deconvolution x-update at a single image frequency (cycles/pixel): F{c} = 0.5 (real), F{b} = 0.4, ρ = 2, horizontal index k = 2 with N = 8, vertical index 0, and the gradient numerator term F{d_x}*F{v₁} + F{d_y}*F{v₂} = 0.3. Compute F{x}, and compare with the inverse filter F{b}/F{c}.
+**Q6. [Calc]** TV-deconvolution x-update at a single image frequency (cycles/pixel): F{c} = 0.5 (real), F{b} = 0.4, ρ = 2, horizontal index k = 2 with N = 8, vertical index 0, and the gradient numerator term F{d_x}\*F{v₁} + F{d_y}\*F{v₂} = 0.3. Compute F{x}, and compare with the inverse filter F{b}/F{c}.
 <details><summary>Answer</summary>
 
 |F{d_x}|² = 4 sin²(π·2/8) = 4 · 0.5 = 2; |F{d_y}|² = 4 sin²(0) = 0.
 Numerator = 0.5·0.4 + 2·0.3 = 0.8. Denominator = 0.25 + 2·(2 + 0) = 4.25.  
-F{x} = 0.8/4.25 ≈ **0.188** vs inverse filter 0.4/0.5 = **0.8**: the ρ·DᵀD high-pass term damps this frequency heavily and the prior's v pulls it toward the preferred gradients.
+F{x} = 0.8/4.25 = **16/85 ≈ 0.19** vs inverse filter 0.4/0.5 = **0.8**: the ρ·DᵀD high-pass term damps this frequency heavily and the prior's v pulls it toward the preferred gradients.
 
 </details>
 
