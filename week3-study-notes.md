@@ -494,7 +494,29 @@ The simplest approach: estimate each missing channel value at a pixel by averagi
 > - **Green** forms a checkerboard, not a rectangular grid: use `scipy.interpolate.griddata` with `method="linear"`, or the `np.roll` average above (exactly equivalent at interior pixels).
 > - **Borders:** a sub-grid does not reach every border pixel, so state a rule, e.g. `RegularGridInterpolator(..., bounds_error=False, fill_value=None)` extrapolates linearly.
 
-Naive interpolation like this tends to introduce visible color fringing/artifacts near edges — each channel is interpolated *independently*, ignoring the fact that a real edge should show up consistently across all three channels at once. The next methods address this in increasingly sophisticated ways.
+**Where naive interpolation goes wrong.** Each channel is interpolated *independently*, ignoring the fact that a real edge should show up in the same place in all three channels. Red, green and blue are measured at different pixels, so each channel ends up putting its blurred edge in a slightly different place. The result is visible color fringing near edges. The next methods address this in increasingly sophisticated ways.
+
+> **Channel disagreement: the recurring idea (case 1 of 7, demosaicking at edges).** Analogy first: three witnesses each report where a fence begins, but each stood in a different spot, and their reports differ by a step. A sketch artist who trusts all three draws a fence with a blurry, doubled start.
+>
+> The principle: a pixel's color is set by the *ratio* between its R, G and B values, not by any one of them. A neutral pixel (black, gray or white) has R = G = B. So wherever the three channels disagree more than the scene really does, the pixel gets a color the scene never had.
+>
+> Many of this week's odd-looking artifacts are this one failure, produced at different stages of the pipeline. Each case is flagged with a "Channel disagreement" note like this one, and §22 collects all seven in one table.
+
+> **Same concept, different names.** The visible result of channel disagreement is called **false color** = **color artifacts** = **color fringing** (when it hugs an edge). **Color moiré** is false color in a repeating pattern (case 2, §14.2). **Color noise** = **chroma noise** is the random version (case 4, §16.1). **Color bleeding** is the JPEG version (case 6, §19).
+
+> **Worked example: a black-and-white edge turns blue.** Take one R G R G row of an RGGB mosaic crossing a vertical edge. Columns 3–4 are black (0) and columns 5–6 are white (1), identical in all three channels, so the scene has no color at all. Naive interpolation (the four-neighbor green average above, plus the matching nearest-neighbor averages for red and blue; computed by a short script) gives:
+>
+> | Column | Truth | Measured here | R | G | B | Looks |
+> |---|---|---|---|---|---|---|
+> | 3 | 0 | G | 0.00 | 0.00 | 0.00 | black |
+> | 4 | 0 | R | 0.00 | 0.25 | 0.50 | dark blue |
+> | 5 | 1 | G | 0.50 | 1.00 | 1.00 | cyan |
+> | 6 | 1 | R | 1.00 | 1.00 | 1.00 | white |
+>
+> Why it happens:
+> - **Red** is measured at columns 4 (dark) and 6 (bright), so it puts its half-way value, 0.5, at column 5.
+> - **Blue** is never measured in this row. It comes from the rows just above and below, where it is measured at columns 3 (dark) and 5 (bright), so it puts its half-way value at column 4.
+> - Red and blue disagree by one pixel about where the edge is. The two pixels between their guesses come out bluish: a colored fringe on a perfectly gray edge.
 
 ### 14.2 Aside: The Optical Low-Pass Filter (OLPF)
 
@@ -523,6 +545,8 @@ Throughout, "frequency" means **image frequency** (Week 1 §16.4; §11 above): l
 > | 10 | +1.000 | yes | +1.000 |
 >
 > At every column where red is actually measured, the two patterns agree exactly; they only disagree at columns red never sees. So after demosaicking, green reports fine 2.5 px stripes while red (and, by the same argument, blue) reports coarse 10 px bands. The channels disagree about the pattern, and that disagreement shows up as colored bands that were never in the scene: **false color, or moiré**.
+
+> **Channel disagreement (case 2 of 7, aliasing → color moiré).** The same failure as case 1 (§14.1), with a different cause. In case 1 the channels disagree by one pixel about where a single edge is. Here they disagree about the whole pattern, because red and blue sample too sparsely to see stripes that green records correctly. The OLPF below attacks it by removing detail too fine for the sparsest channels, so there is less for the channels to disagree about.
 
 Many sensors therefore sit behind an **optical low-pass filter (OLPF)**, also called an optical anti-aliasing filter. "Low-pass" refers to spatial frequency (fine stripes and texture), not to color; the infrared-blocking layer is the part that acts on wavelength.
 
@@ -592,7 +616,9 @@ and the inverse, exactly as the lecture states it structurally:
 >
 > Gray: both color differences vanish, so Cb = Cr = 128, and all its information lives in Y′. Red: Cr hits its maximum, 240 = 128 + 112, because red is as far above its own luma as the format allows. Cb drops below 128 because red has less blue than a gray of equal luma would. Y′ is fairly low (81.5, where the full 16–235 luma range is available) because red contributes only 0.299 of luma.
 
-**Why chroma is where demosaicking errors live.** The fringes and speckle of naive interpolation are mostly disagreements *between* channels (red says one thing, green another), not errors in overall brightness. A disagreement between channels is, by definition, a color difference, so it lands mostly in Cb and Cr. Smoothing just those two channels attacks the artifacts where they are concentrated.
+> **Channel disagreement: why the chroma fix works.** The fringes and speckle of naive interpolation are mostly disagreements *between* channels (red says one thing, green another), not errors in overall brightness. A disagreement between channels is, by definition, a color difference, so it lands mostly in Cb and Cr. Smoothing just those two channels attacks the artifacts where they are concentrated.
+>
+> In §14.1's black-and-white edge, the real jump from dark to bright lands in Y′ and is kept. The bluish tint on columns 4–5 (= the false color) lands in Cb and Cr. In a median window that also covers the plain black and white pixels on either side, those two tinted pixels are outliers, so the median replaces their chroma with the neutral value the rest of the window agrees on.
 
 **Why a median filter counts as a low-pass filter here.** A low-pass filter (Week 1 §22.1) keeps broad variation and removes pixel-to-pixel variation. The median filter (§12.3) is not a weighted average, but it behaves the same on this content: an isolated wrong-colored pixel is an outlier in its window, so the median discards it, while a broad region of consistent chroma passes unchanged. Unlike a plain average, the median does not smear a speckle into a halo, which is why PS2 suggests it.
 
@@ -643,13 +669,16 @@ D_R(x,y) = r(x,y) − (1/4) · Σ r(x+m, y+n),   (m,n) ∈ {(0,−2), (0,2), (�
 
 The curvature in the channel actually measured at a pixel is therefore a cheap proxy for the curvature the missing channels would show. Adding a scaled copy of it nudges the naive average toward the true edge-aware value, and the whole thing is still a fixed weighted sum of RAW pixels, i.e. an ordinary linear convolution.
 
+> **Channel disagreement: fixing it at the source.** §14.3 cleans up case 1's disagreement after it happens. Edge-directed interpolation (§14.4) and Malvar–He–Cutler prevent it: by borrowing the measured channel's edge information, the filled-in channels put their edges where the measured channel does, instead of each channel guessing on its own.
+
 **PS2's practical framing.** There are several cases above, but by symmetry only **4 unique filter shapes** are needed (several cases are the same filter rotated or with colors swapped).
 
 PS2 also flags that many coefficients are **dyadic rationals** (fractions with a power-of-two denominator, e.g. 1/2, 3/4, 5/8, 3/2). In fixed-point hardware a multiplication by one of these is a cheap bit-shift plus addition, a real reason this filter became popular in camera ISPs.
 
 > **Summary**
 > - Each pixel records one color, so demosaicking must guess the other two; the problem is underdetermined (null space of dimension 32 for a 4×4 patch).
-> - Naive per-channel interpolation leaves color fringes; the optical low-pass filter prevents some aliasing before it happens.
+> - Naive per-channel interpolation lets the channels disagree about where an edge is, leaving color fringes (channel disagreement, case 1); aliasing makes them disagree about fine patterns (case 2, color moiré), which the optical low-pass filter partly prevents.
+> - Rule to remember: a neutral pixel has R = G = B, so any disagreement between channels shows up as false color.
 > - Chroma low-pass demosaicking blurs only Cb and Cr in Y′CbCr, using the eye's weaker color acuity.
 > - Malvar–He–Cutler adds a cross-channel curvature correction to the naive average and stays linear.
 > - *Next (optional):* §15 covers capture designs that avoid demosaicking.
@@ -665,12 +694,17 @@ Week 2 §14 already covered the dominant approach — a **Bayer color filter arr
 - **Vertically stacked sensors (Foveon X3–style).** Rather than splitting light optically before it reaches the sensor, this design exploits a property of silicon itself: different wavelengths of light penetrate to different depths before being absorbed (shorter wavelengths absorbed nearer the surface, longer wavelengths deeper). Stacking three photodiode layers at different depths *underneath a single pixel location* lets that one location register an approximate red, green, and blue response simultaneously, again without needing to interpolate from neighboring pixels of different colors.
 - **Field-sequential capture.** Instead of splitting color spatially at all, capture three separate exposures in sequence — one through a red filter, one through green, one through blue (e.g. via a rotating filter wheel) — and combine the three monochrome frames afterward into one color image. This only works cleanly for static scenes under controlled, unchanging illumination, since anything that moves (or any lighting that flickers) between the three sequential exposures will misalign across channels.
 
+> **Channel disagreement (case 3 of 7, channels captured in different places or at different times).** These designs avoid demosaicking, so they avoid case 1, but their channels can still disagree in their own way.
+> - **Three-sensor cameras:** the three images must line up to a fraction of a pixel. If the prism assembly puts one sensor's image off by a pixel, every edge gets a colored fringe along one side, just like case 1.
+> - **Field-sequential capture:** R, G and B are taken at different moments, so a moving object sits in a different place in each channel. Its edges come out with separate red, green and blue "ghost" outlines.
+
 **Beyond the visible range.** Some sensors respond outside the 400–700 nm range of human cones.
 - **Near-infrared:** ordinary silicon photodiodes already respond a little there, so adding an extra channel (RGB + near-IR) is a straightforward extension.
 - **Thermal infrared:** silicon does not absorb photons that far into the infrared, so thermal sensors use other photodiode materials (e.g. indium-, mercury- or lead-based compounds) and non-glass optics such as germanium, which is transparent to thermal IR where glass is opaque.
 
 > **Summary**
 > - Three-sensor cameras, stacked photodiodes and field-sequential capture each measure full color without a Bayer mosaic, at a cost in size, cost or speed.
+> - They can still suffer channel disagreement (case 3): misaligned sensors, or motion between the R, G and B exposures, give colored edges.
 > - Some sensors also go beyond visible light (near-infrared with silicon; thermal infrared needs other materials).
 > - *Next (optional):* §16 turns to noise, the other thing that demosaicked images contain.
 
@@ -686,6 +720,8 @@ Noise (Week 2 §18) is the random pixel-to-pixel error that every sensor adds. �
 **Why denoising is a dilemma (slide 83: "remove noise but retain high-frequency detail").** Sensor noise (Week 2 §18) is independent from pixel to pixel, so its power spreads evenly across all image frequencies ("white" noise). In a seeded 4096-sample test with noise standard deviation 0.1, the average power was 0.00970 in the lower half of the frequency band and 0.01021 in the upper half: essentially equal.
 
 Natural images are mostly low frequency. So at low frequencies the image dominates the noise, while at high frequencies the noise is comparable to or larger than the image, and that is where grain is most visible.
+
+> **Channel disagreement (case 4 of 7, color noise).** Noise is independent not only from pixel to pixel but also from one color channel to the next. In a flat gray patch the true R, G and B are equal, but each channel gets its own random error. Each pixel therefore ends up slightly reddish, greenish or bluish at random: colored speckle, called **color noise** (= **chroma noise**; = false color, in its random form). Because it lives in the differences between channels, i.e. in Cb and Cr, the chroma-only smoothing of §14.3 reduces it with little cost to sharpness.
 
 A **low-pass filter** therefore removes much of the noise, but also the high-frequency part of every genuine edge and texture. It cannot tell the two apart by frequency alone. This is why the filters below move on from the Gaussian to edge-aware ones.
 
@@ -793,7 +829,7 @@ Mirroring the lecture's own "everything put together" summary:
 **BM3D** (Dabov et al.) is mentioned by the lecture as current state-of-the-art, non-local denoising — **not** one of HW2's required methods, included here only for context. The idea: find groups of mutually similar image patches (as in §16.3) and stack each group into a 3D block; apply a "collaborative filter" to the whole block at once — a DCT-style transform of the 3D block, thresholding (zeroing) small transform coefficients (the assumption being that true signal concentrates into a few large coefficients while noise spreads thinly across many small ones), then inverting the transform back to pixel values.
 
 > **Summary**
-> - Noise is spread evenly over all image frequencies while images are mostly low frequency, so plain low-pass filtering removes noise and detail together.
+> - Noise is spread evenly over all image frequencies while images are mostly low frequency, so plain low-pass filtering removes noise and detail together. It is also independent per color channel, which shows up as colored speckle (color noise, channel disagreement case 4).
 > - The bilateral filter multiplies the spatial Gaussian by an intensity-similarity Gaussian: it averages only pixels close in both space and value (nonlinear, edge-preserving; σ_i → ∞ gives a Gaussian).
 > - Non-local means compares patches, not single pixels, so any similar-looking region anywhere can contribute (self-similarity).
 > - BM3D groups similar patches and thresholds their 3D transform coefficients (context only).
@@ -894,11 +930,16 @@ sRGB → XYZ:                     XYZ → linear sRGB (its inverse):
 
 **Strategy 2: compression / perceptual mapping.** Move out-of-gamut colors inward smoothly instead of chopping them. One simple version keeps the luminance and blends toward the neutral gray of the same brightness until every channel is legal. For the P3 green, a 24.54% blend toward gray (Y = 0.6917 in all three channels) gives linear sRGB (0, 0.9561, 0.1104), at xy = (0.2843, 0.5436), with luminance still 0.6917. The color is less saturated than the original but keeps its brightness. Real implementations typically also compress nearby in-gamut colors a little, so neighboring shades stay distinguishable instead of piling up at the boundary.
 
+> **Channel disagreement, a related case (case 5 of 7, per-channel clipping).** Here no edge is misplaced. Instead, each channel is edited on its own, so the *ratio* between the channels, which is what sets hue (§14.1's principle), is no longer the one the color had.
+> - In the P3-green example, clipping raises red by 0.2249, lowers green by 0.0421 and raises blue by 0.0786: three different changes, so the hue moves, from xy = (0.2650, 0.6900) to (0.3000, 0.6000).
+> - Compression instead changes all three channels together, by blending toward gray. On the chromaticity diagram its result, (0.2843, 0.5436), sits on the straight line from the P3 green to the D65 white point (§8), about 41% of the way along. Moving along that line keeps the hue and only lowers saturation.
+
 **Camera "modes."** Choosing how aggressively to compress, how much saturation to preserve versus hue accuracy, and where to accept clipping is exactly the kind of "different ways of projecting the colors" the slide ties to vivid/portrait/landscape modes. Which specific strategy a given manufacturer uses isn't something the lecture specifies, and it varies.
 
 > **Summary**
 > - Gamut mapping converts camera RGB → CIE XYZ (calibrated 3×3 matrix) → linear sRGB (standard matrix), both in linear light.
 > - Negative or >1 sRGB values mean the color is outside the sRGB gamut; clipping is cheap but shifts hue and merges detail, compression moves colors in smoothly.
+> - Clipping shifts hue because it changes each channel by a different amount, breaking their ratio (channel disagreement, case 5); compression moves all three together toward gray.
 > - *Next (optional):* §19 shrinks the finished image for storage.
 
 ---
@@ -919,9 +960,23 @@ JPEG compression is lecture content, not one of HW2's tasks, so this is covered 
 
 No full DCT derivation is needed here — the conceptual shape (transform → subsample what's least noticeable → quantize what's least noticeable → losslessly pack what's left) is what matters for this level of treatment.
 
+> **Channel disagreement (case 6 of 7, chroma subsampling → color bleeding).** Step 2 makes Y′ and the chroma channels disagree about *where* an edge is. Y′ still has a value for every pixel, but one Cb/Cr sample now covers two pixels (4:2:2) or four (4:2:0). At a sharp edge between two saturated colors, the shared chroma is a blend of both sides, so the color smears across the edge while the brightness edge stays sharp. This is **color bleeding** (= false color at a color edge).
+>
+> **Worked example: red next to blue, sharing one chroma sample** (4:2:2, one horizontal pair; §14.3's BT.601 matrix, computed by a short script). Each pixel keeps its own Y′; Cb and Cr are replaced by the pair's average, (165.102, 174.893).
+>
+> | Pixel | Original R′G′B′ | Y′ (kept) | Own Cb, Cr | After sharing, R′G′B′ | Looks |
+> |---|---|---|---|---|---|
+> | Left | (1, 0, 0) red | 81.481 | 90.203, 240.000 | (0.592, 0.093, 0.592) | magenta |
+> | Right | (0, 0, 1) blue | 40.966 | 240.000, 109.786 | (0.408, 0 *, 0.407) | dark purple |
+>
+> \* The right pixel's green comes out as −0.092 and is clipped to 0.
+>
+> Both pixels turn purple: the brightness difference between them survives (Y′ was kept), but the red and the blue have bled into each other. It is easiest to see on graphics with saturated color edges (red text on a blue background) and hard to see on most photos, whose sharp edges are mostly brightness edges, which Y′ keeps.
+
 > **Summary**
 > - JPEG converts to Y′CbCr, subsamples chroma (4:4:4, 4:2:2, 4:2:0), splits into 8×8 blocks, DCTs each, quantizes, then entropy-codes losslessly.
 > - The loss happens only at chroma subsampling and quantization, both aimed at detail the eye barely notices.
+> - Chroma subsampling lets Y′ and Cb/Cr disagree about where a color edge is, so saturated colors bleed across it (channel disagreement, case 6).
 > - *Next (optional):* §20 puts the whole pipeline together on a real camera file.
 
 ---
@@ -977,6 +1032,11 @@ The formats differ between manufacturers, so you need a decoder to get at the nu
 
 The lecture shows exactly one slide on this topic, with no formula: a blurred input next to its deblurred (deconvolved) reconstruction (Heide et al. 2016), plus a short list of blur sources: defocus, geometric distortion, spherical aberration, chromatic aberration (Week 2 §6 covered the optical causes) and coma. Nothing about *how* deblurring works is given. The real treatment (inverse-problem formulation, undoing a known or estimated blur) is Week 5–6 material, with a first-look primer in Week 1 §23. This section only previews that the topic exists.
 
+> **Channel disagreement (case 7 of 7, chromatic aberration).** One blur source on the slide is a channel-disagreement artifact made by the lens itself, before the sensor sees anything.
+> - Glass bends each wavelength slightly differently (Week 2 §6), so the red, green and blue images focus at slightly different distances. Away from the frame's center they also come out at slightly different *sizes* (magnifications), so the three images no longer line up.
+> - At a sharp black-white edge the three channels' edges then sit in different places, and the edge gets colored fringes: the optical twin of case 1.
+> - The size mismatch is the easier part to fix computationally: the "lens corrections" stage of the pipeline (§9) can rescale the red and blue channels so they line up with green again.
+
 **Orientation, so the word is not opaque.** Every blur source on that slide acts like **convolution**: each sharp scene point is replaced by a small blob (the blur **kernel**, or point spread function), and the photo is the sum of all the blobs (Week 1 §20; named formally in Week 4 §18).
 
 **Deconvolution** is the reverse problem: given the blurry photo, estimate the sharp one. It is *non-blind* when the kernel is known and *blind* when it must be guessed too.
@@ -988,17 +1048,34 @@ It matters for this course because defocus, motion blur, coded apertures, flutte
 > **Summary**
 > - Blurs (defocus, aberrations) act like convolution with a kernel; deconvolution tries to undo it.
 > - It is hard because blur nearly kills fine frequencies, and dividing them back amplifies noise (ill-posed), so regularization is needed.
+> - Chromatic aberration gives each color channel a different blur and size, so the channels' edges disagree and fringe (channel disagreement, case 7).
 > - This week only previews it; the real treatment comes in later weeks.
 > - *Next (optional):* §22 lists what comes next.
 
 ---
 
 
-## 22. Looking Ahead
+## 22. Recap and Looking Ahead
 
-The lecture's own closing slide names exactly what comes next, reproduced here as-is: **sampling, filtering, deconvolution, sparse image priors** — the mathematical toolkit (Week 5's "Sampling, Linear Systems, Deconvolution" and Week 6's regularized inverse problems) needed to formalize the deconvolution preview of §21 and to properly justify the aliasing intuition used informally in §14.2.
+**Recap: one failure, seven places.** Part 2 met the same artifact mechanism seven times: the color channels of a pixel disagree more than the scene does, so the pixel shows a color the scene never had (§14.1's principle).
+
+| Case | Where | What disagrees | What you see | This week's fix |
+|---|---|---|---|---|
+| 1 | Demosaicking (§14.1) | R, G, B edge positions, because each channel is sampled at different pixels | Colored fringes on edges | Chroma low-pass (§14.3); cross-channel interpolation (§14.4–14.5) |
+| 2 | Bayer sampling (§14.2) | Sparse R/B vs. denser G about a fine pattern (aliasing) | Color moiré | Optical low-pass filter (§14.2); chroma low-pass |
+| 3 | Other capture designs (§15) | Channels captured in different places (misaligned sensors) or at different times | Fringes on edges; colored ghost outlines on moving objects | Precise alignment; static scenes |
+| 4 | Sensor noise (§16.1) | Independent random error in each channel | Colored speckle (color noise) | Chroma-only smoothing (§14.3's idea) |
+| 5 | Gamut clipping (§18) | Each channel clamped separately, so their ratio changes | Hue shift; saturated gradations flattened | Gamut compression (§18) |
+| 6 | JPEG (§19) | Full-resolution Y′ vs. low-resolution Cb/Cr about where a color edge is | Color bleeding across saturated color edges | Less chroma subsampling (4:4:4) |
+| 7 | Lens (§21) | R, G, B images focused and sized differently (chromatic aberration) | Colored fringes on edges | Lens-correction rescaling of R and B (§9) |
+
+**Rule of thumb for diagnosing an artifact.** If something looks colored where the scene was neutral, or a color hugs edges, suspect channel disagreement first. Then ask which stage could have made the channels disagree: sampling (cases 1–2), capture (3), noise (4), per-channel editing (5), compression (6) or the lens (7).
+
+**What comes next.** The lecture's own closing slide names exactly what comes next, reproduced here as-is: **sampling, filtering, deconvolution, sparse image priors** — the mathematical toolkit (Week 5's "Sampling, Linear Systems, Deconvolution" and Week 6's regularized inverse problems) needed to formalize the deconvolution preview of §21 and to properly justify the aliasing intuition used informally in §14.2.
 
 > **Summary**
+> - Seven of Part 2's artifacts share one cause: a pixel's color channels disagree more than the scene does, producing false color.
+> - Rule to remember: colored where the scene was neutral, or color hugging edges → suspect channel disagreement, then find the stage that caused it.
 > - Next lectures supply sampling, filtering, deconvolution and sparse image priors.
 > - Those tools formalize this week's informal aliasing story and the deconvolution preview.
 
