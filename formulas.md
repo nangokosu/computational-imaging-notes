@@ -2280,15 +2280,15 @@ z ← argmin_z  g(z) + (ρ/2) ‖D x − z‖₂²
 b_m = Σ_p a_m[p] · x[p]  =  a_mᵀ x          ⇒          b = A x + η,   A ∈ ℝ^(M×N)
 ```
 
-**Computes:** Each photodiode reading as the pattern-weighted sum of the scene's pixels; stacking M readings gives a linear system, compressive when M < N (compression factor N/M).
+**Computes:** Each reading of the camera's one detector (the photodiode) as the pattern-weighted sum of the scene's N image pixels; stacking M readings gives a linear system, compressive when M < N (compression factor N/M).
 
 | Term | Meaning |
 |---|---|
-| a_m | Pattern m, one weight per pixel p (1 = on, 0 = off, or between) — designer (HW5: random) |
+| a_m | Pattern m, one weight per image pixel p (= per DMD pattern cell; 1 = on, 0 = off, or between) — designer (HW5: random) |
 | A | Measurement matrix, one pattern per row — designer |
 | b_m | Measurement m: the photodiode's reading — measured |
-| x[p] | Scene brightness at pixel p — unknown |
-| M, N | Number of measurements and of pixels (HW5: 1024 and 4096) — designer |
+| x[p] | Scene brightness at image pixel p — unknown |
+| M, N | Number of measurements and of image pixels (HW5: 1024 and 4096) — designer |
 | η | Measurement noise (HW5: σ = 0.001) |
 
 ---
@@ -2310,7 +2310,7 @@ L(x, w) = ½ xᵀx + wᵀ(A x − b)
 | A, b | Measurement matrix (wide, M < N) and measurements |
 | A Aᵀ | M×M overlaps between pairs of patterns |
 | (A Aᵀ)⁻¹ b | Weights saying how much of each pattern to use (size M) |
-| Aᵀ(…) | Sum of patterns with those weights: an N-pixel image |
+| Aᵀ(…) | Sum of patterns with those weights: an image of N image pixels |
 | w | Lagrange multipliers, one per measurement — computed |
 
 ---
@@ -2373,8 +2373,8 @@ b[m, t] = Σ_p a_m[p] · x[p, t]          ⇒          B = A X
 | Δt | Time-bin width, s (1 ns → Δd ≈ 0.15 m) — set by the detector electronics |
 | c | Speed of light, ≈ 3 × 10⁸ m/s — fixed |
 | Δd | Depth slice per bin, m (the /2 accounts for the round trip) |
-| a_m[p] | Pattern m's weight at pixel p — designer |
-| x[p, t] | Light pixel p returns in time bin t — unknown |
+| a_m[p] | Pattern m's weight at image pixel p — designer |
+| x[p, t] | Light the scene patch of image pixel p returns in time bin t — unknown |
 | A | Pattern matrix (M × N) — designer |
 | X | Scene cube: column t = image at depth bin t (N × bins) — unknown |
 | B | Data: row m = histogram through pattern m (M × bins) — measured |

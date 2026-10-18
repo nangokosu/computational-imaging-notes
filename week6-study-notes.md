@@ -18,7 +18,7 @@ Week 5 ended with a problem: undoing blur is **ill-posed**, which in plain words
 1. **A better description of a good answer.** Write down, as a formula, what real images tend to look like (a **prior**, literally "what you believe *before* looking at the data"), and look for the image that both explains the measurement and looks like a real image.
 2. **Better ways to find that image.** Two general-purpose **solvers** (step-by-step search procedures that home in on the best image), Adam and ADMM, that work for almost any measurement process, not just blur.
 
-The lecture then applies the same tools to a camera with a single pixel, to show that one recipe covers very different imaging problems ("if you can solve this, you can solve anything").
+The lecture then applies the same tools to a camera with a single light detector (the "single-pixel camera"), to show that one recipe covers very different imaging problems ("if you can solve this, you can solve anything").
 
 **Three words in this week mean more than one thing.** Each section says which meaning it uses.
 
@@ -1074,16 +1074,29 @@ The name: "half-quadratic" because, once **z** is held fixed, the new objective 
 
 ## 23. The Single-Pixel Camera (supports HW5 Task 3)
 
-**The idea (slides 104–107).** A normal camera has millions of light-sensing pixels. A **single-pixel camera** has *one*, and still makes an image, by taking many measurements, each through a different known pattern.
+**The idea (slides 104–107).** A normal camera has millions of light-sensing cells (sensor pixels). A **single-pixel camera** has *one* light sensor, and still makes an image with thousands of image pixels, by taking many measurements, each through a different known pattern. How one sensor yields many image pixels is untangled right after the hardware below.
 
 **How the hardware works.**
 
 1. A lens forms an image of the scene, not on a sensor, but on a **digital micromirror device** (DMD): a chip covered in hundreds of thousands of microscopic mirrors, each of which can tilt to one of two angles (the same chip used in many video projectors).
 2. Each mirror sends its piece of the image either *toward* a second lens ("on") or *away* ("off"). The on/off layout is the **pattern** (the **mask**).
-3. The second lens gathers all the "on" light onto a single **photodiode** (a one-pixel light meter), which reports one number: the total light passing the pattern.
+3. The second lens gathers all the "on" light onto a single **photodiode** (one light sensor on its own: the camera's only **detector**), which reports one number: the total light passing the pattern.
 4. Change the pattern, read again. Repeat *M* times.
 
-**Each reading is a weighted sum (slide 107).** If the scene, flattened, is **x** (*N* pixel values) and pattern *m* is the row **a**_*m* (1 = on, 0 = off, or any weight in between), then reading *m* is
+> **Watch the word "pixel": two meanings.** Analogy first: imagine finding the weights of 16 parcels with one bathroom scale. You never weigh a parcel alone; you weigh different groups, and from enough group totals you solve for each parcel. One scale, 16 answers. The scale is the camera's detector; the parcels are the image pixels.
+>
+> - **Sensor pixel** (= **detector**): a physical cell that turns light into a number (Week 1 §7). A normal camera has millions; a single-pixel camera has exactly **one**, the photodiode. That one detector is the "single pixel" in the name.
+> - **Image pixel**: one of the *N* unknown values of the picture we reconstruct, the brightness of one small patch of the scene. The single-pixel camera still outputs *N* of them (4096 in HW5).
+>
+> **Why the word was safe until now.** In a normal camera, each sensor pixel produces exactly one image pixel, so Week 1 §7's single word "pixel" covered both. Here the two come apart: one sensor pixel, *N* image pixels.
+>
+> **Where the image pixels come from: the DMD.** The pattern is drawn on a grid of *N* **pattern cells** (each cell is one mirror, or a small block of mirrors switched together). Each cell sees one patch of the scene, and that patch is one image pixel. So the image's resolution is set by the pattern grid, not by the detector. The detector never sees an image pixel alone; it only reports the total over every cell that is "on."
+>
+> **Wording used from here on:** "detector" = the one light sensor; "image pixel" = one of the *N* unknowns (one pattern cell); "single-pixel" appears only inside the fixed names (single-pixel camera, single-pixel imaging, single-pixel LiDAR).
+
+> **Same concept, different names.** **Detector** = **photodiode** = **bucket detector** (it collects all the light passing the pattern, like a bucket; a common name in the research papers) = the "single pixel." **Image pixel** = scene pixel = **pattern cell** (the same index *p*, seen from the DMD side). **Single-pixel camera** = single-pixel imaging system.
+
+**Each reading is a weighted sum (slide 107).** If the scene, flattened, is **x** (*N* image-pixel values) and pattern *m* is the row **a**_*m* (1 = on, 0 = off, or any weight in between), then reading *m* is
 
 ```
 b_m = Σ_p a_m[p] · x[p]  =  a_mᵀ x          ⇒          b = A x + η,   A ∈ ℝ^(M×N)
@@ -1091,25 +1104,26 @@ b_m = Σ_p a_m[p] · x[p]  =  a_mᵀ x          ⇒          b = A x + η,   A �
 
 | Term | Meaning (slide 107) | Who sets it |
 |---|---|---|
-| **a**_*m* | pattern *m*, one weight per pixel *p* | the designer (HW5: random) |
+| **a**_*m* | pattern *m*, one weight per image pixel *p* (= per pattern cell) | the designer (HW5: random) |
 | **A** | the **measurement matrix**: one pattern per row | the designer |
 | *b_m* | measurement *m*: the photodiode's reading | measured |
 | *M* | number of measurements | the designer |
-| *N* | number of pixels in the image | the designer |
+| *N* | number of image pixels (= pattern cells) in the reconstruction | the designer |
 
-**Why bother with one pixel?** At wavelengths where large sensor arrays are expensive or do not exist (infrared, terahertz, some x-ray bands, slide 138), one excellent detector plus a cheap mirror array can beat a poor array. The same idea is central to some LiDAR systems (§27).
+**Why bother with one detector?** At wavelengths where large sensor arrays are expensive or do not exist (infrared, terahertz, some x-ray bands, slide 138), one excellent detector plus a cheap mirror array can beat a poor array. The same idea is central to some LiDAR systems (§27).
 
-**Compression (slides 106, 108–109).** If *M* = *N*, the system can be solved like any square one. The interesting case is **M < N**: fewer measurements than pixels. That makes the problem **under-determined** (more unknowns than equations; Week 5 §28), also called a **compressive imaging** problem: the camera "compresses" while measuring, instead of measuring everything and compressing afterwards (as JPEG does, Week 3). The **compression factor** is *N*/*M*. Slide 106 shows reconstructions from 10%, 5% and 2% as many measurements as pixels.
+**Compression (slides 106, 108–109).** If *M* = *N*, the system can be solved like any square one. The interesting case is **M < N**: fewer measurements than image pixels. That makes the problem **under-determined** (more unknowns than equations; Week 5 §28), also called a **compressive imaging** problem: the camera "compresses" while measuring, instead of measuring everything and compressing afterwards (as JPEG does, Week 3). The **compression factor** is *N*/*M*. Slide 106 shows reconstructions from 10%, 5% and 2% as many measurements as image pixels.
 
 **HW5 Task 3's setup, in these terms.** The test image is a 64×64 logo, so *N* = 4096 unknowns. With compression factor 4, *M* = 4096/4 = 1024 measurements. The patterns are random gray levels between 0 and 1 (`np.random.rand`), one 64×64 mask per measurement, and the noise has σ = 0.001. The starter code supplies the two operations as functions (handles, Week 5 §26):
 
 - `Afun(x)`: multiply each mask by the image and sum each product, giving 1024 numbers (that is **A x**);
 - `Atfun(b)`: weight each mask by its measurement and add the masks up, giving a 64×64 image (that is **A**ᵀ**b**).
 
-**Watch the names.** In `hw5_task3.py`, the variable `N` is the number of *measurements* (1024), the lecture's *M*. These notes always use the lecture's meaning (*N* = pixels, *M* = measurements).
+**Watch the names.** In `hw5_task3.py`, the variable `N` is the number of *measurements* (1024), the lecture's *M*. These notes always use the lecture's meaning (*N* = image pixels, *M* = measurements).
 
 > **Summary**
-> - A single-pixel camera reads the total light through *M* known patterns: **b = A x + η**, one pattern per row of **A**.
+> - A single-pixel camera's one detector reads the total light through *M* known patterns: **b = A x + η**, one pattern per row of **A**.
+> - "Pixel" has two meanings here: one *sensor pixel* (the detector) but *N* *image pixels*, one per DMD pattern cell.
 > - Rule to remember: **compressive** means **M < N** (under-determined); compression factor = **N/M**. HW5 Task 3: *N* = 4096, *M* = 1024.
 > - `Afun` = **A x** (masks times image, summed), `Atfun` = **A**ᵀ**b** (masks weighted by readings, summed). The starter code's `N` is the lecture's *M*.
 > - Next: the simplest answer to an under-determined system, and why it is not enough (§24).
@@ -1145,10 +1159,10 @@ substitute:                        x = Aᵀ (A Aᵀ)⁻¹ b
 
 **Why it looks bad.** "Results (not great)" (slide 112). Nothing in it says "look like an image." With random patterns, a weighted sum of random patterns looks like random speckle, and the missing null-space part (75% of the image's degrees of freedom at 4× compression) is simply set to zero.
 
-> **Worked example (4 pixels, 2 patterns).** Scene **x** = [0.2, 0.9, 0.4, 0.7]. Patterns **a**₁ = [1, 0, 1, 0] and **a**₂ = [0, 1, 1, 1]. Readings: *b*₁ = 0.2 + 0.4 = 0.6, *b*₂ = 0.9 + 0.4 + 0.7 = 2.0.
-> - **A A**ᵀ = [[2, 1], [1, 3]] (pattern 1 has 2 "on" pixels, pattern 2 has 3, and they share 1).
+> **Worked example (4 image pixels, 2 patterns).** Scene **x** = [0.2, 0.9, 0.4, 0.7]. Patterns **a**₁ = [1, 0, 1, 0] and **a**₂ = [0, 1, 1, 1]. Readings: *b*₁ = 0.2 + 0.4 = 0.6, *b*₂ = 0.9 + 0.4 + 0.7 = 2.0.
+> - **A A**ᵀ = [[2, 1], [1, 3]] (pattern 1 has 2 "on" cells, pattern 2 has 3, and they share 1).
 > - Solve [[2, 1], [1, 3]]**w** = [0.6, 2.0]: **w** = [−0.04, 0.68]. Then **x̃** = **A**ᵀ**w** = −0.04·**a**₁ + 0.68·**a**₂ = **[−0.04, 0.68, 0.64, 0.68]**.
-> - It reproduces both readings exactly (−0.04 + 0.64 = 0.6; 0.68 + 0.64 + 0.68 = 2.0) and is shorter than the truth (length 1.156 vs. 1.225), but it is wrong everywhere, and pixel 1 is even negative (impossible for light). The error, truth − estimate = [0.24, 0.22, −0.24, 0.02], is invisible to both patterns: **A** times it is [0, 0]. That is the null-space part least-norm discards.
+> - It reproduces both readings exactly (−0.04 + 0.64 = 0.6; 0.68 + 0.64 + 0.68 = 2.0) and is shorter than the truth (length 1.156 vs. 1.225), but it is wrong everywhere, and image pixel 1 is even negative (impossible for light). The error, truth − estimate = [0.24, 0.22, −0.24, 0.02], is invisible to both patterns: **A** times it is [0, 0]. That is the null-space part least-norm discards.
 
 **Computing it without inverting anything (PS5 slides 13–14; HW5 Task 3.1).** **A A**ᵀ is 1024×1024 here, but in larger problems it is still too big to form. Solve in two stages, using only `Afun` and `Atfun`:
 
@@ -1249,7 +1263,7 @@ These are §20's and §21's formulas with **C** → **A**, derived the same way 
 |---|---|---|
 | **Ã** (apply to **x**) | **A**ᵀ(**A x**) + ρ**D**ᵀ(**D x**) | **A**ᵀ(**A x**) + ρ**x** |
 | **b̃** (right side) | **A**ᵀ**b** + ρ**D**ᵀ**v** | **A**ᵀ**b** + ρ**v** |
-| operator size | *N*×*N* (pixels × pixels) | *N*×*N* |
+| operator size | *N*×*N* (image pixels × image pixels) | *N*×*N* |
 | function calls in the matvec | `Afun`, `Atfun`, `opDx`, `opDtx` | `Afun`, `Atfun` |
 
 "Combine the least squares objectives first" (PS5) means exactly this: merge the data term and the ADMM coupling term into one system **Ã x** = **b̃** before calling CG. Both versions of **Ã** are symmetric and positive definite, so CG applies. Each is a sum of terms **G**ᵀ**G**, which are never negative (**x**ᵀ**G**ᵀ**G x** = ‖**G x**‖² ≥ 0). With ρ*I*, every nonzero **x** gives a positive value. With ρ**D**ᵀ**D**, the only images it ignores are constant ones, and the patterns do see a constant image (every mask has positive weights), so no nonzero image is ignored by both terms.
@@ -1279,7 +1293,7 @@ LiDAR (light detection and ranging; Week 4 and Week 5 §20.2) measures distance 
 
 ### 27.1 Why LiDAR and single-pixel imaging fit together
 
-A depth camera needs, at every pixel, a detector fast enough to time light to within a nanosecond (a billionth of a second; light travels 30 cm in that time). Such detectors (for example **single-photon avalanche diodes**, SPADs, which click on individual photons) are expensive to build in large arrays, especially at the infrared wavelengths many LiDARs use (such as 1550 nm, chosen partly because it is safer for eyes). Three ways to get a depth *image*:
+A depth camera built on a sensor array needs, in every sensor pixel, a detector fast enough to time light to within a nanosecond (a billionth of a second; light travels 30 cm in that time). Such detectors (for example **single-photon avalanche diodes**, SPADs, which click on individual photons) are expensive to build in large arrays, especially at the infrared wavelengths many LiDARs use (such as 1550 nm, chosen partly because it is safer for eyes). Three ways to get a depth *image*:
 
 | Approach | How | Detector |
 |---|---|---|
@@ -1287,7 +1301,7 @@ A depth camera needs, at every pixel, a detector fast enough to time light to wi
 | **flash** LiDAR | light the whole scene at once | a full array of fast detectors |
 | **compressive (single-pixel) LiDAR** | light the whole scene; a DMD (§23) applies patterns; time the total return | one fast detector |
 
-The third is §23's single-pixel camera with a timing detector. Research systems built this way have recovered depth images from fewer patterns than pixels.
+The third is §23's single-pixel camera with a timing detector. Research systems built this way have recovered depth images from fewer patterns than image pixels.
 
 ### 27.2 The forward model: one single-pixel problem per time bin
 
@@ -1295,7 +1309,7 @@ The third is §23's single-pixel camera with a timing detector. Research systems
 
 > **Worked example (bin sizes).** Δ*t* = 1 ns gives Δ*d* = 3 × 10⁸ × 10⁻⁹ / 2 ≈ **0.15 m** per bin. Covering depths 0–30 m then takes 30 / 0.15 = **200 bins**.
 
-**The model.** Describe the scene as a stack of 2D images, one per depth bin: *x*[*p*, *t*] is how much light pixel *p* sends back in time bin *t* (nonzero only in the bin matching that pixel's surface depth). The light reaching the detector in bin *t*, through pattern *m*, is the pattern-weighted sum of that slice:
+**The model.** Describe the scene as a stack of 2D images, one per depth bin: *x*[*p*, *t*] is how much light the scene patch of image pixel *p* (the patch one pattern cell sees) sends back in time bin *t* (nonzero only in the bin matching that patch's surface depth). The light reaching the detector in bin *t*, through pattern *m*, is the pattern-weighted sum of that slice:
 
 ```
 b[m, t] = Σ_p a_m[p] · x[p, t]          ⇒          B = A X
@@ -1309,22 +1323,22 @@ b[m, t] = Σ_p a_m[p] · x[p, t]          ⇒          B = A X
 
 **Read it column by column:** each time bin is an ordinary single-pixel imaging problem **b**_*t* = **A x**_*t*, all sharing the same **A**. HW5 Task 3's solver, run 200 times (or on all columns at once), recovers the whole depth-resolved scene.
 
-> **Worked example (4 pixels, 2 patterns, two surfaces).** Reuse §24's scene reflectivities [0.2, 0.9, 0.4, 0.7], with pixels 1–2 on a wall in bin 3 and pixels 3–4 on a box in bin 5. Patterns **a**₁ = [1, 0, 1, 0], **a**₂ = [0, 1, 1, 1].
+> **Worked example (4 image pixels, 2 patterns, two surfaces).** Reuse §24's scene reflectivities [0.2, 0.9, 0.4, 0.7], with image pixels 1–2 on a wall in bin 3 and image pixels 3–4 on a box in bin 5. Patterns **a**₁ = [1, 0, 1, 0], **a**₂ = [0, 1, 1, 1].
 >
 > | | bin 3 (wall) | bin 5 (box) |
 > |---|---|---|
-> | pattern 1 histogram | 0.2 (pixel 1) | 0.4 (pixel 3) |
-> | pattern 2 histogram | 0.9 (pixel 2) | 0.4 + 0.7 = 1.1 (pixels 3, 4) |
+> | pattern 1 histogram | 0.2 (image pixel 1) | 0.4 (image pixel 3) |
+> | pattern 2 histogram | 0.9 (image pixel 2) | 0.4 + 0.7 = 1.1 (image pixels 3, 4) |
 >
 > Timing has already separated the two surfaces: the bin-3 column is a single-pixel measurement of the wall alone, the bin-5 column of the box alone. Adding the bins back up gives §24's readings 0.6 and 2.0 (the plain intensity image).
 
-**A prior that fits naturally.** Each depth slice **x**_*t* is mostly zero (only the pixels whose surface is at that depth are lit): the "stars" situation of §7, so an ℓ₁ prior suits each slice. Across slices, each pixel has typically one main return (sparse in time), and neighboring pixels tend to have similar depths (sparse depth gradients: TV, §27.4).
+**A prior that fits naturally.** Each depth slice **x**_*t* is mostly zero (only the image pixels whose surface is at that depth are lit): the "stars" situation of §7, so an ℓ₁ prior suits each slice. Across slices, each image pixel has typically one main return (sparse in time), and neighboring image pixels tend to have similar depths (sparse depth gradients: TV, §27.4).
 
-**From the cube to a depth map.** For each pixel, the depth is the bin with the strongest return times 0.15 m. A cheaper variant used in practice recovers just two images with two single-pixel solves, the total reflectivity Σ_*t* *x*[*p*, *t*] and the time-weighted sum Σ_*t* *t*·*x*[*p*, *t*]; their ratio is each pixel's average return bin, i.e. its depth (correct when each pixel has one surface).
+**From the cube to a depth map.** For each image pixel, the depth is the bin with the strongest return times 0.15 m. A cheaper variant used in practice recovers just two images with two single-pixel solves, the total reflectivity Σ_*t* *x*[*p*, *t*] and the time-weighted sum Σ_*t* *t*·*x*[*p*, *t*]; their ratio is each image pixel's average return bin, i.e. its depth (correct when each image pixel sees one surface).
 
 **The data-size picture.** The full cube has 4096 × 200 = 819 200 unknowns; the data has 1024 × 200 = 204 800 numbers. The same 4× compression as HW5, with the prior making up the difference.
 
-**One more advantage: light efficiency.** Each pattern with about half its mirrors "on" sends roughly half of the whole scene's returned light to the detector, instead of one pixel's worth at a time. When the detector's own electronic noise dominates (rather than the randomness of the light itself), that larger signal per reading improves the signal-to-noise ratio. This is called the **multiplex advantage**.
+**One more advantage: light efficiency.** Each pattern with about half its mirrors "on" sends roughly half of the whole scene's returned light to the detector, instead of one scene point's worth at a time (as a scanning LiDAR gets). When the detector's own electronic noise dominates (rather than the randomness of the light itself), that larger signal per reading improves the signal-to-noise ratio. This is called the **multiplex advantage**.
 
 ### 27.3 Counting photons changes the data term
 
@@ -1348,7 +1362,7 @@ This replaces ½‖**b** − **A x**‖²/σ² as the data term. The MAP objecti
 
 **Why TV fits depth even better than brightness.** A depth map has no texture: a printed poster on a wall has a busy brightness image but a perfectly flat depth image. Depth maps are mostly flat or smoothly varying patches separated by sharp jumps at object boundaries: exactly what TV favors (§9).
 
-**Flying pixels.** Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to *no* surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call **flying pixels** (or **mixed pixels**); a sensor also creates them on its own when one pixel's light comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.
+**Flying pixels.** Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to *no* surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call **flying pixels** (or **mixed pixels**); here "pixel" means a pixel of the output depth map (an image pixel), and the name is fixed by convention. A sensor also creates them on its own when the light one sensor pixel (or one laser spot) collects comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.
 
 > **Worked example (a scan line across a box edge).** Measured depths, in meters, with noise: [10.0, 10.1, 9.9, 10.0, 15.1, 14.9, 15.0, 15.0] (a wall at 10 m, then a box surface at 15 m). Two clean-ups:
 >
@@ -1365,7 +1379,7 @@ This replaces ½‖**b** − **A x**‖²/σ² as the data term. The MAP objecti
 
 > **Summary**
 > - Compressive LiDAR = single-pixel camera + timing detector: **B = A X**, one single-pixel problem per **time bin** (bin depth = **cΔt/2**, 0.15 m for 1 ns), all sharing the same **A**.
-> - Each depth slice is sparse (ℓ₁ prior); each pixel has one main return; depth = strongest bin × bin depth.
+> - Each depth slice is sparse (ℓ₁ prior); each image pixel has one main return; depth = strongest bin × bin depth.
 > - Photon counts are Poisson, so the data term becomes **Σ[(Ax)_i − b_i log(Ax)_i]**; the MAP/ADMM recipe still applies.
 > - TV suits depth maps: sharp edges, no flying pixels (11.67 m and 13.33 m invented by averaging vs. clean plateaus with TV), at a small contrast loss; slanted planes call for TGV.
 > - Next: other imaging systems built on the same objective (§28).
@@ -1382,7 +1396,7 @@ Slides 113–138 survey other inverse problems; all are "minimize ½‖**b** −
 
 **Magnetic resonance imaging (MRI, slide 132).** An MRI scanner measures the image's Fourier coefficients directly (radiologists call the frequency domain **k-space**). **Compressive MRI** measures fewer (often randomly chosen) coefficients, shortening scans, which matters for patients who must hold still. Here **A** = "Fourier transform, then keep only the measured frequencies."
 
-**Hyperspectral imaging (slides 134–137).** A **hyperspectral** image records many narrow wavelength bands per pixel (dozens to hundreds, instead of RGB's three): a 3D **datacube** (*x*, *y*, λ), here λ meaning wavelength. Conventional instruments scan, either over space (*x*, *y*) or over wavelength. **CASSI** (coded aperture snapshot spectral imager) captures the whole cube in one 2D photo: a **coded aperture** (a fixed random mask) patterns the light, then a **disperser** (a prism or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways by a different distance, and all the shifted, masked copies land summed on one sensor. **A** = "mask, shift by wavelength, sum." Quality is moderate for a single snapshot, good with several coded shots (slide 137).
+**Hyperspectral imaging (slides 134–137).** A **hyperspectral** image records many narrow wavelength bands per image pixel (dozens to hundreds, instead of RGB's three): a 3D **datacube** (*x*, *y*, λ), here λ meaning wavelength. Conventional instruments scan, either over space (*x*, *y*) or over wavelength. **CASSI** (coded aperture snapshot spectral imager) captures the whole cube in one 2D photo: a **coded aperture** (a fixed random mask) patterns the light, then a **disperser** (a prism or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways by a different distance, and all the shifted, masked copies land summed on one sensor. **A** = "mask, shift by wavelength, sum." Quality is moderate for a single snapshot, good with several coded shots (slide 137).
 
 **A caution from medical imaging (slide 133).** Practitioners are "often hesitant about priors": there are few guarantees of success; if reconstruction breaks it is not clear how; and "is that feature a reconstruction artifact or the thing I'm looking for?" A prior can **hallucinate**: produce plausible-looking detail that was never measured (a learned prior trained on healthy anatomy might smooth away a small tumor, or invent a structure).
 

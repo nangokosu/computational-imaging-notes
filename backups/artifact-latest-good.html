@@ -12510,7 +12510,7 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )</div>
     <li><strong>A better description of a good answer.</strong> Write down, as a formula, what real images tend to look like (a <strong><a href="https://en.wikipedia.org/wiki/Prior_probability">prior</a></strong>, literally "what you believe <em>before</em> looking at the data"), and look for the image that both explains the measurement and looks like a real image.</li>
     <li><strong>Better ways to find that image.</strong> Two general-purpose <strong>solvers</strong> (step-by-step search procedures that home in on the best image), <a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam">Adam</a> and <a href="https://en.wikipedia.org/wiki/Alternating_direction_method_of_multipliers">ADMM</a>, that work for almost any measurement process, not just blur.</li>
   </ol>
-  <p>The lecture then applies the same tools to a camera with a single pixel, to show that one recipe covers very different imaging problems ("if you can solve this, you can solve anything").</p>
+  <p>The lecture then applies the same tools to a camera with a single light detector (the "single-pixel camera"), to show that one recipe covers very different imaging problems ("if you can solve this, you can solve anything").</p>
   <p><strong>Three words in this week mean more than one thing.</strong> Each section says which meaning it uses.</p>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Word</th><th>Meaning 1</th><th>Meaning 2</th></tr></thead>
@@ -14428,20 +14428,36 @@ while not converged:
   <div class="kicker">Part 6 &middot; Compressive Imaging and the Single-Pixel Camera</div>
   <div class="eyebrow">23</div>
   <h2>The Single-Pixel Camera (supports HW5 Task 3)</h2>
-  <p><strong>The idea (slides 104–107).</strong> A normal camera has millions of light-sensing pixels. A <strong><a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">single-pixel camera</a></strong> has <em>one</em>, and still makes an image, by taking many measurements, each through a different known pattern.</p>
+  <p><strong>The idea (slides 104–107).</strong> A normal camera has millions of light-sensing cells (sensor <a href="https://en.wikipedia.org/wiki/Pixel">pixels</a>). A <strong><a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">single-pixel camera</a></strong> has <em>one</em> light sensor, and still makes an image with thousands of image pixels, by taking many measurements, each through a different known pattern. How one sensor yields many image pixels is untangled right after the hardware below.</p>
   <p><strong>How the hardware works.</strong></p>
   <ol class="plain">
     <li>A lens forms an image of the scene, not on a sensor, but on a <strong><a href="https://en.wikipedia.org/wiki/Digital_micromirror_device">digital micromirror device</a></strong> (DMD): a chip covered in hundreds of thousands of microscopic mirrors, each of which can tilt to one of two angles (the same chip used in many video projectors).</li>
     <li>Each mirror sends its piece of the image either <em>toward</em> a second lens ("on") or <em>away</em> ("off"). The on/off layout is the <strong>pattern</strong> (the <strong>mask</strong>).</li>
-    <li>The second lens gathers all the "on" light onto a single <strong><a href="https://en.wikipedia.org/wiki/Photodiode">photodiode</a></strong> (a one-pixel light meter), which reports one number: the total light passing the pattern.</li>
+    <li>The second lens gathers all the "on" light onto a single <strong><a href="https://en.wikipedia.org/wiki/Photodiode">photodiode</a></strong> (one light sensor on its own: the camera's only <strong>detector</strong>), which reports one number: the total light passing the pattern.</li>
     <li>Change the pattern, read again. Repeat <em>M</em> times.</li>
   </ol>
+  <div class="callout">
+    <div class="label">Watch the word "pixel": two meanings</div>
+  <p>Analogy first: imagine finding the weights of 16 parcels with one bathroom scale. You never weigh a parcel alone; you weigh different groups, and from enough group totals you solve for each parcel. One scale, 16 answers. The scale is the camera's detector; the parcels are the image pixels.</p>
+  <ul>
+    <li><strong>Sensor pixel</strong> (= <strong>detector</strong>): a physical cell that turns light into a number (Week 1 §7). A normal camera has millions; a single-pixel camera has exactly <strong>one</strong>, the photodiode. That one detector is the "single pixel" in the name.</li>
+    <li><strong>Image pixel</strong>: one of the <em>N</em> unknown values of the picture we reconstruct, the brightness of one small patch of the scene. The single-pixel camera still outputs <em>N</em> of them (4096 in HW5).</li>
+  </ul>
+  <p><strong>Why the word was safe until now.</strong> In a normal camera, each sensor pixel produces exactly one image pixel, so Week 1 §7's single word "pixel" covered both. Here the two come apart: one sensor pixel, <em>N</em> image pixels.</p>
+  <p><strong>Where the image pixels come from: the DMD.</strong> The pattern is drawn on a grid of <em>N</em> <strong>pattern cells</strong> (each cell is one mirror, or a small block of mirrors switched together). Each cell sees one patch of the scene, and that patch is one image pixel. So the image's resolution is set by the pattern grid, not by the detector. The detector never sees an image pixel alone; it only reports the total over every cell that is "on."</p>
+  <p><strong>Wording used from here on:</strong> "detector" = the one light sensor; "image pixel" = one of the <em>N</em> unknowns (one pattern cell); "single-pixel" appears only inside the fixed names (single-pixel camera, single-pixel imaging, single-pixel LiDAR).</p>
+  </div>
+  <div class="callout">
+    <div class="label">Same concept, different names</div>
+  <p><strong>Detector</strong> = <strong><a href="https://en.wikipedia.org/wiki/Photodiode">photodiode</a></strong> = <strong>bucket detector</strong> (it collects all the light passing the pattern, like a bucket; a common name in the research papers) = the "single pixel." <strong>Image pixel</strong> = scene pixel = <strong>pattern cell</strong> (the same index <em>p</em>, seen from the DMD side). <strong>Single-pixel camera</strong> = single-pixel imaging system.</p>
+  </div>
 <figure class="chart-fig">
-<svg viewBox="0 0 680 240" role="img" aria-label="Light from the scene passes a lens onto a digital micromirror device showing an on-off pattern; the on mirrors send light through a second lens onto a single photodiode, which outputs one number b_m equal to the pattern dotted with the scene.">
+<svg viewBox="0 0 680 240" role="img" aria-label="Light from the scene, made of N image pixels, passes a lens onto a digital micromirror device whose grid has one cell per image pixel and shows an on-off pattern; the on cells send light through a second lens onto a single photodiode, the camera's one detector and the single pixel of its name, which outputs one number b_m equal to the pattern dotted with the scene.">
 <defs><marker id="w6-spc-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-soft)"/></marker></defs>
 <rect x="20" y="80" width="90" height="80" rx="8" fill="var(--surface)" stroke="var(--ink-faint)" stroke-width="1.5" />
 <text x="65" y="116" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">scene x</text>
-<text x="65" y="133" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >N pixels</text>
+<text x="65" y="133" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >(unknown)</text>
+<text x="65" y="176" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >N image pixels</text>
 <ellipse cx="160" cy="120" rx="10" ry="46" fill="var(--accent-2)" fill-opacity="0.3" stroke="var(--accent-2)" stroke-width="1.5"/>
 <text x="160" y="186" text-anchor="middle" class="chart-label" fill="var(--accent-2)" >lens</text>
 <rect x="220" y="80" width="20" height="20" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="0.6" />
@@ -14461,12 +14477,13 @@ while not converged:
 <rect x="260" y="140" width="20" height="20" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="0.6" />
 <rect x="280" y="140" width="20" height="20" rx="0" fill="var(--surface-2)" stroke="var(--border)" stroke-width="0.6" />
 <text x="260" y="186" text-anchor="middle" class="chart-label" fill="var(--accent-ink)" >DMD: pattern aₘ</text>
-<text x="260" y="66" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >mirrors on / off</text>
+<text x="260" y="66" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >1 cell per image pixel</text>
 <ellipse cx="370" cy="120" rx="10" ry="46" fill="var(--accent-2)" fill-opacity="0.3" stroke="var(--accent-2)" stroke-width="1.5"/>
 <text x="370" y="186" text-anchor="middle" class="chart-label" fill="var(--accent-2)" >lens</text>
 <rect x="430" y="105" width="50" height="30" rx="4" fill="var(--accent-3)" fill-opacity="0.35" stroke="var(--accent-3)" stroke-width="1.5" />
 <text x="455" y="186" text-anchor="middle" class="chart-label" fill="var(--accent-3)" >photodiode</text>
-<text x="455" y="154" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >(one pixel)</text>
+<text x="455" y="154" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >the one detector</text>
+<text x="455" y="168" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >= the “single pixel”</text>
 <rect x="530" y="90" width="130" height="60" rx="8" fill="var(--surface)" stroke="var(--accent-3)" stroke-width="1.5" />
 <text x="595" y="116" text-anchor="middle" class="chart-label" fill="var(--ink)" font-weight="600">bₘ = aₘᵀx</text>
 <text x="595" y="133" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >one number</text>
@@ -14480,18 +14497,18 @@ while not converged:
 <text x="260" y="226" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >“off” mirrors send light away</text>
 <text x="340" y="30" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >repeat with M different patterns → M numbers b = Ax</text>
 </svg>
-<figcaption>Fig. 150 &mdash; the single-pixel camera. A lens images the scene onto a digital micromirror device (DMD); its on/off pattern aₘ decides which parts of the image reach the second lens, which focuses all of that light onto one photodiode. Each pattern gives one number bₘ = aₘᵀx; M patterns give b = Ax.</figcaption>
+<figcaption>Fig. 150 &mdash; the single-pixel camera. A lens images the scene onto a digital micromirror device (DMD) whose grid has one cell per image pixel (16 here); its on/off pattern aₘ decides which scene patches reach the second lens, which focuses all of that light onto the camera's one detector, a photodiode (the &ldquo;single pixel&rdquo; of the name). Each pattern gives one number bₘ = aₘᵀx; M patterns give b = Ax, from which the N image pixels are solved.</figcaption>
 </figure>
-  <p><strong>Each reading is a weighted sum (slide 107).</strong> If the scene, flattened, is <strong>x</strong> (<em>N</em> pixel values) and pattern <em>m</em> is the row <strong>a</strong>_<em>m</em> (1 = on, 0 = off, or any weight in between), then reading <em>m</em> is</p>
+  <p><strong>Each reading is a weighted sum (slide 107).</strong> If the scene, flattened, is <strong>x</strong> (<em>N</em> image-pixel values) and pattern <em>m</em> is the row <strong>a</strong>_<em>m</em> (1 = on, 0 = off, or any weight in between), then reading <em>m</em> is</p>
   <div class="formula" style="white-space:pre">b_m = Σ_p a_m[p] · x[p]  =  a_mᵀ x          ⇒          b = A x + η,   A ∈ ℝ^(M×N)</div>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Term</th><th>Meaning (slide 107)</th><th>Who sets it</th></tr></thead>
     <tbody>
-      <tr><td><strong>a</strong>_<em>m</em></td><td>pattern <em>m</em>, one weight per pixel <em>p</em></td><td>the designer (HW5: random)</td></tr>
+      <tr><td><strong>a</strong>_<em>m</em></td><td>pattern <em>m</em>, one weight per image pixel <em>p</em> (= per pattern cell)</td><td>the designer (HW5: random)</td></tr>
       <tr><td><strong>A</strong></td><td>the <strong>measurement matrix</strong>: one pattern per row</td><td>the designer</td></tr>
       <tr><td><em>b_m</em></td><td>measurement <em>m</em>: the photodiode's reading</td><td>measured</td></tr>
       <tr><td><em>M</em></td><td>number of measurements</td><td>the designer</td></tr>
-      <tr><td><em>N</em></td><td>number of pixels in the image</td><td>the designer</td></tr>
+      <tr><td><em>N</em></td><td>number of image pixels (= pattern cells) in the reconstruction</td><td>the designer</td></tr>
     </tbody>
   </table></div>
 <figure class="chart-fig">
@@ -14540,22 +14557,23 @@ while not converged:
 <text x="377" y="125" text-anchor="middle" class="chart-label" fill="var(--ink)" >2.0</text>
 <text x="418" y="91" text-anchor="start" class="chart-label" fill="var(--ink-soft)" >b₁ = 0.2 + 0.4 = 0.6</text>
 <text x="418" y="125" text-anchor="start" class="chart-label" fill="var(--ink-soft)" >b₂ = 0.9 + 0.4 + 0.7 = 2.0</text>
-<text x="340" y="225" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >M = 2 readings &lt; N = 4 pixels: under-determined (compressive)</text>
+<text x="340" y="225" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >M = 2 readings &lt; N = 4 image pixels: under-determined (compressive)</text>
 </svg>
-<figcaption>Fig. 151 &mdash; b = Ax for the 4-pixel, 2-pattern example used in §24 and §27. Each row of A is one pattern (also drawn as the 2×2 mask it represents); each reading is the sum of the scene values the pattern lets through.</figcaption>
+<figcaption>Fig. 151 &mdash; b = Ax for the 4-image-pixel, 2-pattern example used in §24 and §27. Each row of A is one pattern (also drawn as the 2×2 mask it represents); each reading is the sum of the scene values the pattern lets through.</figcaption>
 </figure>
-  <p><strong>Why bother with one pixel?</strong> At wavelengths where large sensor arrays are expensive or do not exist (<a href="https://en.wikipedia.org/wiki/Infrared">infrared</a>, <a href="https://en.wikipedia.org/wiki/Terahertz_radiation">terahertz</a>, some x-ray bands, slide 138), one excellent detector plus a cheap mirror array can beat a poor array. The same idea is central to some <a href="https://en.wikipedia.org/wiki/Lidar">LiDAR</a> systems (§27).</p>
-  <p><strong>Compression (slides 106, 108–109).</strong> If <em>M</em> = <em>N</em>, the system can be solved like any square one. The interesting case is <strong>M &lt; N</strong>: fewer measurements than pixels. That makes the problem <strong><a href="https://en.wikipedia.org/wiki/Underdetermined_system">under-determined</a></strong> (more unknowns than equations; Week 5 §28), also called a <strong><a href="https://en.wikipedia.org/wiki/Compressed_sensing">compressive imaging</a></strong> problem: the camera "compresses" while measuring, instead of measuring everything and compressing afterwards (as <a href="https://en.wikipedia.org/wiki/JPEG">JPEG</a> does, Week 3). The <strong>compression factor</strong> is <em>N</em>/<em>M</em>. Slide 106 shows reconstructions from 10%, 5% and 2% as many measurements as pixels.</p>
+  <p><strong>Why bother with one detector?</strong> At wavelengths where large sensor arrays are expensive or do not exist (<a href="https://en.wikipedia.org/wiki/Infrared">infrared</a>, <a href="https://en.wikipedia.org/wiki/Terahertz_radiation">terahertz</a>, some x-ray bands, slide 138), one excellent detector plus a cheap mirror array can beat a poor array. The same idea is central to some <a href="https://en.wikipedia.org/wiki/Lidar">LiDAR</a> systems (§27).</p>
+  <p><strong>Compression (slides 106, 108–109).</strong> If <em>M</em> = <em>N</em>, the system can be solved like any square one. The interesting case is <strong>M &lt; N</strong>: fewer measurements than image pixels. That makes the problem <strong><a href="https://en.wikipedia.org/wiki/Underdetermined_system">under-determined</a></strong> (more unknowns than equations; Week 5 §28), also called a <strong><a href="https://en.wikipedia.org/wiki/Compressed_sensing">compressive imaging</a></strong> problem: the camera "compresses" while measuring, instead of measuring everything and compressing afterwards (as <a href="https://en.wikipedia.org/wiki/JPEG">JPEG</a> does, Week 3). The <strong>compression factor</strong> is <em>N</em>/<em>M</em>. Slide 106 shows reconstructions from 10%, 5% and 2% as many measurements as image pixels.</p>
   <p><strong>HW5 Task 3's setup, in these terms.</strong> The test image is a 64×64 logo, so <em>N</em> = 4096 unknowns. With compression factor 4, <em>M</em> = 4096/4 = 1024 measurements. The patterns are random gray levels between 0 and 1 (<code>np.random.rand</code>), one 64×64 mask per measurement, and the noise has σ = 0.001. The starter code supplies the two operations as functions (handles, Week 5 §26):</p>
   <ul>
     <li><code>Afun(x)</code>: multiply each mask by the image and sum each product, giving 1024 numbers (that is <strong>A x</strong>);</li>
     <li><code>Atfun(b)</code>: weight each mask by its measurement and add the masks up, giving a 64×64 image (that is <strong>A</strong>ᵀ<strong>b</strong>).</li>
   </ul>
-  <p><strong>Watch the names.</strong> In <code>hw5_task3.py</code>, the variable <code>N</code> is the number of <em>measurements</em> (1024), the lecture's <em>M</em>. These notes always use the lecture's meaning (<em>N</em> = pixels, <em>M</em> = measurements).</p>
+  <p><strong>Watch the names.</strong> In <code>hw5_task3.py</code>, the variable <code>N</code> is the number of <em>measurements</em> (1024), the lecture's <em>M</em>. These notes always use the lecture's meaning (<em>N</em> = image pixels, <em>M</em> = measurements).</p>
   <div class="summary-box">
     <div class="label">Summary</div>
     <ul>
-      <li>A single-pixel camera reads the total light through <em>M</em> known patterns: <strong>b = A x + η</strong>, one pattern per row of <strong>A</strong>.</li>
+      <li>A single-pixel camera's one detector reads the total light through <em>M</em> known patterns: <strong>b = A x + η</strong>, one pattern per row of <strong>A</strong>.</li>
+      <li>"Pixel" has two meanings here: one <em>sensor pixel</em> (the detector) but <em>N</em> <em>image pixels</em>, one per DMD pattern cell.</li>
       <li>Rule to remember: <strong>compressive</strong> means <strong>M &lt; N</strong> (under-determined); compression factor = <strong>N/M</strong>. HW5 Task 3: <em>N</em> = 4096, <em>M</em> = 1024.</li>
       <li><code>Afun</code> = <strong>A x</strong> (masks times image, summed), <code>Atfun</code> = <strong>A</strong>ᵀ<strong>b</strong> (masks weighted by readings, summed). The starter code's <code>N</code> is the lecture's <em>M</em>.</li>
       <li>Next: the simplest answer to an under-determined system, and why it is not enough (§24).</li>
@@ -14608,12 +14626,12 @@ substitute:                        x = Aᵀ (A Aᵀ)⁻¹ b</div>
 </figure>
   <p><strong>Why it looks bad.</strong> "Results (not great)" (slide 112). Nothing in it says "look like an image." With random patterns, a weighted sum of random patterns looks like random speckle, and the missing null-space part (75% of the image's degrees of freedom at 4× compression) is simply set to zero.</p>
   <div class="callout">
-    <div class="label">Worked example &mdash; 4 pixels, 2 patterns</div>
+    <div class="label">Worked example &mdash; 4 image pixels, 2 patterns</div>
   <p>Scene <strong>x</strong> = [0.2, 0.9, 0.4, 0.7]. Patterns <strong>a</strong>₁ = [1, 0, 1, 0] and <strong>a</strong>₂ = [0, 1, 1, 1]. Readings: <em>b</em>₁ = 0.2 + 0.4 = 0.6, <em>b</em>₂ = 0.9 + 0.4 + 0.7 = 2.0.</p>
   <ul>
-    <li><strong>A A</strong>ᵀ = [[2, 1], [1, 3]] (pattern 1 has 2 "on" pixels, pattern 2 has 3, and they share 1).</li>
+    <li><strong>A A</strong>ᵀ = [[2, 1], [1, 3]] (pattern 1 has 2 "on" cells, pattern 2 has 3, and they share 1).</li>
     <li>Solve [[2, 1], [1, 3]]<strong>w</strong> = [0.6, 2.0]: <strong>w</strong> = [−0.04, 0.68]. Then <strong>x̃</strong> = <strong>A</strong>ᵀ<strong>w</strong> = −0.04·<strong>a</strong>₁ + 0.68·<strong>a</strong>₂ = <strong>[−0.04, 0.68, 0.64, 0.68]</strong>.</li>
-    <li>It reproduces both readings exactly (−0.04 + 0.64 = 0.6; 0.68 + 0.64 + 0.68 = 2.0) and is shorter than the truth (length 1.156 vs. 1.225), but it is wrong everywhere, and pixel 1 is even negative (impossible for light). The error, truth − estimate = [0.24, 0.22, −0.24, 0.02], is invisible to both patterns: <strong>A</strong> times it is [0, 0]. That is the null-space part least-norm discards.</li>
+    <li>It reproduces both readings exactly (−0.04 + 0.64 = 0.6; 0.68 + 0.64 + 0.68 = 2.0) and is shorter than the truth (length 1.156 vs. 1.225), but it is wrong everywhere, and image pixel 1 is even negative (impossible for light). The error, truth − estimate = [0.24, 0.22, −0.24, 0.02], is invisible to both patterns: <strong>A</strong> times it is [0, 0]. That is the null-space part least-norm discards.</li>
   </ul>
   </div>
   <p><strong>Computing it without inverting anything (PS5 slides 13–14; HW5 Task 3.1).</strong> <strong>A A</strong>ᵀ is 1024×1024 here, but in larger problems it is still too big to form. Solve in two stages, using only <code>Afun</code> and <code>Atfun</code>:</p>
@@ -14757,7 +14775,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
     <tbody>
       <tr><td><strong>Ã</strong> (apply to <strong>x</strong>)</td><td><strong>A</strong>ᵀ(<strong>A x</strong>) + ρ<strong>D</strong>ᵀ(<strong>D x</strong>)</td><td><strong>A</strong>ᵀ(<strong>A x</strong>) + ρ<strong>x</strong></td></tr>
       <tr><td><strong>b̃</strong> (right side)</td><td><strong>A</strong>ᵀ<strong>b</strong> + ρ<strong>D</strong>ᵀ<strong>v</strong></td><td><strong>A</strong>ᵀ<strong>b</strong> + ρ<strong>v</strong></td></tr>
-      <tr><td>operator size</td><td><em>N</em>×<em>N</em> (pixels × pixels)</td><td><em>N</em>×<em>N</em></td></tr>
+      <tr><td>operator size</td><td><em>N</em>×<em>N</em> (image pixels × image pixels)</td><td><em>N</em>×<em>N</em></td></tr>
       <tr><td>function calls in the matvec</td><td><code>Afun</code>, <code>Atfun</code>, <code>opDx</code>, <code>opDtx</code></td><td><code>Afun</code>, <code>Atfun</code></td></tr>
     </tbody>
   </table></div>
@@ -14784,7 +14802,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <h2>Compressive and Single-Pixel LiDAR</h2>
   <p><a href="https://en.wikipedia.org/wiki/Lidar">LiDAR</a> (light detection and ranging; Week 4 and Week 5 §20.2) measures distance by timing laser light's round trip: distance <em>d</em> = <em>c t</em> / 2, where <em>t</em> is the round-trip time and <em>c</em> ≈ 3 × 10⁸ m/s is the <a href="https://en.wikipedia.org/wiki/Speed_of_light">speed of light</a>. This week's tools matter for LiDAR in four concrete ways.</p>
   <h3>27.1 Why LiDAR and single-pixel imaging fit together</h3>
-  <p>A depth camera needs, at every pixel, a detector fast enough to time light to within a <a href="https://en.wikipedia.org/wiki/Nanosecond">nanosecond</a> (a billionth of a second; light travels 30 cm in that time). Such detectors (for example <strong><a href="https://en.wikipedia.org/wiki/Single-photon_avalanche_diode">single-photon avalanche diodes</a></strong>, SPADs, which click on individual photons) are expensive to build in large arrays, especially at the <a href="https://en.wikipedia.org/wiki/Infrared">infrared</a> wavelengths many LiDARs use (such as 1550 nm, chosen partly because it is safer for eyes). Three ways to get a depth <em>image</em>:</p>
+  <p>A depth camera built on a sensor array needs, in every sensor pixel, a detector fast enough to time light to within a <a href="https://en.wikipedia.org/wiki/Nanosecond">nanosecond</a> (a billionth of a second; light travels 30 cm in that time). Such detectors (for example <strong><a href="https://en.wikipedia.org/wiki/Single-photon_avalanche_diode">single-photon avalanche diodes</a></strong>, SPADs, which click on individual photons) are expensive to build in large arrays, especially at the <a href="https://en.wikipedia.org/wiki/Infrared">infrared</a> wavelengths many LiDARs use (such as 1550 nm, chosen partly because it is safer for eyes). Three ways to get a depth <em>image</em>:</p>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Approach</th><th>How</th><th>Detector</th></tr></thead>
     <tbody>
@@ -14793,14 +14811,14 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
       <tr><td><strong>compressive (single-pixel) LiDAR</strong></td><td>light the whole scene; a DMD (§23) applies patterns; time the total return</td><td>one fast detector</td></tr>
     </tbody>
   </table></div>
-  <p>The third is §23's <a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">single-pixel camera</a> with a timing detector. Research systems built this way have recovered depth images from fewer patterns than pixels.</p>
+  <p>The third is §23's <a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">single-pixel camera</a> with a timing detector. Research systems built this way have recovered depth images from fewer patterns than image pixels.</p>
   <h3>27.2 The forward model: one single-pixel problem per time bin</h3>
   <p><strong><a href="https://en.wikipedia.org/wiki/Time-to-digital_converter">Time bins</a>.</strong> The detector does not report one time; it records a <strong><a href="https://en.wikipedia.org/wiki/Histogram">histogram</a></strong>: counts of returned light in each short time slot (a <strong>time bin</strong>) after the laser pulse. A bin of width Δ<em>t</em> corresponds to a depth slice of thickness Δ<em>d</em> = <em>c</em> Δ<em>t</em> / 2.</p>
   <div class="callout">
     <div class="label">Worked example &mdash; bin sizes</div>
   <p>Δ<em>t</em> = 1 ns gives Δ<em>d</em> = 3 × 10⁸ × 10⁻⁹ / 2 ≈ <strong>0.15 m</strong> per bin. Covering depths 0–30 m then takes 30 / 0.15 = <strong>200 bins</strong>.</p>
   </div>
-  <p><strong>The model.</strong> Describe the scene as a stack of 2D images, one per depth bin: <em>x</em>[<em>p</em>, <em>t</em>] is how much light pixel <em>p</em> sends back in time bin <em>t</em> (nonzero only in the bin matching that pixel's surface depth). The light reaching the detector in bin <em>t</em>, through pattern <em>m</em>, is the pattern-weighted sum of that slice:</p>
+  <p><strong>The model.</strong> Describe the scene as a stack of 2D images, one per depth bin: <em>x</em>[<em>p</em>, <em>t</em>] is how much light the scene patch of image pixel <em>p</em> (the patch one pattern cell sees) sends back in time bin <em>t</em> (nonzero only in the bin matching that patch's surface depth). The light reaching the detector in bin <em>t</em>, through pattern <em>m</em>, is the pattern-weighted sum of that slice:</p>
   <div class="formula" style="white-space:pre">b[m, t] = Σ_p a_m[p] · x[p, t]          ⇒          B = A X</div>
 <figure class="chart-fig">
 <svg viewBox="0 0 680 200" role="img" aria-label="A laser pulse lights the whole scene; returning light passes a DMD pattern and is timed by one fast detector, producing a histogram over time bins with bars at the bins of the near wall and the box.">
@@ -14853,7 +14871,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <text x="567.5" y="22" text-anchor="middle" class="chart-label" fill="var(--accent-3)" >histogram b[m, t]</text>
 <text x="340" y="186" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >earlier bin = nearer surface; each bin&#x27;s height is a pattern-weighted sum of one depth slice</text>
 </svg>
-<figcaption>Fig. 154 &mdash; compressive LiDAR's measurement. The laser lights the whole scene; the DMD pattern selects pixels; one fast detector records when the returning light arrives, as a histogram over time bins. Each bin's count is the pattern-weighted sum of the light coming back from that depth slice (illustrative counts).</figcaption>
+<figcaption>Fig. 154 &mdash; compressive LiDAR's measurement. The laser lights the whole scene; the DMD pattern selects which scene patches (image pixels) reach the detector; that one fast detector records when the returning light arrives, as a histogram over time bins. Each bin's count is the pattern-weighted sum of the light coming back from that depth slice (illustrative counts).</figcaption>
 </figure>
   <div class="tbl-wrap"><table>
     <thead><tr><th>Term</th><th>Meaning</th><th>Size (64×64 scene, 4×, 200 bins)</th></tr></thead>
@@ -14865,19 +14883,19 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   </table></div>
   <p><strong>Read it column by column:</strong> each time bin is an ordinary single-pixel imaging problem <strong>b</strong>_<em>t</em> = <strong>A x</strong>_<em>t</em>, all sharing the same <strong>A</strong>. HW5 Task 3's solver, run 200 times (or on all columns at once), recovers the whole depth-resolved scene.</p>
   <div class="callout">
-    <div class="label">Worked example &mdash; 4 pixels, 2 patterns, two surfaces</div>
-  <p>Reuse §24's scene reflectivities [0.2, 0.9, 0.4, 0.7], with pixels 1–2 on a wall in bin 3 and pixels 3–4 on a box in bin 5. Patterns <strong>a</strong>₁ = [1, 0, 1, 0], <strong>a</strong>₂ = [0, 1, 1, 1].</p>
+    <div class="label">Worked example &mdash; 4 image pixels, 2 patterns, two surfaces</div>
+  <p>Reuse §24's scene reflectivities [0.2, 0.9, 0.4, 0.7], with image pixels 1–2 on a wall in bin 3 and image pixels 3–4 on a box in bin 5. Patterns <strong>a</strong>₁ = [1, 0, 1, 0], <strong>a</strong>₂ = [0, 1, 1, 1].</p>
   <div class="tbl-wrap"><table>
     <thead><tr><th></th><th>bin 3 (wall)</th><th>bin 5 (box)</th></tr></thead>
     <tbody>
-      <tr><td>pattern 1 histogram</td><td>0.2 (pixel 1)</td><td>0.4 (pixel 3)</td></tr>
-      <tr><td>pattern 2 histogram</td><td>0.9 (pixel 2)</td><td>0.4 + 0.7 = 1.1 (pixels 3, 4)</td></tr>
+      <tr><td>pattern 1 histogram</td><td>0.2 (image pixel 1)</td><td>0.4 (image pixel 3)</td></tr>
+      <tr><td>pattern 2 histogram</td><td>0.9 (image pixel 2)</td><td>0.4 + 0.7 = 1.1 (image pixels 3, 4)</td></tr>
     </tbody>
   </table></div>
   <p>Timing has already separated the two surfaces: the bin-3 column is a single-pixel measurement of the wall alone, the bin-5 column of the box alone. Adding the bins back up gives §24's readings 0.6 and 2.0 (the plain intensity image).</p>
   </div>
 <figure class="chart-fig">
-<svg viewBox="0 0 680 280" role="img" aria-label="Two histograms over 6 time bins. Pattern 1, which sees pixels 1 and 3, has 0.2 at bin 3 and 0.4 at bin 5. Pattern 2, which sees pixels 2, 3 and 4, has 0.9 at bin 3 and 1.1 at bin 5. Summing each histogram gives 0.6 and 2.0.">
+<svg viewBox="0 0 680 280" role="img" aria-label="Two histograms over 6 time bins. Pattern 1, which sees image pixels 1 and 3, has 0.2 at bin 3 and 0.4 at bin 5. Pattern 2, which sees image pixels 2, 3 and 4, has 0.9 at bin 3 and 1.1 at bin 5. Summing each histogram gives 0.6 and 2.0.">
 <line x1="110" y1="40" x2="110" y2="190" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="110" y="205" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >1</text>
 <line x1="150" y1="40" x2="150" y2="190" stroke="var(--border)" stroke-width="0.5" fill="none" />
@@ -14934,14 +14952,14 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <rect x="567.2" y="63.1" width="25.6" height="126.9" rx="0" fill="var(--accent)" stroke="none" stroke-width="1.0" />
 <text x="580" y="57.1" text-anchor="middle" class="chart-label" fill="var(--ink)" >1.1</text>
 <text x="520" y="250" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >sum over bins = 2.0 (plain reading)</text>
-<text x="340" y="268" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >purple: bin 3, the wall (pixels 1–2) · amber: bin 5, the box (pixels 3–4)</text>
+<text x="340" y="268" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >purple: bin 3, the wall (image pixels 1–2) · amber: bin 5, the box (image pixels 3–4)</text>
 </svg>
-<figcaption>Fig. 155 &mdash; the 4-pixel, two-surface worked example, computed from the reflectivities and patterns. Timing separates the surfaces: bin 3 holds only wall light, bin 5 only box light, so each bin is a separate single-pixel measurement. Summing over bins gives back the plain readings 0.6 and 2.0 of §24.</figcaption>
+<figcaption>Fig. 155 &mdash; the 4-image-pixel, two-surface worked example, computed from the reflectivities and patterns. Timing separates the surfaces: bin 3 holds only wall light, bin 5 only box light, so each bin is a separate single-pixel measurement. Summing over bins gives back the plain readings 0.6 and 2.0 of §24.</figcaption>
 </figure>
-  <p><strong>A <a href="https://en.wikipedia.org/wiki/Prior_probability">prior</a> that fits naturally.</strong> Each depth slice <strong>x</strong>_<em>t</em> is mostly zero (only the pixels whose surface is at that depth are lit): the "stars" situation of §7, so an ℓ₁ prior suits each slice. Across slices, each pixel has typically one main return (<a href="https://en.wikipedia.org/wiki/Sparse_approximation">sparse</a> in time), and neighboring pixels tend to have similar depths (sparse depth gradients: TV, §27.4).</p>
-  <p><strong>From the cube to a depth map.</strong> For each pixel, the depth is the bin with the strongest return times 0.15 m. A cheaper variant used in practice recovers just two images with two single-pixel solves, the total reflectivity Σ_<em>t</em> <em>x</em>[<em>p</em>, <em>t</em>] and the time-weighted sum Σ_<em>t</em> <em>t</em>·<em>x</em>[<em>p</em>, <em>t</em>]; their ratio is each pixel's average return bin, i.e. its depth (correct when each pixel has one surface).</p>
+  <p><strong>A <a href="https://en.wikipedia.org/wiki/Prior_probability">prior</a> that fits naturally.</strong> Each depth slice <strong>x</strong>_<em>t</em> is mostly zero (only the image pixels whose surface is at that depth are lit): the "stars" situation of §7, so an ℓ₁ prior suits each slice. Across slices, each image pixel has typically one main return (<a href="https://en.wikipedia.org/wiki/Sparse_approximation">sparse</a> in time), and neighboring image pixels tend to have similar depths (sparse depth gradients: TV, §27.4).</p>
+  <p><strong>From the cube to a depth map.</strong> For each image pixel, the depth is the bin with the strongest return times 0.15 m. A cheaper variant used in practice recovers just two images with two single-pixel solves, the total reflectivity Σ_<em>t</em> <em>x</em>[<em>p</em>, <em>t</em>] and the time-weighted sum Σ_<em>t</em> <em>t</em>·<em>x</em>[<em>p</em>, <em>t</em>]; their ratio is each image pixel's average return bin, i.e. its depth (correct when each image pixel sees one surface).</p>
   <p><strong>The data-size picture.</strong> The full cube has 4096 × 200 = 819 200 unknowns; the data has 1024 × 200 = 204 800 numbers. The same 4× compression as HW5, with the prior making up the difference.</p>
-  <p><strong>One more advantage: light efficiency.</strong> Each pattern with about half its mirrors "on" sends roughly half of the whole scene's returned light to the detector, instead of one pixel's worth at a time. When the detector's own electronic noise dominates (rather than the randomness of the light itself), that larger signal per reading improves the <a href="https://en.wikipedia.org/wiki/Signal-to-noise_ratio">signal-to-noise ratio</a>. This is called the <strong><a href="https://en.wikipedia.org/wiki/Fellgett%27s_advantage">multiplex advantage</a></strong>.</p>
+  <p><strong>One more advantage: light efficiency.</strong> Each pattern with about half its mirrors "on" sends roughly half of the whole scene's returned light to the detector, instead of one scene point's worth at a time (as a scanning LiDAR gets). When the detector's own electronic noise dominates (rather than the randomness of the light itself), that larger signal per reading improves the <a href="https://en.wikipedia.org/wiki/Signal-to-noise_ratio">signal-to-noise ratio</a>. This is called the <strong><a href="https://en.wikipedia.org/wiki/Fellgett%27s_advantage">multiplex advantage</a></strong>.</p>
   <h3>27.3 Counting photons changes the data term</h3>
   <p><strong>The problem.</strong> Long-range or low-power LiDARs often return only a handful of photons per bin. Photon arrivals are random, and their counts follow a <strong><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a></strong> (the probability law for counting <a href="https://en.wikipedia.org/wiki/Independence_(probability_theory)">independent</a> random events, such as raindrops landing on a tile in a minute; this is the photon <a href="https://en.wikipedia.org/wiki/Shot_noise">shot noise</a> of Week 2 §18), not a Gaussian: a bin expecting 4 photons gets 4 ± 2 (50% spread), while one expecting 400 gets 400 ± 20 (5%), because the <a href="https://en.wikipedia.org/wiki/Standard_deviation">standard deviation</a> is the square root of the mean. At low counts, a Gaussian noise model is wrong: it even assigns probability to negative counts.</p>
   <p><strong>§5's recipe still works; only the <a href="https://en.wikipedia.org/wiki/Likelihood_function">likelihood</a> changes.</strong> If bin <em>i</em> expects (<strong>A x</strong>)_<em>i</em> photons, the Poisson probability of seeing <em>b_i</em> is (<strong>A x</strong>)_<em>i</em>^<em>b_i</em> e^{−(<strong>A x</strong>)_<em>i</em>} / <em>b_i</em>!, so</p>
@@ -14957,7 +14975,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <p>This replaces ½‖<strong>b</strong> − <strong>A x</strong>‖²/σ² as the data term. The MAP <a href="https://en.wikipedia.org/wiki/Loss_function">objective</a> is still "data term + λΨ," and <a href="https://en.wikipedia.org/wiki/Alternating_direction_method_of_multipliers">ADMM</a> still applies: the data step is no longer a linear system (no closed form), but splitting can isolate it into its own simple per-measurement prox step. The deeper machinery is beyond this week; the point is that the Bayesian view tells you <em>which</em> data term to use when the noise is not Gaussian.</p>
   <h3>27.4 TV for depth maps: edges stay sharp, no "flying pixels"</h3>
   <p><strong>Why TV fits depth even better than brightness.</strong> A depth map has no texture: a printed poster on a wall has a busy brightness image but a perfectly flat depth image. Depth maps are mostly flat or smoothly varying patches separated by sharp jumps at object boundaries: exactly what TV favors (§9).</p>
-  <p><strong>Flying pixels.</strong> Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to <em>no</em> surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call <strong>flying pixels</strong> (or <strong>mixed pixels</strong>); a sensor also creates them on its own when one pixel's light comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.</p>
+  <p><strong>Flying pixels.</strong> Ordinary smoothing (averaging neighbors) at a depth edge invents depths that belong to <em>no</em> surface: points floating in mid-air between a foreground object and the background. These are the same artifacts LiDAR and time-of-flight users call <strong>flying pixels</strong> (or <strong>mixed pixels</strong>); here "pixel" means a pixel of the output depth map (an image pixel), and the name is fixed by convention. A sensor also creates them on its own when the light one sensor pixel (or one laser spot) collects comes partly from the foreground and partly from the background. TV's edge-preserving behavior avoids adding them.</p>
   <div class="callout">
     <div class="label">Worked example &mdash; a scan line across a box edge</div>
   <p>Measured depths, in meters, with noise: [10.0, 10.1, 9.9, 10.0, 15.1, 14.9, 15.0, 15.0] (a wall at 10 m, then a box surface at 15 m). Two clean-ups:</p>
@@ -14971,7 +14989,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
   <p>The average invents two flying points at 11.67 m and 13.33 m, where nothing exists. TV returns two perfectly flat plateaus and a single clean 10 → 15 m jump. Its one bias: each plateau moves toward the other by λ ÷ (plateau length) = 0.2/4 = 0.05 m, because TV charges for the jump's height (§9's "total climb") and trims it slightly. This <strong>contrast loss</strong> is TV's typical small price.</p>
   </div>
 <figure class="chart-fig">
-<svg viewBox="0 0 680 290" role="img" aria-label="Depth along 8 pixels: measurements near 10 meters for 4 pixels, then near 15 meters. A 3-tap average invents two in-between depths, 11.67 and 13.33 meters. TV denoising gives two flat plateaus at 10.05 and 14.95 meters with a single clean jump.">
+<svg viewBox="0 0 680 290" role="img" aria-label="Depth along 8 depth-map pixels: measurements near 10 meters for 4 depth-map pixels, then near 15 meters. A 3-tap average invents two in-between depths, 11.67 and 13.33 meters. TV denoising gives two flat plateaus at 10.05 and 14.95 meters with a single clean jump.">
 <line x1="113.8" y1="25" x2="113.8" y2="245" stroke="var(--border)" stroke-width="0.5" fill="none" />
 <text x="113.8" y="260" text-anchor="middle" class="chart-label" fill="var(--ink-faint)" >1</text>
 <line x1="181.2" y1="25" x2="181.2" y2="245" stroke="var(--border)" stroke-width="0.5" fill="none" />
@@ -15002,7 +15020,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <text x="74" y="56.5" text-anchor="end" class="chart-label" fill="var(--ink-faint)" >15</text>
 <line x1="80" y1="245" x2="620" y2="245" stroke="currentColor" stroke-width="1.0" fill="none" />
 <line x1="80" y1="25" x2="80" y2="245" stroke="currentColor" stroke-width="1.0" fill="none" />
-<text x="350" y="279" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >pixel along the scan line</text>
+<text x="350" y="279" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" >depth-map pixel along the scan line</text>
 <text x="40" y="135" text-anchor="middle" class="chart-label" fill="var(--ink-soft)" transform="rotate(-90 40 135)">depth (m)</text>
 <polyline points="113.8,222.7 181.2,222.7 248.8,222.7 316.2,222.7 383.8,54.2 451.2,54.2 518.8,54.2 586.2,54.2" stroke="var(--accent-3)" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
 <polyline points="113.8,223.2 181.2,224.4 248.8,224.4 316.2,167.1 383.8,109.8 451.2,52.5 518.8,53.6 586.2,52.5" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linejoin="round" stroke-dasharray="5 3"/>
@@ -15034,7 +15052,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
     <div class="label">Summary</div>
     <ul>
       <li>Compressive LiDAR = single-pixel camera + timing detector: <strong>B = A X</strong>, one single-pixel problem per <strong>time bin</strong> (bin depth = <strong>cΔt/2</strong>, 0.15 m for 1 ns), all sharing the same <strong>A</strong>.</li>
-      <li>Each depth slice is sparse (ℓ₁ prior); each pixel has one main return; depth = strongest bin × bin depth.</li>
+      <li>Each depth slice is sparse (ℓ₁ prior); each image pixel has one main return; depth = strongest bin × bin depth.</li>
       <li>Photon counts are Poisson, so the data term becomes <strong>Σ[(Ax)_i − b_i log(Ax)_i]</strong>; the MAP/ADMM recipe still applies.</li>
       <li>TV suits depth maps: sharp edges, no flying pixels (11.67 m and 13.33 m invented by averaging vs. clean plateaus with TV), at a small contrast loss; slanted planes call for TGV.</li>
       <li>Next: other imaging systems built on the same objective (§28).</li>
@@ -15083,7 +15101,7 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
 <figcaption>Fig. 157 &mdash; the Fourier slice theorem. Summing the image along parallel lines that run perpendicular to the direction θ (left, θ = 30° here, so the lines run at 120°) gives one CT projection, laid out along direction θ. Its 1D Fourier transform equals the image's 2D Fourier transform along the straight line through the origin at the same angle θ (right, amber). Each angle fills in one slice; many angles fill the spectrum.</figcaption>
 </figure>
   <p><strong><a href="https://en.wikipedia.org/wiki/Magnetic_resonance_imaging">Magnetic resonance imaging</a> (MRI, slide 132).</strong> An MRI scanner measures the image's Fourier coefficients directly (radiologists call the frequency domain <strong><a href="https://en.wikipedia.org/wiki/K-space_(magnetic_resonance_imaging)">k-space</a></strong>). <strong>Compressive MRI</strong> measures fewer (often randomly chosen) coefficients, shortening scans, which matters for patients who must hold still. Here <strong>A</strong> = "Fourier transform, then keep only the measured frequencies."</p>
-  <p><strong><a href="https://en.wikipedia.org/wiki/Hyperspectral_imaging">Hyperspectral</a> imaging (slides 134–137).</strong> A <strong>hyperspectral</strong> image records many narrow wavelength bands per pixel (dozens to hundreds, instead of RGB's three): a 3D <strong>datacube</strong> (<em>x</em>, <em>y</em>, λ), here λ meaning wavelength. Conventional instruments scan, either over space (<em>x</em>, <em>y</em>) or over wavelength. <strong>CASSI</strong> (<a href="https://en.wikipedia.org/wiki/Coded_aperture">coded aperture</a> snapshot spectral imager) captures the whole cube in one 2D photo: a <strong>coded aperture</strong> (a fixed random mask) patterns the light, then a <strong>disperser</strong> (a <a href="https://en.wikipedia.org/wiki/Dispersive_prism">prism</a> or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways by a different distance, and all the shifted, masked copies land summed on one sensor. <strong>A</strong> = "mask, shift by wavelength, sum." Quality is moderate for a single snapshot, good with several coded shots (slide 137).</p>
+  <p><strong><a href="https://en.wikipedia.org/wiki/Hyperspectral_imaging">Hyperspectral</a> imaging (slides 134–137).</strong> A <strong>hyperspectral</strong> image records many narrow wavelength bands per image pixel (dozens to hundreds, instead of RGB's three): a 3D <strong>datacube</strong> (<em>x</em>, <em>y</em>, λ), here λ meaning wavelength. Conventional instruments scan, either over space (<em>x</em>, <em>y</em>) or over wavelength. <strong>CASSI</strong> (<a href="https://en.wikipedia.org/wiki/Coded_aperture">coded aperture</a> snapshot spectral imager) captures the whole cube in one 2D photo: a <strong>coded aperture</strong> (a fixed random mask) patterns the light, then a <strong>disperser</strong> (a <a href="https://en.wikipedia.org/wiki/Dispersive_prism">prism</a> or grating, which bends each wavelength by a different amount) shifts each wavelength's copy sideways by a different distance, and all the shifted, masked copies land summed on one sensor. <strong>A</strong> = "mask, shift by wavelength, sum." Quality is moderate for a single snapshot, good with several coded shots (slide 137).</p>
 <figure class="chart-fig">
 <svg viewBox="0 0 680 200" role="img" aria-label="A scene&#x27;s spectral cube passes a coded aperture mask, then a prism that shifts each wavelength by a different amount, so three colored copies land offset on one 2D sensor, where they add up.">
 <defs><marker id="w6-cassi-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-soft)"/></marker></defs>
@@ -15630,11 +15648,12 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
         </div>
         <p style="font-family:var(--font-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin:14px 0 0">Compressive imaging and the single-pixel camera</p>
         <div class="term-table">
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">Single-pixel imaging</a></dt><dd>reconstructing a full image from many single-value measurements plus known coded illumination patterns. Precisely: a lens images the scene onto a DMD, a pattern of mirrors sends part of the light to one photodiode, and each reading is b_m = a_mᵀx; repeat M times, b = Ax + η. Useful where large sensor arrays are expensive or impossible (infrared, terahertz) (§23).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Single-pixel_imaging">Single-pixel imaging</a></dt><dd>reconstructing a full image from many single-value measurements plus known coded illumination patterns. Precisely: a lens images the scene onto a DMD, a pattern of mirrors sends part of the light to one photodiode, and each reading is b_m = a_mᵀx; repeat M times, b = Ax + η. Useful where large sensor arrays are expensive or impossible (infrared, terahertz) (§23). The "single pixel" is the one detector; the reconstructed image still has N image pixels, one per DMD pattern cell.</dd></div>
+          <div class="row"><dt>Sensor pixel vs. image pixel</dt><dd>a <em>sensor pixel</em> (= detector) is a physical light-sensing cell; an <em>image pixel</em> is one value of the output picture. A normal camera has one sensor pixel per image pixel, so "pixel" covers both; a single-pixel camera has one sensor pixel (the photodiode) but reconstructs N image pixels, one per DMD <strong>pattern cell</strong> (one mirror or a small block of mirrors) (§23). Same concept, different names: image pixel = scene pixel = pattern cell.</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Digital_micromirror_device">Digital micromirror device (DMD)</a></dt><dd>a chip covered in hundreds of thousands of microscopic mirrors, each tilting "on" (toward the detector) or "off"; the on/off layout is the pattern (mask); the same chip is used in many video projectors (§23).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Photodiode">Photodiode</a></dt><dd>a one-pixel light meter that reports one number, the total light reaching it (§23).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Photodiode">Photodiode</a></dt><dd>a single light sensor (one sensor pixel on its own) that reports one number, the total light reaching it; in the single-pixel camera it is the only detector, the "single pixel" of the name (§23). Same concept, different names: detector = photodiode = bucket detector.</dd></div>
           <div class="row"><dt>Measurement matrix A</dt><dd>one pattern per row; for HW5 Task 3, M = 1024 random gray-level masks on a 64×64 (N = 4096) image; <code>Afun</code> = Ax (masks times image, summed), <code>Atfun</code> = Aᵀb (masks weighted by readings, summed) (§23). Same concept, different names: measurement matrix = sensing matrix = A. Watch the names: the starter code's <code>N</code> is the lecture's M.</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Compressed_sensing">Compressive imaging</a></dt><dd>measuring fewer numbers than pixels (M &lt; N), so the camera "compresses while measuring" instead of measuring everything and compressing afterwards as JPEG does; the compression factor is N/M (HW5: 4) (§23). Same concept, different names: compressive imaging = compressed sensing setting (M &lt; N).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Compressed_sensing">Compressive imaging</a></dt><dd>measuring fewer numbers than image pixels (M &lt; N), so the camera "compresses while measuring" instead of measuring everything and compressing afterwards as JPEG does; the compression factor is N/M (HW5: 4) (§23). Same concept, different names: compressive imaging = compressed sensing setting (M &lt; N).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Underdetermined_system">Under-determined</a> (restated)</dt><dd>more unknowns than equations, so infinitely many exact solutions exist (§23–§24; Week 5 §28). Same concept, different names: under-determined = compressive (M &lt; N).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra)">Null space</a> (restated)</dt><dd>the changes to the image that leave every reading unchanged; any solution plus a null-space vector is another solution (§24; Week 5 §27.1).</dd></div>
           <div class="row"><dt>Least-norm solution</dt><dd>x̃_ln = Aᵀ(AAᵀ)⁻¹b, the exact solution with the smallest ℓ₂ norm, derived with a Lagrange multiplier; it is a weighted sum of the patterns, contains no null-space part, and with random patterns looks like speckle ("not great," slide 112); Tikhonov in the limit λ → 0 (§24). Same concept, different names: least-norm = minimum-norm solution = "LN" = the pseudoinverse solution A⁺b for a wide A.</dd></div>
@@ -15654,9 +15673,9 @@ DnCNN prior (K = I):   x ← (AᵀA + ρ I)⁻¹  (Aᵀb + ρ v),          v = z
           <div class="row"><dt>Scanning vs. flash vs. compressive LiDAR</dt><dd>scanning: steer one beam point by point with one fast detector; flash: light the whole scene and use a full array of fast detectors; compressive (single-pixel): light the whole scene, apply DMD patterns, time the total return with one fast detector (§27.1). Same concept, different names: single-pixel LiDAR = compressive LiDAR = compressive depth imaging.</dd></div>
           <div class="row"><dt>Time bin / <a href="https://en.wikipedia.org/wiki/Histogram">histogram</a></dt><dd>the detector records counts of returned light in each short time slot (bin) after the pulse; a bin of width Δt is a depth slice Δd = cΔt/2 (0.15 m for 1 ns) (§27.2). Same concept, different names: time bin = histogram bin = range bin.</dd></div>
           <div class="row"><dt>Compressive LiDAR forward model B = AX</dt><dd>each time bin is an ordinary single-pixel problem b_t = Ax_t sharing the same A; X's column t is the image of "what is at depth bin t," and each such slice is sparse (an ℓ₁ prior suits it) (§27.2).</dd></div>
-          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Fellgett%27s_advantage">Multiplex advantage</a></dt><dd>each pattern sends roughly half the scene's light to the detector instead of one pixel's worth, improving SNR when the detector's own electronic noise dominates (§27.2). Same concept, different names: multiplex advantage = Fellgett advantage (the spectroscopy name).</dd></div>
+          <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Fellgett%27s_advantage">Multiplex advantage</a></dt><dd>each pattern sends roughly half the scene's light to the detector instead of one scene point's worth (as in scanning), improving SNR when the detector's own electronic noise dominates (§27.2). Same concept, different names: multiplex advantage = Fellgett advantage (the spectroscopy name).</dd></div>
           <div class="row"><dt><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> (restated)</dt><dd>the probability law for counting independent random events, "raindrops landing on a tile in a minute"; photon counts follow it (shot noise, Week 2 §18), with standard deviation √mean, so a Gaussian noise model is wrong at low counts and the data term becomes Σ[(Ax)_i − b_i log(Ax)_i] (§27.3).</dd></div>
-          <div class="row"><dt>Flying pixels</dt><dd>invented depths that belong to no surface, points floating in mid-air between a foreground object and the background, produced at depth edges when foreground and background are mixed, either by the sensor itself (one pixel's light coming from both) or by ordinary averaging; TV smoothing does not add them (§27.4). Same concept, different names: flying pixels = mixed pixels = edge artifacts in depth maps.</dd></div>
+          <div class="row"><dt>Flying pixels</dt><dd>invented depths that belong to no surface, points floating in mid-air between a foreground object and the background, produced at depth edges when foreground and background are mixed, either by the sensor itself (one sensor pixel's or laser spot's light coming from both) or by ordinary averaging; TV smoothing does not add them (§27.4). The "pixel" in the name is a pixel of the output depth map (an image pixel). Same concept, different names: flying pixels = mixed pixels = edge artifacts in depth maps.</dd></div>
           <div class="row"><dt>Contrast loss</dt><dd>TV's small bias of moving each plateau toward its neighbor by λ ÷ (plateau length), because it charges for a jump's height (§27.4).</dd></div>
           <div class="row"><dt>Total generalized variation (TGV)</dt><dd>a higher-order prior that penalizes <em>changes</em> in the gradient rather than the gradient itself, so a slanted plane costs nothing; fits depth maps of slanted surfaces better than plain TV (§9, §27.4).</dd></div>
         </div>
