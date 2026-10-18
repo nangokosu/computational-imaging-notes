@@ -88,7 +88,7 @@ The six weeks form a few long chains. Knowing these makes most conceptual questi
 5. **Blur is convolution, deblurring is division (W1 → W4 → W5 → W6).** Image ∗ PSF ⇔ spectrum × OTF → inverse filter divides by the OTF → noise explodes where |OTF| ≈ 0 → fixes: make the OTF broadband (coded aperture / flutter shutter, W4), damp the division (Wiener, W5), or add a prior and solve iteratively (TV + ADMM, W6).
 6. **Everything is Ax = b (W3 → W5 → W6).** Blur, demosaicking, and single-pixel imaging are all linear measurements → least squares (normal equations / gradient descent) → under-determined or ill-conditioned → regularization = a Bayesian prior (MAP) → sparsity (ℓ1, TV) → solved by splitting (ADMM, soft thresholding, plug-and-play denoisers).
 7. **Color is three samples of a spectrum (W1 → W3).** Three cone types / three camera filters reduce a spectrum to 3 numbers (metamers exist) → a Bayer CFA records only 1 of 3 per pixel → demosaicking interpolates → zipper and false-color artifacts at edges → gradient-corrected (MHC) or chroma-domain filtering reduces them.
-8. **The LiDAR thread (W4 → W5 → W6).** Range from round-trip time d = c·τ/2 (d = distance to the target, c = speed of light, τ = round-trip time of the light pulse; W4) → a fixed pulse rate means echoes from beyond c/(2·f_rep) (f_rep = pulses sent per second; not a focal length) alias back as near targets — temporal aliasing (W5) → a single-pixel detector with coded illumination plus sparsity priors gives compressive LiDAR (W6).
+8. **The LiDAR thread (W4 → W5 → W6).** Range from round-trip time d = c·τ/2 (d = distance to the target, c = speed of light, τ = round-trip time of the light pulse; W4) → a fixed pulse rate means echoes from beyond c/(2·f_rep) (f_rep = pulses sent per second; not a focal length) alias back as near targets — temporal aliasing (W5) → one fast detector (the "single pixel") behind DMD patterns plus sparsity priors gives compressive LiDAR (W6).
 
 ---
 
@@ -1596,10 +1596,10 @@ Each SGD step costs ~B/m of a GD step, so 1000 rows (≈ 6% of 16384) are far ch
 - **HQS** (= half-quadratic splitting = quadratic penalty method) — ADMM without u; exact only as ρ → ∞, very ρ-sensitive. **Unrolled optimization** (= algorithm unrolling = deep unfolding) — K iterations as network layers, learn λ⁽ᵏ⁾, ρ⁽ᵏ⁾.
 
 **Compressive imaging**
-- **Single-pixel camera** — DMD (digital micromirror device: a chip of tiny tilting mirrors that displays a pattern) shows M patterns, one photodiode sums light through each: b = Ax + η. **Compressive** = under-determined = M < N (fewer measurements than the N scene pixels); compression factor N/M. (Measurement matrix = sensing matrix = A.)
+- **Single-pixel camera** — DMD (digital micromirror device: a chip of tiny tilting mirrors that displays a pattern) shows M patterns, one photodiode (the camera's only detector) sums light through each: b = Ax + η. **Compressive** = under-determined = M < N (fewer measurements than the N image pixels); compression factor N/M. (Measurement matrix = sensing matrix = A.) **Watch "pixel":** the "single pixel" is the one **detector** (one sensor pixel, the photodiode; = bucket detector); the reconstructed image still has N **image pixels**, one per DMD pattern cell (each cell = one mirror or a small block of mirrors). A normal camera has one sensor pixel per image pixel, so the word covered both until now.
 - **Least-norm solution** (= minimum-norm = pseudoinverse A⁺b, the generalized "inverse" for a non-square A) — shortest exact fit; weighted sum of patterns, zero null-space part → looks like speckle. Computed via CG on (AAᵀ)w = b, then x = Aᵀw.
 - **Conjugate gradients (CG)** — solves SPD (symmetric positive definite: symmetric, with all eigenvalues > 0; not Week 3's spectral power distribution) systems with one matrix-vector product per step (works with function handles `Afun`/`Atfun`, functions that compute Ax and Aᵀy without storing A; no matrix inverse).
-- **Compressive LiDAR** (= single-pixel LiDAR) — single-pixel camera + timing detector; histogram per pattern; one single-pixel problem per **time bin** (= range bin). Poisson photon counts change the data term; TV on depth avoids **flying pixels** (= mixed pixels: pixels on an object's edge that get a false depth between foreground and background).
+- **Compressive LiDAR** (= single-pixel LiDAR) — single-pixel camera + timing detector; histogram per pattern; one single-pixel problem per **time bin** (= range bin). Poisson photon counts change the data term; TV on depth avoids **flying pixels** (= mixed pixels: depth-map pixels on an object's edge that get a false depth between foreground and background).
 - **CT / MRI / hyperspectral** (CT = X-ray computed tomography; MRI = magnetic resonance imaging; hyperspectral = an image with many narrow wavelength bands per pixel, not just RGB) — same objective, different A: CT projections = slices of the 2D spectrum (Fourier slice = projection-slice theorem); MRI samples k-space (Fourier coefficients) directly; CASSI (coded aperture snapshot spectral imager) = mask + disperser (a prism that spreads wavelengths sideways) + sum onto one sensor. Priors can **hallucinate**.
 - **"Frequency" this week** always = **image frequency** (cycles/pixel) in the FFT formulas; LiDAR uses time (ns), not frequency.
 
@@ -1703,7 +1703,7 @@ x = F⁻¹{ [F{c}*·F{b} + ρ(F{d_x}*·F{v₁} + F{d_y}*·F{v₂})] / [ |F{c}|²
 | v₁, v₂ | horizontal / vertical halves of v = z − u | intensity/px | changes each iteration |
 | ρ | penalty parameter | — | you choose |
 | F, F⁻¹, * | 2D DFT, inverse, complex conjugate (= transpose in Fourier) | — | — |
-| k, N | image-frequency index (cycles/N px) and row length in pixels (here N = image width, not the total pixel count N of E8) | — | — |
+| k, N | image-frequency index (cycles/N px) and row length in pixels (here N = image width, not the total image-pixel count N of E8) | — | — |
 *Use it when:* data step for circulant blur — element-wise division per image frequency. *Gotcha:* denominator is constant → precompute once; PnP (K = I) replaces ρ|F{d}|² with ρ.
 
 #### E8. Single-pixel model and least-norm solution
@@ -1714,10 +1714,10 @@ x̃_ln = Aᵀ (A Aᵀ)⁻¹ b      (solve (A Aᵀ) w = b by CG, then x = Aᵀ w)
 | Symbol | Meaning | Units | You control / fixed |
 |---|---|---|---|
 | A | measurement matrix, one pattern aₘ per row | weights 0–1 | designer |
-| x | scene, N pixels | intensity | unknown |
-| b | M photodiode readings | intensity | measured |
+| x | scene, N image pixels | intensity | unknown |
+| b | M readings of the one detector (photodiode) | intensity | measured |
 | η | measurement noise | intensity | fixed by sensor |
-| M, N | # measurements, # pixels | count | designer |
+| M, N | # measurements, # image pixels (= DMD pattern cells) | count | designer |
 | AAᵀ | M×M pattern overlaps | — | computed |
 | w | multipliers / pattern weights (size M) | — | computed |
 *Use it when:* the plain exact fit of an under-determined system. *Gotcha:* exact but ignores the null space (N − M dims) → speckle; a prior (TV/DnCNN in ADMM) is needed. Single-pixel x-update (AᵀA + ρDᵀD)x = … has no FFT shortcut → CG every iteration.
@@ -1731,8 +1731,8 @@ x̃_ln = Aᵀ (A Aᵀ)⁻¹ b      (solve (A Aᵀ) w = b by CG, then x = Aᵀ w)
 | Δt | time-bin width | s | detector electronics |
 | c | speed of light ≈ 3 × 10⁸ | m/s | fixed |
 | Δd | depth slice per bin (/2 = round trip) | m | derived |
-| aₘ[p] | pattern m's weight at pixel p | — | designer |
-| x[p, t] | light pixel p returns in bin t | counts | unknown |
+| aₘ[p] | pattern m's weight at image pixel p | — | designer |
+| x[p, t] | light the scene patch of image pixel p returns in bin t | counts | unknown |
 | A, X, B | patterns (M×N), scene cube (N×bins), histograms (M×bins) | — | designer / unknown / measured |
 *Use it when:* depth imaging with one timing detector — each bin is a single-pixel problem sharing A. *Gotcha:* low photon counts → Poisson data term Σ[(Ax)ᵢ − bᵢ log(Ax)ᵢ], not least squares.
 
@@ -1772,11 +1772,11 @@ Anisotropic = 3 + 3 + 2 + 0 = **8**. Isotropic = √5 + 3 + 2 + 0 = **5 + √5 �
 
 </details>
 
-**Q4. [Calc]** (a) Least-norm solution of A = [[1, 1, 0], [0, 1, 1]], b = [3, 5]. Check it against the exact solution [0, 3, 2]. (b) A single-pixel camera images 128×128 pixels at compression factor 8: M, null-space dimension, fraction measured?
+**Q4. [Calc]** (a) Least-norm solution of A = [[1, 1, 0], [0, 1, 1]], b = [3, 5]. Check it against the exact solution [0, 3, 2]. (b) A single-pixel camera reconstructs a 128×128-image-pixel picture at compression factor 8: M, null-space dimension, fraction measured?
 <details><summary>Answer</summary>
 
 (a) AAᵀ = [[2, 1], [1, 2]]; solve 2w₁ + w₂ = 3, w₁ + 2w₂ = 5 → w = [1/3, 7/3]; x = Aᵀw = [w₁, w₁ + w₂, w₂] = **[1/3, 8/3, 7/3]**. Check Ax = [9/3, 15/3] = [3, 5] ✓. Compare squared norms (no roots needed): ‖x‖² = (1 + 64 + 49)/9 = 114/9 ≈ 12.7 < ‖[0, 3, 2]‖² = 13, so it is the shortest exact fit.  
-(b) N = 16384; M = 16384/8 = **2048**; null space ≥ N − M = **14336** dims; measured fraction **12.5%**.
+(b) N = 128 × 128 = 16384 image pixels; M = 16384/8 = **2048**; null space ≥ N − M = **14336** dims; measured fraction **12.5%**.
 
 </details>
 
