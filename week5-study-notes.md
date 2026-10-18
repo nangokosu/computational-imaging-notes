@@ -1793,10 +1793,23 @@ It is the inverse filter F(*b*)/F(*k*) multiplied by a **noise-dependent damping
 | \|F(*k*)\|² | how strongly the blur passes this frequency, as a power (squared magnitude) | known |
 | SNR(ω) | **signal-to-noise ratio** at frequency ω: signal variance ÷ noise variance at that frequency | estimated, or chosen by you |
 | 1/SNR(ω) | the noise-to-signal ratio: how much of this frequency is noise | as above |
-| damping factor \|*K*\|²/(\|*K*\|² + 1/SNR) | near 1 where the blurred signal is strong compared with the noise, near 0 where it is not | computed |
+| damping factor *D* = \|*K*\|²/(\|*K*\|² + 1/SNR) | the fraction of the inverse filter's gain 1/*K* that Wiener keeps at this frequency: near 1 (little damping) where the blurred signal is strong compared with the noise, near 0 (frequency zeroed) where it is not | computed |
 | ω | one frequency (a label; same axis as every other spectrum here) | — |
 
 **Variance**, used in SNR(ω), is the average squared deviation of a random quantity from its mean; the noise's variance is σ_n², the square of its standard deviation (Week 2 §18).
+
+**What "damping factor" means.** *Analogy:* after the inverse filter sets how much to boost each frequency, picture a volume knob for each frequency that can only turn that boost down, never up. "Damp" here just means "turn down" (= attenuate, §5.4). The damping factor *D* is that knob's setting, a number between 0 and 1:
+
+```
+Wiener gain  =  inverse-filter gain  ×  damping factor
+             =        1/K            ×  D,      D = |K|² / ( |K|² + 1/SNR )
+```
+
+- **It is the fraction kept, not the fraction removed.** *D* = 1 means no damping (Wiener applies the full inverse-filter boost). *D* = 0 means fully damped (that frequency is set to zero). The amount actually removed is 1 − *D*. So "damping factor 0.2" means *strong* damping (keep 20% of the boost, remove 80%), and "damping factor 0.99" means almost *no* damping. The name reads backwards (a bigger damping factor means less damping), so always say which way you mean it.
+- **What it measures.** Write SNR = *S*/*N*, with *S* the signal's power (its variance, as in the table) and *N* the noise's power at this frequency. Multiply the top and bottom of *D* by *S*: *D* = |*K*|²*S* / (|*K*|²*S* + *N*). Here |*K*|²*S* is the signal power that survives the blur, and *N* is the noise power added on top. So *D* is **the fraction of what the camera measured at this frequency that is real signal**. Wiener applies the inverse filter's boost only in proportion to how much of what it is boosting is genuine.
+- **It is also how much of the true signal comes back.** The blur multiplies a frequency by *K*; Wiener then multiplies by (1/*K*)·*D*. The round trip is *K* × (1/*K*)·*D* = *D*. So *D* = 0.68 means that frequency of the sharp image is restored to 68% of its true strength.
+- **The halfway point.** *D* = 1/2 exactly where |*K*|² = 1/SNR, i.e. where the blurred signal's power equals the noise power. Frequencies with |*K*| above √(1/SNR) are mostly kept; those below are mostly zeroed. For SNR = 100 the halfway point is |*K*| = √0.01 = 0.1.
+- **Not the physics "damping factor".** This has nothing to do with the damping ratio of a vibrating spring or circuit, or with an audio amplifier's "damping factor." Here it is only a per-frequency weight between 0 and 1. HW4's handout uses this name: Wiener deconvolution "uses a damping factor in the Fourier domain that depends on the signal-to-noise ratio."
 
 **Two limits (slide 112, "Intuitively").**
 
@@ -1811,11 +1824,11 @@ H_Wiener(ω) = K*(ω) / ( |K(ω)|² + 1/SNR(ω) )          i_est = F⁻¹( H_Wie
 
 The denominator is never zero as long as 1/SNR > 0, which is exactly the "do not divide by zero" of slide 111. (*K** is the complex conjugate; for a symmetric kernel like a centered Gaussian, *K* is real and *K** = *K*.)
 
-> **Worked example (one frequency at a time).** Take SNR = 100 (1/SNR = 0.01).
-> - Where the OTF is *K* = 0.9: Wiener gain = 0.9/(0.81 + 0.01) = **1.098**, almost the inverse filter's 1/0.9 = 1.111. Healthy frequency, nearly full correction.
-> - Where *K* = 0.1: Wiener gain = 0.1/(0.01 + 0.01) = **5.0**, half the inverse filter's 10. Partial correction.
-> - Same *K* = 0.1, but noisier, SNR = 10: gain = 0.1/(0.01 + 0.1) = **0.91**. The filter now does not boost this frequency at all.
-> - Back to §22's 8-sample kernel with 1/SNR = 0.01: the gains at frequency indices 0–4 are 0.99, 1.16, 1.92, 4.66, **0** (vs. inverse 1, 1.17, 2, 6.83, ∞). The exact zero is now handled gracefully (gain 0, not ∞), and the near-zero at index 3 is boosted 4.66× instead of 6.83×, so §22's noise wave comes out at amplitude 0.047 instead of 0.068. The cost: the true signal at index 3 is restored to only 0.146 × 4.66 ≈ 68% of its strength rather than 100%.
+> **Worked example (one frequency at a time).** Take SNR = 100 (1/SNR = 0.01). Each line gives the damping factor *D* and then the Wiener gain = (1/*K*) × *D*.
+> - Where the OTF is *K* = 0.9: *D* = 0.81/(0.81 + 0.01) = 0.988 (almost no damping). Wiener gain = 1.111 × 0.988 = **1.098**, almost the inverse filter's 1/0.9 = 1.111. Healthy frequency, nearly full correction.
+> - Where *K* = 0.1: *D* = 0.01/(0.01 + 0.01) = 0.5, exactly the halfway point. Wiener gain = 10 × 0.5 = **5.0**, half the inverse filter's 10. Partial correction.
+> - Same *K* = 0.1, but noisier, SNR = 10: *D* = 0.01/(0.01 + 0.1) = 0.091 (heavy damping: 91% of the boost removed). Gain = 10 × 0.091 = **0.91**. The filter now does not boost this frequency at all.
+> - Back to §22's 8-sample kernel with 1/SNR = 0.01: the damping factors at frequency indices 0–4 are 0.99, 0.986, 0.962, 0.681, 0, so the gains are 0.99, 1.16, 1.92, 4.66, **0** (vs. inverse 1, 1.17, 2, 6.83, ∞). The exact zero is now handled gracefully (gain 0, not ∞), and the near-zero at index 3 is boosted 4.66× instead of 6.83×, so §22's noise wave comes out at amplitude 0.047 instead of 0.068. The cost: the true signal at index 3 is restored to only 0.146 × 4.66 ≈ 68% of its strength rather than 100%, which is exactly its damping factor 0.681.
 
 **The trade-off in one sentence.** Wiener deconvolution accepts a slightly blurry answer (frequencies it gave up on stay attenuated) in exchange for not amplifying noise. Slides 113–114 show the result: naive deconvolution is pure noise; Wiener recovers recognizable, sharper parrots, still somewhat noisy. As the noise grows (σ = 0.01 → 0.05), the Wiener result gets smoother and noisier.
 
@@ -1835,7 +1848,8 @@ The formula needs SNR(ω) at every frequency, which is rarely known exactly. Thr
 4. Score each restoration with MSE and PSNR (§25).
 
 > **Summary**
-> - Rule to remember: **i_est = F⁻¹( K* / (|K|² + 1/SNR) · F(b) )**, the inverse filter times a damping factor |*K*|²/(|*K*|² + 1/SNR).
+> - Rule to remember: **i_est = F⁻¹( K* / (|K|² + 1/SNR) · F(b) )**, the inverse filter times a damping factor *D* = |*K*|²/(|*K*|² + 1/SNR).
+> - *D* is the fraction of the inverse filter's boost that is kept (1 = no damping, 0 = frequency zeroed; 1 − *D* is removed), equal to the share of the measured power at that frequency that is real signal.
 > - High SNR → divide by the kernel; low SNR → set to zero; never divide by zero.
 > - In practice 1/SNR is often one constant; PS4 estimates SNR as mean pixel value ÷ noise σ (an amplitude ratio, unlike the lecture's variance ratio).
 > - Next: where the formula comes from (§24).

@@ -1719,13 +1719,14 @@ i_est = F⁻¹( [ |F(k)|² / ( |F(k)|² + 1/SNR(ω) ) ] · F(b) / F(k) )
 SNR(ω) = signal variance at ω / noise variance at ω          (PS4's estimate: SNR = Ī / σ_noise)
 ```
 
-**Computes:** A deconvolved image that divides by the OTF only where the signal dominates the noise, damping each frequency by |K|²/(|K|² + 1/SNR) — near 1 at high SNR (inverse filter), near 0 at low SNR (frequency abandoned).
+**Computes:** A deconvolved image that divides by the OTF only where the signal dominates the noise, multiplying the inverse filter's gain at each frequency by the damping factor D = |K|²/(|K|² + 1/SNR), the fraction of the boost kept — near 1 at high SNR (no damping: inverse filter), near 0 at low SNR (frequency abandoned).
 
 | Term | Meaning |
 |---|---|
 | F(k) = K | OTF of the known blur; K* its conjugate |
 | F(b) | Spectrum of the measurement |
 | SNR(ω) | Signal-to-noise power ratio at frequency ω — estimated or chosen; often one constant |
+| D = \|K\|²/(\|K\|² + 1/SNR) | Damping factor, between 0 and 1: fraction of the inverse filter's gain kept (1 = no damping, 0 = zeroed); also the share of measured power that is signal — computed |
 | Ī | Mean pixel value of the noisy image (PS4's amplitude-ratio estimate) |
 | σ_noise | Standard deviation of the added noise |
 

@@ -1310,7 +1310,8 @@ Both sweep a nuisance parameter that varies across the scene (defocus/depth, or 
 
 **Inverse problems**
 - **Deconvolution** — undo a known blur (= deblurring = image restoration; non-blind = PSF known). **Inverse filter** — divide spectrum by OTF; blows up noise where |OTF| ≈ 0.
-- **Wiener filter** — inverse filter × damping factor |K|²/(|K|² + 1/SNR) (K = the blur's OTF; SNR here = signal power ÷ noise power, not Week 2's mean ÷ std; see E6). (Wiener filter = Wiener deconvolution; damping factor = regularizing factor = filter factor.)
+- **Wiener filter** — inverse filter × damping factor D = |K|²/(|K|² + 1/SNR) (K = the blur's OTF; SNR here = signal power ÷ noise power, not Week 2's mean ÷ std; see E6). (Wiener filter = Wiener deconvolution; damping factor = regularizing factor = filter factor.)
+- **Damping factor D** — the fraction of the inverse filter's boost 1/K that Wiener *keeps* at one frequency: D = 1 → no damping, D = 0 → frequency zeroed, 1 − D = the part removed. A bigger damping factor means *less* damping. D = share of the measured power at that frequency that is real signal (|K|²S ÷ (|K|²S + N)); D = 1/2 where |K|² = 1/SNR. Not the damping ratio of a spring/circuit.
 - **b = Ax** — any linear imaging process (x = unknown image as one long column of numbers, A = matrix describing the camera/blur, b = measurements); **null space** = inputs x that A maps to zero (invisible to the camera), **rank** = how many independent pieces of information survive; **condition number** s_max/s_min (s = singular values: the gains A applies along its independent directions) = noise amplification.
 - **Least squares** — minimize ½‖Ax − b‖² (‖v‖² = sum of squared entries of v) (= ℓ₂ fitting = data term); **normal equations** AᵀAx = Aᵀb (Aᵀ = transpose of A: rows and columns swapped). **Tikhonov regularization** adds λ‖x‖²/2 (λ = regularization weight, a dial you set; not a wavelength) → stable, unique.
 - **Gradient descent (GD)** — step downhill along −∇f (∇f = gradient: the vector of partial derivatives of the cost f, pointing uphill); (= full-batch/vanilla GD; step size = learning rate α). **SGD** (stochastic, i.e. random, gradient descent) — same step using a random batch of rows (each row of A = one measurement).
@@ -1403,7 +1404,7 @@ SNR(ω) = signal power at ω / noise power at ω     (constant approx: 1/SNR ≈
 | ω | Spatial frequency index | cycles/px | — |
 | F(b) | Spectrum of the measurement | — | measured |
 | σ_n | Noise standard deviation | intensity | fixed by sensor |
-| [ … ] | Damping factor, between 0 and 1 | unitless | follows |
+| [ … ] = D | Damping factor: fraction of the inverse filter's gain 1/K kept at ω (1 = no damping, 0 = zeroed; 1 − D removed) | unitless, 0–1 | follows |
 *Use it when:* deblurring with noise. *Gotcha:* SNR → ∞ gives the inverse filter; small |K| → gain ≈ |K|·SNR → 0 instead of ∞.
 
 #### E7. Least squares, gradient, normal equations
@@ -1455,7 +1456,7 @@ x^(k+1) = x^(k) − α Ã^(k)ᵀ ( Ã^(k) x^(k) − b̃^(k) )          E[ g(x) ]
 2. Keep every D-th pixel → copies move D× closer (Nyquist drops to 1/(2D) cycles/original px) → overlap. **So:** blur to 1/(2D) first, then decimate.
 3. Higher LiDAR PRF → next pulse fires before far returns arrive → far target reported at d − R_max. **So:** R_max = c/(2·PRF); more points/s costs range.
 4. Lens/pixel PSF ≥ 0 and sums to 1 → |OTF| ≤ 1 with zeros/small values at high frequency → information attenuated or lost. **So:** every camera is a low-pass filter, and undoing it means amplifying.
-5. Inverse filter divides by small |K| → noise term N/K explodes → PSNR collapses. **So:** Wiener damps each frequency by |K|²/(|K|²+1/SNR), trading leftover blur for less noise.
+5. Inverse filter divides by small |K| → noise term N/K explodes → PSNR collapses. **So:** Wiener multiplies each frequency's inverse-filter gain by the damping factor D = |K|²/(|K|²+1/SNR) (fraction kept: ≈ 1 where signal dominates, ≈ 0 where noise does), trading leftover blur for less noise.
 6. DFT treats image as periodic → FFT filtering = circular convolution → borders wrap; `psf2otf` must centre the kernel at (0,0). **So:** FFT and `convolve2d` match in the interior, differ at edges.
 7. AᵀA has large eigenvalue spread (ill-conditioned = large condition number, so small noise causes big errors) → GD step capped by 2/μ_max but slow along small-eigenvalue directions; SGD batch gradient is a noisy, scaled-down estimate. **So:** pick α from μ_max; smaller batch → cheaper but more iterations.
 
@@ -1505,9 +1506,9 @@ Break-even: K² = 2·18 + 1 = 37 → K ≈ 6 (6² = 36), so FFT wins for **K ≳
 **Q4. [Calc]** At one frequency the OTF magnitude is |K| = 0.05 and the (power) SNR is 100. Compare the gain of the inverse filter and the Wiener filter. Repeat for |K| = 0.9.
 <details><summary>Answer</summary>
 
-Wiener gain magnitude = |K|/(|K|² + 1/SNR) (from E6, since |K*| = |K|), 1/SNR = 0.01.
-|K| = 0.05: inverse 1/0.05 = **20**; Wiener 0.05/(0.0025 + 0.01) = **4** (damping factor 0.2).
-|K| = 0.9: inverse 1/0.9 = **10/9 ≈ 1.11**; Wiener 0.9/(0.81 + 0.01) = 0.9/0.82 = **45/41 ≈ 1.10** (damping 0.81/0.82 = 81/82 ≈ 0.99) — nearly identical where signal dominates.
+Wiener gain magnitude = |K|/(|K|² + 1/SNR) = (1/|K|) × D, with damping factor D = |K|²/(|K|² + 1/SNR) (from E6, since |K*| = |K|); 1/SNR = 0.01.
+|K| = 0.05: inverse 1/0.05 = **20**; Wiener 0.05/(0.0025 + 0.01) = **4**. Damping factor D = 0.0025/0.0125 = **0.2**: Wiener keeps only 20% of the inverse boost (20 × 0.2 = 4), i.e. *heavy* damping (80% removed).
+|K| = 0.9: inverse 1/0.9 = **10/9 ≈ 1.11**; Wiener 0.9/(0.81 + 0.01) = 0.9/0.82 = **45/41 ≈ 1.10** Damping factor D = 0.81/0.82 = **81/82 ≈ 0.99**: 99% of the inverse boost is kept, i.e. almost *no* damping (10/9 × 81/82 = 45/41) — nearly identical where signal dominates. (A large damping factor means little damping.)
 
 </details>
 
